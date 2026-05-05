@@ -27,6 +27,7 @@ Open one of the following URLs in your browser and check which one returns a JSO
 | US (alt) | `https://layla.amazon.com/api/behaviors/entities?skillId=amzn1.ask.1p.smarthome` |
 | US (alt 2) | `https://pitangui.amazon.com/api/behaviors/entities?skillId=amzn1.ask.1p.smarthome` |
 | Japan | `https://alexa.amazon.co.jp/api/behaviors/entities?skillId=amzn1.ask.1p.smarthome` |
+| Spain | `https://alexa.amazon.es/api/behaviors/entities?skillId=amzn1.ask.1p.smarthome` |
 
 You should see a JSON response containing your devices. If you get an error, try a different URL or make sure you are
 logged in.
