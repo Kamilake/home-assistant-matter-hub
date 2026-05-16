@@ -9,6 +9,7 @@ import {
   MovementType,
 } from "@matter/main/behaviors";
 import { WindowCovering } from "@matter/main/clusters";
+import { BridgeDataProvider } from "../../services/bridges/bridge-data-provider.js";
 import {
   type HomeAssistantAction,
   HomeAssistantActions,
@@ -93,6 +94,22 @@ export class WindowCoveringServerBase extends FeaturedBase {
   private static readonly DEBOUNCE_SUBSEQUENT_MS = 150;
   private static readonly COMMAND_SEQUENCE_THRESHOLD_MS = 600;
 
+  // Per-entity override wins over per-bridge flag; both must be > 0 to count.
+  private resolveDebounceOverride(
+    homeAssistant: HomeAssistantEntityBehavior,
+  ): number | null {
+    const fromEntity = homeAssistant.state.mapping?.coverSliderDebounceMs;
+    if (typeof fromEntity === "number" && fromEntity > 0) {
+      return fromEntity;
+    }
+    const fromBridge =
+      this.env.get(BridgeDataProvider).featureFlags?.coverSliderDebounceMs;
+    if (typeof fromBridge === "number" && fromBridge > 0) {
+      return fromBridge;
+    }
+    return null;
+  }
+
   override async [Symbol.asyncDispose]() {
     if (this.liftDebounceTimer) {
       clearTimeout(this.liftDebounceTimer);
@@ -108,25 +125,16 @@ export class WindowCoveringServerBase extends FeaturedBase {
   }
 
   override async initialize() {
-    // Set default values BEFORE super.initialize() to prevent validation errors.
-    // WindowCovering with PositionAware features requires valid position values.
-    if (this.features.lift) {
-      if (this.state.installedOpenLimitLift == null) {
-        this.state.installedOpenLimitLift = 0;
+    // Match the certified Eve MotionBlinds cluster profile (#328): HAMH owns
+    // operationalStatus, so disable matter.js's auto reactors, and leave the
+    // deprecated Percentage attrs undefined so they drop out of AttributeList.
+    (
+      this as unknown as {
+        internal: { disableOperationalModeHandling: boolean };
       }
-      if (this.state.installedClosedLimitLift == null) {
-        this.state.installedClosedLimitLift = 10000; // 100.00%
-      }
-    }
-    if (this.features.tilt) {
-      if (this.state.installedOpenLimitTilt == null) {
-        this.state.installedOpenLimitTilt = 0;
-      }
-      if (this.state.installedClosedLimitTilt == null) {
-        this.state.installedClosedLimitTilt = 10000; // 100.00%
-      }
-    }
+    ).internal.disableOperationalModeHandling = true;
     if (this.features.positionAwareLift) {
+      this.state.currentPositionLiftPercentage = undefined;
       if (this.state.currentPositionLiftPercent100ths === undefined) {
         this.state.currentPositionLiftPercent100ths = null;
       }
@@ -135,6 +143,7 @@ export class WindowCoveringServerBase extends FeaturedBase {
       }
     }
     if (this.features.positionAwareTilt) {
+      this.state.currentPositionTiltPercentage = undefined;
       if (this.state.currentPositionTiltPercent100ths === undefined) {
         this.state.currentPositionTiltPercent100ths = null;
       }
@@ -229,6 +238,18 @@ export class WindowCoveringServerBase extends FeaturedBase {
     const overrideType = config.getCoverType?.(state, this.agent);
     const overrideEndProduct = config.getEndProductType?.(state, this.agent);
 
+    // On the Stopped -> Moving transition, write only operationalStatus and
+    // target. Apple Home derives direction from target-vs-current; if a fresh
+    // current update lands at the controller before/with the new target, the
+    // UI briefly shows the wrong direction. Skipping current here lets the
+    // first subscription report carry state + target alone, and the next HA
+    // tick (~50-1000ms later) carries current on its own (#328).
+    const previousStatus = (
+      this.state.operationalStatus as { global?: number } | undefined
+    )?.global;
+    const startedMoving =
+      !isStopped && previousStatus === MovementStatus.Stopped;
+
     const appliedPatch = applyPatchState<WindowCoveringServerBase.State>(
       this.state,
       {
@@ -246,29 +267,12 @@ export class WindowCoveringServerBase extends FeaturedBase {
             : this.features.tilt
               ? WindowCovering.EndProductType.TiltOnlyInteriorBlind
               : WindowCovering.EndProductType.RollerShade),
-        operationalStatus: {
-          global: movementStatus,
-          ...(this.features.lift ? { lift: movementStatus } : {}),
-          ...(this.features.tilt ? { tilt: movementStatus } : {}),
-        },
-        ...(this.features.absolutePosition && this.features.lift
-          ? {
-              installedOpenLimitLift: 0,
-              installedClosedLimitLift: 100_00,
-              currentPositionLift: currentLift100ths,
-            }
-          : {}),
-        ...(this.features.absolutePosition && this.features.tilt
-          ? {
-              installedOpenLimitTilt: 0,
-              installedClosedLimitTilt: 100_00,
-              currentPositionTilt: currentTilt100ths,
-            }
-          : {}),
+        // Target before operationalStatus so the wire order matches the
+        // certified Eve MotionBlinds (state, target, current). Patch insertion
+        // order propagates into matter.js's changeList via for-in over values
+        // (Datasource.js:414), then through attrsChanged.emit (#328).
         ...(this.features.positionAwareLift
           ? {
-              currentPositionLiftPercentage: currentLift,
-              currentPositionLiftPercent100ths: currentLift100ths,
               targetPositionLiftPercent100ths: inferTarget(
                 currentLift100ths,
                 this.state.targetPositionLiftPercent100ths,
@@ -277,12 +281,25 @@ export class WindowCoveringServerBase extends FeaturedBase {
           : {}),
         ...(this.features.positionAwareTilt
           ? {
-              currentPositionTiltPercentage: currentTilt,
-              currentPositionTiltPercent100ths: currentTilt100ths,
               targetPositionTiltPercent100ths: inferTarget(
                 currentTilt100ths,
                 this.state.targetPositionTiltPercent100ths,
               ),
+            }
+          : {}),
+        operationalStatus: {
+          global: movementStatus,
+          ...(this.features.lift ? { lift: movementStatus } : {}),
+          ...(this.features.tilt ? { tilt: movementStatus } : {}),
+        },
+        ...(this.features.positionAwareLift && !startedMoving
+          ? {
+              currentPositionLiftPercent100ths: currentLift100ths,
+            }
+          : {}),
+        ...(this.features.positionAwareTilt && !startedMoving
+          ? {
+              currentPositionTiltPercent100ths: currentTilt100ths,
             }
           : {}),
       },
@@ -310,7 +327,7 @@ export class WindowCoveringServerBase extends FeaturedBase {
     const currentTilt = this.state.currentPositionTiltPercent100ths ?? 0;
 
     logger.info(
-      `handleMovement: type=${MovementType[type]}, direction=${MovementDirection[direction]}, target=${targetPercent100ths}, currentLift=${currentLift}, currentTilt=${currentTilt}, absolutePosition=${this.features.absolutePosition}`,
+      `handleMovement: type=${MovementType[type]}, direction=${MovementDirection[direction]}, target=${targetPercent100ths}, currentLift=${currentLift}, currentTilt=${currentTilt}`,
     );
 
     // Boundary targets (0=open, 10000=closed per Matter spec) are routed
@@ -327,7 +344,7 @@ export class WindowCoveringServerBase extends FeaturedBase {
         this.handleLiftClose();
       } else if (
         targetPercent100ths != null &&
-        this.features.absolutePosition
+        this.features.positionAwareLift
       ) {
         this.handleGoToLiftPosition(targetPercent100ths);
       } else if (direction === MovementDirection.Open) {
@@ -356,7 +373,7 @@ export class WindowCoveringServerBase extends FeaturedBase {
         this.handleTiltClose();
       } else if (
         targetPercent100ths != null &&
-        this.features.absolutePosition
+        this.features.positionAwareTilt
       ) {
         this.handleGoToTiltPosition(targetPercent100ths);
       } else if (direction === MovementDirection.Open) {
@@ -409,10 +426,8 @@ export class WindowCoveringServerBase extends FeaturedBase {
     const actions = this.env.get(HomeAssistantActions);
     this.pendingLiftAction = { action, entityId, actions };
 
-    // Two-phase debounce to handle Google Home's quick swipe behavior:
-    // - Quick swipe sends an initial "step" value, then final value after a delay
-    // - If we use short debounce, the step value gets executed before final arrives
-    // - Use longer debounce for first command, shorter for subsequent commands in sequence
+    // Two-phase debounce for GH quick swipes; coverSliderDebounceMs collapses
+    // both phases into one window for controllers that stream slider updates.
     const now = Date.now();
     const timeSinceLastCommand = now - this.lastLiftCommandTime;
     this.lastLiftCommandTime = now;
@@ -420,12 +435,16 @@ export class WindowCoveringServerBase extends FeaturedBase {
     const isFirstInSequence =
       timeSinceLastCommand >
       WindowCoveringServerBase.COMMAND_SEQUENCE_THRESHOLD_MS;
-    const debounceMs = isFirstInSequence
-      ? WindowCoveringServerBase.DEBOUNCE_INITIAL_MS
-      : WindowCoveringServerBase.DEBOUNCE_SUBSEQUENT_MS;
+    const overrideMs = this.resolveDebounceOverride(homeAssistant);
+    const debounceMs =
+      overrideMs != null
+        ? overrideMs
+        : isFirstInSequence
+          ? WindowCoveringServerBase.DEBOUNCE_INITIAL_MS
+          : WindowCoveringServerBase.DEBOUNCE_SUBSEQUENT_MS;
 
     logger.debug(
-      `Lift command: target=${targetPosition}%, debounce=${debounceMs}ms (${isFirstInSequence ? "initial" : "subsequent"})`,
+      `Lift command: target=${targetPosition}%, debounce=${debounceMs}ms (${overrideMs != null ? "override" : isFirstInSequence ? "initial" : "subsequent"})`,
     );
 
     if (this.liftDebounceTimer) {
@@ -482,7 +501,7 @@ export class WindowCoveringServerBase extends FeaturedBase {
     const actions = this.env.get(HomeAssistantActions);
     this.pendingTiltAction = { action, entityId, actions };
 
-    // Two-phase debounce (same logic as lift)
+    // Same two-phase / override logic as lift.
     const now = Date.now();
     const timeSinceLastCommand = now - this.lastTiltCommandTime;
     this.lastTiltCommandTime = now;
@@ -490,12 +509,16 @@ export class WindowCoveringServerBase extends FeaturedBase {
     const isFirstInSequence =
       timeSinceLastCommand >
       WindowCoveringServerBase.COMMAND_SEQUENCE_THRESHOLD_MS;
-    const debounceMs = isFirstInSequence
-      ? WindowCoveringServerBase.DEBOUNCE_INITIAL_MS
-      : WindowCoveringServerBase.DEBOUNCE_SUBSEQUENT_MS;
+    const overrideMs = this.resolveDebounceOverride(homeAssistant);
+    const debounceMs =
+      overrideMs != null
+        ? overrideMs
+        : isFirstInSequence
+          ? WindowCoveringServerBase.DEBOUNCE_INITIAL_MS
+          : WindowCoveringServerBase.DEBOUNCE_SUBSEQUENT_MS;
 
     logger.debug(
-      `Tilt command: target=${targetPosition}%, debounce=${debounceMs}ms (${isFirstInSequence ? "initial" : "subsequent"})`,
+      `Tilt command: target=${targetPosition}%, debounce=${debounceMs}ms (${overrideMs != null ? "override" : isFirstInSequence ? "initial" : "subsequent"})`,
     );
 
     if (this.tiltDebounceTimer) {

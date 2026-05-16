@@ -38,13 +38,26 @@ export class BasicInformationServer extends Base {
         : undefined;
     const serialNumberSuffix =
       this.env.get(BridgeDataProvider).serialNumberSuffix;
+    // Reserve room for the suffix so it survives the 32-char cap; otherwise
+    // appending and then trimming chops the suffix off (#330).
+    const maxRawLen = 32 - (serialNumberSuffix?.length ?? 0);
+    const registrySerial = featureFlags?.useHaRegistrySerial
+      ? ellipse(maxRawLen, device?.serial_number)
+      : undefined;
     const rawSerial =
-      ellipse(32, mapping?.customSerialNumber) ?? hash(32, entity.entity_id);
-    const serialNumber = serialNumberSuffix
-      ? ellipse(32, `${rawSerial}${serialNumberSuffix}`)
-      : rawSerial;
+      ellipse(maxRawLen, mapping?.customSerialNumber) ??
+      registrySerial ??
+      hash(maxRawLen, entity.entity_id);
+    const serialNumber =
+      rawSerial && serialNumberSuffix
+        ? `${rawSerial}${serialNumberSuffix}`
+        : rawSerial;
+    const customVendorId = mapping?.customVendorId;
+    const vendorId = isValidVendorId(customVendorId)
+      ? customVendorId
+      : basicInformation.vendorId;
     applyPatchState(this.state, {
-      vendorId: VendorId(basicInformation.vendorId),
+      vendorId: VendorId(vendorId),
       vendorName:
         ellipse(32, mapping?.customVendorName) ??
         ellipse(32, device?.manufacturer) ??
@@ -88,4 +101,13 @@ function hash(maxLength: number, value?: string) {
     .digest("hex")
     .substring(0, hashLength);
   return trimToLength(value, maxLength, suffix);
+}
+
+function isValidVendorId(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= 0xfffe
+  );
 }

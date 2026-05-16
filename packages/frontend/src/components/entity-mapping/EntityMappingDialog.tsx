@@ -37,6 +37,25 @@ interface RelatedButton {
   clean_name: string;
 }
 
+function parseVendorId(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const n =
+    trimmed.startsWith("0x") || trimmed.startsWith("0X")
+      ? Number.parseInt(trimmed.slice(2), 16)
+      : Number(trimmed);
+  if (!Number.isInteger(n) || n < 1 || n > 0xfffe) return undefined;
+  return n;
+}
+
+function parseDebounceMs(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const n = Number(trimmed);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return Math.min(5000, Math.round(n));
+}
+
 interface EntityMappingDialogProps {
   open: boolean;
   entityId: string;
@@ -63,6 +82,7 @@ export function EntityMappingDialog({
   const [customProductName, setCustomProductName] = useState("");
   const [customVendorName, setCustomVendorName] = useState("");
   const [customSerialNumber, setCustomSerialNumber] = useState("");
+  const [customVendorId, setCustomVendorId] = useState("");
   const [disabled, setDisabled] = useState(false);
   const [filterLifeEntity, setFilterLifeEntity] = useState("");
   const [cleaningModeEntity, setCleaningModeEntity] = useState("");
@@ -82,9 +102,11 @@ export function EntityMappingDialog({
   >([]);
   const [valetudoIdentifier, setValetudoIdentifier] = useState("");
   const [coverSwapOpenClose, setCoverSwapOpenClose] = useState(false);
+  const [coverSliderDebounceMs, setCoverSliderDebounceMs] = useState("");
   const [disableClimateOnOff, setDisableClimateOnOff] = useState(false);
   const [disableClimateFanControl, setDisableClimateFanControl] =
     useState(false);
+  const [climateKeepModeOnIdle, setClimateKeepModeOnIdle] = useState(false);
   const composedKeyRef = useRef(0);
   const [composedEntities, setComposedEntities] = useState<
     (ComposedSubEntity & { _key: number })[]
@@ -117,6 +139,11 @@ export function EntityMappingDialog({
       setCustomProductName(currentMapping?.customProductName || "");
       setCustomVendorName(currentMapping?.customVendorName || "");
       setCustomSerialNumber(currentMapping?.customSerialNumber || "");
+      setCustomVendorId(
+        currentMapping?.customVendorId !== undefined
+          ? `0x${currentMapping.customVendorId.toString(16).toUpperCase()}`
+          : "",
+      );
       setDisabled(currentMapping?.disabled || false);
       setFilterLifeEntity(currentMapping?.filterLifeEntity || "");
       setCleaningModeEntity(currentMapping?.cleaningModeEntity || "");
@@ -134,10 +161,16 @@ export function EntityMappingDialog({
       setCustomServiceAreas(currentMapping?.customServiceAreas || []);
       setValetudoIdentifier(currentMapping?.valetudoIdentifier || "");
       setCoverSwapOpenClose(currentMapping?.coverSwapOpenClose || false);
+      setCoverSliderDebounceMs(
+        currentMapping?.coverSliderDebounceMs != null
+          ? String(currentMapping.coverSliderDebounceMs)
+          : "",
+      );
       setDisableClimateOnOff(currentMapping?.disableClimateOnOff || false);
       setDisableClimateFanControl(
         currentMapping?.disableClimateFanControl || false,
       );
+      setClimateKeepModeOnIdle(currentMapping?.climateKeepModeOnIdle || false);
       composedKeyRef.current = 0;
       setComposedEntities(
         (currentMapping?.composedEntities || []).map((e) => ({
@@ -200,6 +233,7 @@ export function EntityMappingDialog({
       customProductName: customProductName.trim() || undefined,
       customVendorName: customVendorName.trim() || undefined,
       customSerialNumber: customSerialNumber.trim() || undefined,
+      customVendorId: parseVendorId(customVendorId),
       disabled,
       filterLifeEntity: filterLifeEntity.trim() || undefined,
       cleaningModeEntity: cleaningModeEntity.trim() || undefined,
@@ -222,8 +256,10 @@ export function EntityMappingDialog({
           : undefined,
       valetudoIdentifier: valetudoIdentifier.trim() || undefined,
       coverSwapOpenClose: coverSwapOpenClose || undefined,
+      coverSliderDebounceMs: parseDebounceMs(coverSliderDebounceMs),
       disableClimateOnOff: disableClimateOnOff || undefined,
       disableClimateFanControl: disableClimateFanControl || undefined,
+      climateKeepModeOnIdle: climateKeepModeOnIdle || undefined,
       composedEntities:
         composedEntities.filter((e) => e.entityId?.trim()).length > 0
           ? composedEntities
@@ -238,6 +274,7 @@ export function EntityMappingDialog({
     customProductName,
     customVendorName,
     customSerialNumber,
+    customVendorId,
     disabled,
     filterLifeEntity,
     cleaningModeEntity,
@@ -256,8 +293,10 @@ export function EntityMappingDialog({
     customFanSpeedTagsList,
     valetudoIdentifier,
     coverSwapOpenClose,
+    coverSliderDebounceMs,
     disableClimateOnOff,
     disableClimateFanControl,
+    climateKeepModeOnIdle,
     composedEntities,
     onSave,
   ]);
@@ -402,6 +441,16 @@ export function EntityMappingDialog({
           value={customSerialNumber}
           onChange={(e) => setCustomSerialNumber(e.target.value)}
           helperText={t("mapping.customSerialNumberHelp")}
+        />
+
+        <TextField
+          fullWidth
+          margin="normal"
+          label={t("mapping.customVendorId")}
+          placeholder="0x115F"
+          value={customVendorId}
+          onChange={(e) => setCustomVendorId(e.target.value)}
+          helperText={t("mapping.customVendorIdHelp")}
         />
 
         {showFilterLifeField && (
@@ -773,16 +822,28 @@ export function EntityMappingDialog({
         )}
 
         {showCoverSwapField && (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={coverSwapOpenClose}
-                onChange={(e) => setCoverSwapOpenClose(e.target.checked)}
-              />
-            }
-            label="Swap open/close commands (for awnings and similar covers)"
-            sx={{ mt: 1, display: "block" }}
-          />
+          <>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={coverSwapOpenClose}
+                  onChange={(e) => setCoverSwapOpenClose(e.target.checked)}
+                />
+              }
+              label="Swap open/close commands (for awnings and similar covers)"
+              sx={{ mt: 1, display: "block" }}
+            />
+            <TextField
+              label="Slider debounce (ms)"
+              type="number"
+              size="small"
+              value={coverSliderDebounceMs}
+              onChange={(e) => setCoverSliderDebounceMs(e.target.value)}
+              helperText="Override for slow blinds. 0 / empty uses bridge setting (default 400/150ms two-phase). Try 800–1500 for sluggish covers. Max 5000."
+              slotProps={{ htmlInput: { min: 0, max: 5000, step: 50 } }}
+              sx={{ mt: 1, display: "block" }}
+            />
+          </>
         )}
 
         {showLockPinField && (
@@ -820,6 +881,16 @@ export function EntityMappingDialog({
                 />
               }
               label="Expose as plain Thermostat (drop FanControl), workaround for controllers like Aqara that don't recognise the air conditioner device type"
+              sx={{ mt: 1, display: "block" }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={climateKeepModeOnIdle}
+                  onChange={(e) => setClimateKeepModeOnIdle(e.target.checked)}
+                />
+              }
+              label="Keep last mode on Matter while off + idle (workaround for ACs that report off + hvac_action=idle during internal cleaning, so the controller's Off button stays actionable)"
               sx={{ mt: 1, display: "block" }}
             />
           </>

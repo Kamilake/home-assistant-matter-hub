@@ -97,6 +97,22 @@ interface AllBridgeFeatureFlags {
    * Default: false (disabled).
    */
   readonly alexaPreserveBrightnessOnTurnOn: boolean;
+  /**
+   * Use HA Registry Serial Number: when set, fall back to the Home Assistant
+   * device registry serial_number for the Matter serialNumber attribute when
+   * no per-entity customSerialNumber is configured. Default off because
+   * changing serialNumber after commissioning can confuse controllers.
+   * Resolution order: customSerialNumber > device.serial_number (when this
+   * flag is on) > entity-ID-based hash.
+   * Default: false (disabled)
+   */
+  readonly useHaRegistrySerial: boolean;
+  /**
+   * Cover slider debounce (ms). >0 overrides the built-in 400/150 ms
+   * two-phase debounce with a single window. For controllers like Apple Home
+   * that stream slider updates. Per-entity override wins over this. 0 = unset.
+   */
+  readonly coverSliderDebounceMs: number;
 }
 
 export type BridgeFeatureFlags = Partial<AllBridgeFeatureFlags>;
@@ -138,6 +154,13 @@ export interface BridgeConfig {
    * and bypass their cached device data.
    */
   readonly serialNumberSuffix?: string;
+  /**
+   * Server Mode only. Rotate matter sessions older than this many hours so
+   * iPhone clients re-establish CASE and re-subscribe, which unsticks
+   * Apple Home "Updating" tiles (#287). 0 disables. Range 0..168.
+   * Falls back to HAMH_MATTER_SESSION_MAX_AGE_HOURS, then 4.
+   */
+  readonly sessionMaxAgeHours?: number;
 }
 
 export interface CreateBridgeRequest extends BridgeConfig {}

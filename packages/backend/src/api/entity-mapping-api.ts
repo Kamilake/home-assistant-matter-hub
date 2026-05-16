@@ -35,6 +35,7 @@ export function entityMappingApi(
       customProductName: body.customProductName,
       customVendorName: body.customVendorName,
       customSerialNumber: body.customSerialNumber,
+      customVendorId: body.customVendorId,
       disabled: body.disabled,
       filterLifeEntity: body.filterLifeEntity,
       cleaningModeEntity: body.cleaningModeEntity,
@@ -53,8 +54,10 @@ export function entityMappingApi(
       currentRoomEntity: body.currentRoomEntity,
       valetudoIdentifier: body.valetudoIdentifier,
       coverSwapOpenClose: body.coverSwapOpenClose,
+      coverSliderDebounceMs: body.coverSliderDebounceMs,
       disableClimateOnOff: body.disableClimateOnOff,
       disableClimateFanControl: body.disableClimateFanControl,
+      climateKeepModeOnIdle: body.climateKeepModeOnIdle,
       composedEntities: body.composedEntities,
     };
 

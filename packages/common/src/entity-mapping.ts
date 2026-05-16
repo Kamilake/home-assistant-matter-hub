@@ -72,6 +72,14 @@ export interface EntityMappingConfig {
    * When set, this takes priority over the default entity-ID-based hash.
    */
   readonly customSerialNumber?: string;
+  /**
+   * Optional: Override the numeric Matter Vendor ID for this entity.
+   * Range 1..0xFFFE. Some controllers (Aqara) key vendor-specific UI off
+   * the numeric vendorId rather than vendorName. Bridge mode only: in
+   * server mode the root vendorId is fixed at commissioning time and
+   * cannot be changed without breaking already-paired controllers.
+   */
+  readonly customVendorId?: number;
   readonly disabled?: boolean;
   /**
    * Optional: Array of additional entities to compose into this device.
@@ -197,6 +205,11 @@ export interface EntityMappingConfig {
    */
   readonly coverSwapOpenClose?: boolean;
   /**
+   * Optional: per-entity cover slider debounce (ms). Overrides the bridge
+   * coverSliderDebounceMs flag. 0 / unset = fall back to bridge / default.
+   */
+  readonly coverSliderDebounceMs?: number;
+  /**
    * Optional: Skip the Matter OnOff cluster for this climate entity.
    * Stops voice commands like "turn off <room>" from calling
    * climate.turn_off on the thermostat. No effect on non-climate entities.
@@ -210,6 +223,15 @@ export interface EntityMappingConfig {
    * modes are no longer exposed over Matter, but stay controllable in HA.
    */
   readonly disableClimateFanControl?: boolean;
+  /**
+   * Optional: While the climate entity is off + hvac_action=idle (e.g. an AC
+   * running an internal cleaning cycle after power-off), keep reporting the
+   * last known operating mode on the Matter side instead of switching to Off.
+   * Lets the Matter controller's Off button stay actionable so the cleaning
+   * cycle can be cancelled. HA and Matter intentionally diverge until the
+   * entity reports a real mode again.
+   */
+  readonly climateKeepModeOnIdle?: boolean;
   /**
    * Auto-populated at runtime when the vacuum supports HA 2026.3 CLEAN_AREA.
    * Maps HA areas (from the user's segment-to-area mapping in HA) to Matter
@@ -238,6 +260,7 @@ export interface EntityMappingRequest {
   readonly customProductName?: string;
   readonly customVendorName?: string;
   readonly customSerialNumber?: string;
+  readonly customVendorId?: number;
   readonly disabled?: boolean;
   readonly filterLifeEntity?: string;
   readonly cleaningModeEntity?: string;
@@ -256,8 +279,10 @@ export interface EntityMappingRequest {
   readonly currentRoomEntity?: string;
   readonly valetudoIdentifier?: string;
   readonly coverSwapOpenClose?: boolean;
+  readonly coverSliderDebounceMs?: number;
   readonly disableClimateOnOff?: boolean;
   readonly disableClimateFanControl?: boolean;
+  readonly climateKeepModeOnIdle?: boolean;
   readonly composedEntities?: ComposedSubEntity[];
 }
 

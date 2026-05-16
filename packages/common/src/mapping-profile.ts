@@ -27,8 +27,10 @@ export interface MappingProfileEntry {
   readonly customFanSpeedTags?: Record<string, number>;
   readonly valetudoIdentifier?: string;
   readonly coverSwapOpenClose?: boolean;
+  readonly coverSliderDebounceMs?: number;
   readonly disableClimateOnOff?: boolean;
   readonly disableClimateFanControl?: boolean;
+  readonly climateKeepModeOnIdle?: boolean;
 }
 
 export interface MappingProfile {

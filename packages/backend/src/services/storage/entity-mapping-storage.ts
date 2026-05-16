@@ -110,6 +110,7 @@ export class EntityMappingStorage extends Service {
       customProductName: request.customProductName?.trim() || undefined,
       customVendorName: request.customVendorName?.trim() || undefined,
       customSerialNumber: request.customSerialNumber?.trim() || undefined,
+      customVendorId: sanitizeVendorId(request.customVendorId),
       disabled: request.disabled,
       filterLifeEntity: request.filterLifeEntity?.trim() || undefined,
       cleaningModeEntity: request.cleaningModeEntity?.trim() || undefined,
@@ -135,8 +136,10 @@ export class EntityMappingStorage extends Service {
       currentRoomEntity: request.currentRoomEntity?.trim() || undefined,
       valetudoIdentifier: request.valetudoIdentifier?.trim() || undefined,
       coverSwapOpenClose: request.coverSwapOpenClose || undefined,
+      coverSliderDebounceMs: sanitizeDebounceMs(request.coverSliderDebounceMs),
       disableClimateOnOff: request.disableClimateOnOff || undefined,
       disableClimateFanControl: request.disableClimateFanControl || undefined,
+      climateKeepModeOnIdle: request.climateKeepModeOnIdle || undefined,
       composedEntities:
         request.composedEntities?.filter((e) => e.entityId?.trim()) ??
         undefined,
@@ -148,6 +151,7 @@ export class EntityMappingStorage extends Service {
       !config.customProductName &&
       !config.customVendorName &&
       !config.customSerialNumber &&
+      config.customVendorId === undefined &&
       config.disabled !== true &&
       !config.filterLifeEntity &&
       !config.cleaningModeEntity &&
@@ -167,8 +171,10 @@ export class EntityMappingStorage extends Service {
       !config.currentRoomEntity &&
       !config.valetudoIdentifier &&
       !config.coverSwapOpenClose &&
+      !config.coverSliderDebounceMs &&
       !config.disableClimateOnOff &&
       !config.disableClimateFanControl &&
+      !config.climateKeepModeOnIdle &&
       (!config.composedEntities || config.composedEntities.length === 0)
     ) {
       bridgeMap.delete(request.entityId);
@@ -192,4 +198,26 @@ export class EntityMappingStorage extends Service {
     this.mappings.delete(bridgeId);
     await this.persist();
   }
+}
+
+function sanitizeVendorId(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+  const n = typeof value === "string" ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isInteger(n) || n < 1 || n > 0xfffe) {
+    return undefined;
+  }
+  return n;
+}
+
+function sanitizeDebounceMs(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+  const n = typeof value === "string" ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isFinite(n) || n <= 0) {
+    return undefined;
+  }
+  return Math.min(5000, Math.round(n));
 }

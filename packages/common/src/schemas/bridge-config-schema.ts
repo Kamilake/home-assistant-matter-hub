@@ -18,7 +18,7 @@ const homeAssistantMatcherSchema: JSONSchema7 = {
           const: "regex",
           title: "regex",
           description:
-            "Full regular expression matching entity IDs. Use ^ and $ for anchors. Example: '^(light|switch)\\.kitchen_.*' matches all kitchen lights and switches.",
+            "Regex tested against the entity_id only (e.g. 'light.kitchen_lamp'). For labels use entity_label_regex or device_label_regex. Example: '^(light|switch)\\.kitchen_.*'.",
         },
         {
           const: "domain",
@@ -49,6 +49,24 @@ const homeAssistantMatcherSchema: JSONSchema7 = {
           title: "device_label",
           description:
             "Matches ALL entities of a device if the device has this label. Use this to include a complete device with all its entities.",
+        },
+        {
+          const: "entity_label_regex",
+          title: "entity_label_regex",
+          description:
+            "Regex tested against entity-label slugs and display names. Matches if any label assigned to the entity matches. Example: '^(matter|voice).*'.",
+        },
+        {
+          const: "device_label_regex",
+          title: "device_label_regex",
+          description:
+            "Regex tested against device-label slugs and display names. Matches ALL entities of a device whose label matches. Example: '^(matter|voice).*'.",
+        },
+        {
+          const: "any_field_regex",
+          title: "any_field_regex",
+          description:
+            "Regex tested against a single-line key=value haystack covering entity_id, domain, platform, area, entity_category, device_class, entity_labels, entity_label_names, device_labels, device_label_names, device_name, product_name. Use lookaheads for AND, alternation for OR. Example: '(?=.*domain=light)(?=.*area=living_room)|(?=.*domain=switch)(?=.*entity_labels=.*\\bvoice\\b)'.",
         },
         {
           const: "area",
@@ -262,6 +280,34 @@ const featureFlagSchema: JSONSchema7 = {
       type: "boolean",
       default: false,
     },
+
+    useHaRegistrySerial: {
+      title: "Use HA Registry Serial Number",
+      description:
+        "Fall back to the Home Assistant device registry serial_number when no per-entity " +
+        "customSerialNumber is configured. Default off because changing serialNumber after " +
+        "commissioning can confuse controllers. A per-entity customSerialNumber still " +
+        "takes precedence.",
+      type: "boolean",
+      default: false,
+    },
+
+    coverSliderDebounceMs: {
+      title: "Cover Slider Debounce (ms)",
+      description:
+        "Override the cover position-update debounce window for this bridge. " +
+        "Some controllers (Apple Home) stream slider updates while the user is " +
+        "still dragging, causing covers to start moving toward an intermediate " +
+        "target. Set to the time the bridge should wait after the last update " +
+        "before sending the final value to Home Assistant. 0 keeps the built-in " +
+        "two-phase debounce (400 ms initial / 150 ms subsequent), which fits " +
+        "most controllers. Try 800–1500 ms for slow blinds. " +
+        "A per-entity override on a single cover wins over this flag.",
+      type: "number",
+      minimum: 0,
+      maximum: 5000,
+      default: 0,
+    },
   },
 };
 
@@ -332,6 +378,17 @@ export const bridgeConfigSchema: JSONSchema7 = {
         "Useful for forcing controllers like Aqara to treat devices as new " +
         "and bypass cached device data. Leave empty for default behavior.",
       maxLength: 16,
+    },
+    sessionMaxAgeHours: {
+      title: "Session Rotation Max Age (hours)",
+      type: "number",
+      description:
+        "Server Mode only. Rotate matter sessions older than this many hours " +
+        "so iPhone clients re-subscribe and Apple Home unsticks 'Updating' " +
+        "tiles. Set 0 to disable rotation. Range 0-168, default 4. (#287)",
+      default: 4,
+      minimum: 0,
+      maximum: 168,
     },
     filter: homeAssistantFilterSchema,
     featureFlags: featureFlagSchema,
