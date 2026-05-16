@@ -97,4 +97,21 @@ describe("EntityFilterRuleField", () => {
       "filter.include.0",
     );
   });
+
+  it("commits typed text for pattern rules via the autocomplete", async () => {
+    const onChange = vi.fn();
+    renderInTheme(
+      <EntityFilterRuleField
+        {...makeProps({ formData: { type: "pattern", value: "" }, onChange })}
+      />,
+    );
+
+    const input = await screen.findByRole("combobox", { name: /value/i });
+    await userEvent.type(input, "switch.dian_juan_men_tuya_l*");
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      { type: "pattern", value: "switch.dian_juan_men_tuya_l*" },
+      "filter.include.0",
+    );
+  });
 });
