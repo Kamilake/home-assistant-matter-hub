@@ -188,7 +188,7 @@ export class ComposedAirPurifierEndpoint extends Endpoint {
     const airPurifierAttributes = primaryPayload.state
       .attributes as AirPurifierAttributes;
     const supportedFeatures = airPurifierAttributes.supported_features ?? 0;
-    const features: FeatureSelection<FanControl.Cluster> = new Set();
+    const features: FeatureSelection<typeof FanControl.Cluster> = new Set();
 
     if (testBit(supportedFeatures, FanDeviceFeature.SET_SPEED)) {
       features.add("MultiSpeed");

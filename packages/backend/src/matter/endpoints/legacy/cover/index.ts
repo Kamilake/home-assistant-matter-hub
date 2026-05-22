@@ -22,7 +22,7 @@ const CoverDeviceType = (
   hasBattery: boolean,
   entityId: string,
 ) => {
-  const features: FeatureSelection<WindowCovering.Complete> = new Set();
+  const features: FeatureSelection<typeof WindowCovering.Complete> = new Set();
 
   // Always add Lift and PositionAwareLift for all covers.
   // Apple Home requires PositionAwareLift to properly recognize WindowCovering devices.

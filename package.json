@@ -49,9 +49,6 @@
       "yaml@>=2.0.0 <2.8.3": "^2.8.3",
       "yaml@<2.0.0": "^1.10.3",
       "@codemirror/state": "6.6.0"
-    },
-    "patchedDependencies": {
-      "@matter/protocol@0.16.11": "patches/@matter__protocol@0.16.11.patch"
     }
   },
   "devDependencies": {

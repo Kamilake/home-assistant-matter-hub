@@ -447,7 +447,9 @@ export class Bridge {
             this.log.info(
               `Closing stale session ${s.id} (peer ${s.peerNodeId}, 0 subs), replaced by session ${newSession.id}`,
             );
-            s.initiateForceClose().catch(() => {});
+            s.initiateForceClose({
+              cause: new Error("stale session replaced by new session"),
+            }).catch(() => {});
           }
         }
       };
@@ -490,7 +492,9 @@ export class Bridge {
           s.initiateClose()
             .catch(() => {
               // Graceful close failed (peer unreachable), force-close locally
-              return s.initiateForceClose();
+              return s.initiateForceClose({
+                cause: new Error("graceful close failed, forcing"),
+              });
             })
             .catch(() => {})
             .finally(() => this.triggerMdnsReAnnounce());
@@ -515,7 +519,9 @@ export class Bridge {
           closes.push(
             s.initiateClose().catch(() => {
               // Graceful close failed (peer unreachable), force-close locally
-              return s.initiateForceClose();
+              return s.initiateForceClose({
+                cause: new Error("graceful close failed, forcing"),
+              });
             }),
           );
         }

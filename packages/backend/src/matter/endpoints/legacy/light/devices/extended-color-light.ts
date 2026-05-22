@@ -15,7 +15,7 @@ export const ExtendedColorLightType = (
   supportsTemperature: boolean,
   hasBattery = false,
 ) => {
-  const features: FeatureSelection<ColorControl.Cluster> = new Set();
+  const features: FeatureSelection<typeof ColorControl.Cluster> = new Set();
   if (supportsColorControl) {
     // Xy is mandatory for device type ExtendedColorLight (0x010d) per Matter
     // Device Library § 4.4. HueSaturation is optional but kept for controllers

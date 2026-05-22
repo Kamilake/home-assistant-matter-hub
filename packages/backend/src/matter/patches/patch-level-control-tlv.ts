@@ -26,9 +26,9 @@ const logger = Logger.get("PatchLevelControlTlv");
 export function patchLevelControlTlv(): void {
   let patched = 0;
 
-  // Patch TlvMoveToLevelRequest (used by moveToLevel and moveToLevelWithOnOff)
+  // Patch MoveToLevelRequest (used by moveToLevel and moveToLevelWithOnOff)
   const moveToLevelFields = (
-    LevelControl.TlvMoveToLevelRequest as unknown as {
+    LevelControl.MoveToLevelRequest as unknown as {
       fieldDefinitions: Record<string, { id: number; optional?: boolean }>;
     }
   ).fieldDefinitions;
@@ -38,9 +38,9 @@ export function patchLevelControlTlv(): void {
     patched++;
   }
 
-  // Patch TlvStepRequest (used by step and stepWithOnOff)
+  // Patch StepRequest (used by step and stepWithOnOff)
   const stepFields = (
-    LevelControl.TlvStepRequest as unknown as {
+    LevelControl.StepRequest as unknown as {
       fieldDefinitions: Record<string, { id: number; optional?: boolean }>;
     }
   ).fieldDefinitions;

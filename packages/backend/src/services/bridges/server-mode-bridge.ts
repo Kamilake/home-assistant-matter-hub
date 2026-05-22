@@ -375,7 +375,9 @@ export class ServerModeBridge {
             this.log.info(
               `Closing stale session ${s.id} (peer ${s.peerNodeId}, 0 subs), replaced by session ${newSession.id}`,
             );
-            s.initiateForceClose().catch(() => {});
+            s.initiateForceClose({
+              cause: new Error("stale session replaced by new session"),
+            }).catch(() => {});
           }
         }
       };
@@ -407,7 +409,9 @@ export class ServerModeBridge {
           s.initiateClose()
             .catch(() => {
               // Graceful close failed (peer unreachable), force-close locally
-              return s.initiateForceClose();
+              return s.initiateForceClose({
+                cause: new Error("graceful close failed, forcing"),
+              });
             })
             .catch(() => {})
             .finally(() => this.triggerMdnsReAnnounce());
@@ -432,7 +436,9 @@ export class ServerModeBridge {
           closes.push(
             s.initiateClose().catch(() => {
               // Graceful close failed (peer unreachable), force-close locally
-              return s.initiateForceClose();
+              return s.initiateForceClose({
+                cause: new Error("graceful close failed, forcing"),
+              });
             }),
           );
         }
@@ -566,7 +572,9 @@ export class ServerModeBridge {
         );
         closes.push(
           s.initiateClose().catch(() => {
-            return s.initiateForceClose();
+            return s.initiateForceClose({
+              cause: new Error("session rotation, forcing"),
+            });
           }),
         );
       }
