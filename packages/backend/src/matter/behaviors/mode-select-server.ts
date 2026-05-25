@@ -7,6 +7,14 @@ import { HomeAssistantEntityBehavior } from "./home-assistant-entity-behavior.js
 
 const logger = Logger.get("ModeSelectServer");
 
+export function buildSupportedModes(options: string[]) {
+  return options.map((label, index) => ({
+    label: label.length > 64 ? label.substring(0, 64) : label,
+    mode: index,
+    semanticTags: [],
+  }));
+}
+
 export interface SelectModeConfig {
   getOptions: (entity: HomeAssistantEntityInformation) => string[];
   getCurrentOption: (
@@ -43,6 +51,7 @@ class ModeSelectServerBase extends Base {
       : -1;
 
     applyPatchState(this.state, {
+      supportedModes: buildSupportedModes(options),
       currentMode: currentIndex >= 0 ? currentIndex : 0,
     });
   }

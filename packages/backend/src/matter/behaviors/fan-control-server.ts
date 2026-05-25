@@ -15,14 +15,18 @@ import { setOptimisticOnOff } from "./on-off-server.js";
 import type { ValueGetter, ValueSetter } from "./utils/cluster-config.js";
 
 import AirflowDirection = FanControl.AirflowDirection;
-import Rock = FanControl.Rock;
-import Wind = FanControl.Wind;
 
 const logger = Logger.get("FanControlServer");
 
 const defaultStepSize = 33.33;
 const minSpeedMax = 3;
 const maxSpeedMax = 100;
+
+export interface FanControlRockSetting {
+  rockLeftRight?: boolean;
+  rockUpDown?: boolean;
+  rockRound?: boolean;
+}
 
 const FeaturedBase = Base.with(
   "Step",
@@ -32,10 +36,6 @@ const FeaturedBase = Base.with(
   "Rocking",
   "Wind",
 ).set({
-  // rockSupport / windSupport are Fixed quality attributes, they MUST be set
-  // via .set() at behavior creation time, NOT in initialize().
-  // Without these, controllers reject attempts to enable rocking/wind.
-  rockSupport: { rockUpDown: true },
   windSupport: { naturalWind: true, sleepWind: true },
 });
 
@@ -51,6 +51,7 @@ export interface FanControlServerConfig {
   // Rocking (oscillation) support
   isOscillating: ValueGetter<boolean>;
   supportsOscillation: ValueGetter<boolean>;
+  getRockSetting?: ValueGetter<FanControlRockSetting>;
   // Wind mode support - returns preset mode name that maps to wind
   getWindMode: ValueGetter<"natural" | "sleep" | undefined>;
   supportsWind: ValueGetter<boolean>;
@@ -63,6 +64,7 @@ export interface FanControlServerConfig {
   setPresetMode: ValueSetter<string>;
   // Rocking (oscillation) control
   setOscillation: ValueSetter<boolean>;
+  setRockSetting?: ValueSetter<FanControlRockSetting>;
   // Wind mode control - sets preset mode for wind
   setWindMode: ValueSetter<"natural" | "sleep" | "off">;
 }
@@ -254,10 +256,11 @@ export class FanControlServerBase extends FeaturedBase {
 
         ...(this.features.rocking
           ? {
-              // rockUpDown maps to HA oscillating
-              rockSetting: {
-                rockUpDown: config.isOscillating(entity.state, this.agent),
-              },
+              rockSetting: config.getRockSetting
+                ? config.getRockSetting(entity.state, this.agent)
+                : {
+                    rockUpDown: config.isOscillating(entity.state, this.agent),
+                  },
             }
           : {}),
 
@@ -454,16 +457,8 @@ export class FanControlServerBase extends FeaturedBase {
   }
 
   private targetRockSettingChanged(
-    rockSetting: {
-      rockLeftRight?: boolean;
-      rockUpDown?: boolean;
-      rockRound?: boolean;
-    },
-    _oldValue: {
-      rockLeftRight?: boolean;
-      rockUpDown?: boolean;
-      rockRound?: boolean;
-    },
+    rockSetting: FanControlRockSetting,
+    _oldValue: FanControlRockSetting,
     context?: ActionContext,
   ) {
     if (transactionIsOffline(context)) {
@@ -474,10 +469,11 @@ export class FanControlServerBase extends FeaturedBase {
       if (!homeAssistant.isAvailable) {
         return;
       }
-      // rockUpDown maps to HA oscillating
-      const isOscillating = !!rockSetting.rockUpDown;
+      const config = this.state.config;
       homeAssistant.callAction(
-        this.state.config.setOscillation(isOscillating, this.agent),
+        config.setRockSetting
+          ? config.setRockSetting(rockSetting, this.agent)
+          : config.setOscillation(!!rockSetting.rockUpDown, this.agent),
       );
     });
   }
@@ -584,6 +580,12 @@ export namespace FanControlServerBase {
   }
 }
 
-export function FanControlServer(config: FanControlServerConfig) {
-  return FanControlServerBase.set({ config });
+export function FanControlServer(
+  config: FanControlServerConfig,
+  defaults: { rockSupport?: FanControlRockSetting } = {},
+) {
+  return FanControlServerBase.set({
+    config,
+    rockSupport: defaults.rockSupport ?? { rockUpDown: true },
+  });
 }
