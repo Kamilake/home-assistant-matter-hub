@@ -250,6 +250,15 @@ export interface CustomServiceArea {
   readonly target?: string;
   /** Optional: Additional data to pass to the service call */
   readonly data?: Record<string, unknown>;
+  /**
+   * Optional: Fire a single combined call for all selected areas instead of
+   * one call per area. Set on any area in the selection; the first matched
+   * area's service/target is used as the template. Matching data keys are
+   * combined where possible (arrays are concatenated, primitive values are
+   * joined with commas), and selection metadata is injected into data.
+   * Default: false (sequential dispatch, compatible with Roborock).
+   */
+  readonly batchDispatch?: boolean;
 }
 
 export interface EntityMappingRequest {
