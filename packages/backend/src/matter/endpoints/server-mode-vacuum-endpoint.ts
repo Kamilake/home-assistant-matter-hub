@@ -10,11 +10,11 @@ import {
 } from "@matter/general";
 import type { EndpointType } from "@matter/main";
 import { RvcOperationalStateServer as RvcOpStateBehavior } from "@matter/main/behaviors/rvc-operational-state";
-import { RvcRunModeServer as RvcRunModeBehavior } from "@matter/main/behaviors/rvc-run-mode";
 import debounce from "debounce";
 import type { BridgeRegistry } from "../../services/bridges/bridge-registry.js";
 import type { HomeAssistantStates } from "../../services/home-assistant/home-assistant-registry.js";
 import { HomeAssistantEntityBehavior } from "../behaviors/home-assistant-entity-behavior.js";
+import { makeRvcOperationalError } from "../behaviors/rvc-operational-state-server.js";
 import { EntityEndpoint, getMappedEntityIds } from "./entity-endpoint.js";
 import { supportsCleaningModes } from "./legacy/vacuum/behaviors/vacuum-rvc-clean-mode-server.js";
 import { ServerModeVacuumDevice } from "./legacy/vacuum/server-mode-vacuum-device.js";
@@ -280,10 +280,7 @@ export class ServerModeVacuumEndpoint extends EntityEndpoint {
    *  Writing directly via endpoint.act() creates an independent
    *  transaction that goes through the full commit lifecycle. */
   private keepaliveTimer?: ReturnType<typeof setInterval>;
-  /** Monotonic counter that ensures operationalError is structurally
-   *  different on every keepalive tick. matter.js's Datasource uses
-   *  isDeepEqual; a unique errorStateLabel value guarantees the struct
-   *  is never deep-equal to its predecessor. */
+  /** Monotonic counter for keepalive diagnostics. */
   private keepaliveCounter = 0;
 
   private constructor(
@@ -315,12 +312,8 @@ export class ServerModeVacuumEndpoint extends EntityEndpoint {
   }
 
   /**
-   * Force a non-empty subscription report by writing a unique
-   * errorStateDetails to the RvcOperationalState cluster via
-   * setStateOf (the same path used by all matter.js state updates).
-   *
-   * errorStateDetails (id 2) has conformance "O" (always optional)
-   * unlike errorStateLabel (id 1) which requires errorStateId 128-191.
+   * Re-push the latest operational state through setStateOf.
+   * NoError stays detail-free so controllers do not display a false issue.
    */
   private async pushKeepalive() {
     try {
@@ -333,27 +326,16 @@ export class ServerModeVacuumEndpoint extends EntityEndpoint {
       const counter = this.keepaliveCounter;
       logger.info(`Keepalive #${counter} for ${this.entityId}`);
 
-      // Read current state from behaviors, reactor writes may not have
-      // produced subscription reports (postCommit writes are buffered),
-      // so re-push the current operationalState and currentMode to
-      // ensure controllers see the latest values.
+      // Read current state from behaviors and re-push it through the
+      // matter.js state path without adding artificial error details.
       const opState = this.stateOf(RvcOpStateBehavior);
 
       await this.setStateOf(RvcOpStateBehavior, {
         operationalState: opState.operationalState,
-        operationalError: {
-          errorStateId: opState.operationalError.errorStateId,
-          errorStateDetails: `k${counter}`,
-        },
+        operationalError: makeRvcOperationalError(
+          opState.operationalError.errorStateId,
+        ),
       });
-
-      // Also push currentMode so controllers see Idle after cleaning ends
-      if (this.behaviors.has(RvcRunModeBehavior)) {
-        const runMode = this.stateOf(RvcRunModeBehavior);
-        await this.setStateOf(RvcRunModeBehavior, {
-          currentMode: runMode.currentMode,
-        });
-      }
 
       logger.info(`Keepalive #${counter} committed for ${this.entityId}`);
     } catch (e: unknown) {

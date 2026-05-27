@@ -33,6 +33,15 @@ const advertisedOperationalStates: number[] = [
   OperationalState.Docked,
 ];
 
+export function makeRvcOperationalError(
+  errorStateId: ErrorState,
+): RvcOperationalState.ErrorStateStruct {
+  if (errorStateId === ErrorState.NoError) {
+    return { errorStateId };
+  }
+  return { errorStateId, errorStateDetails: ErrorState[errorStateId] };
+}
+
 export interface RvcOperationalStateServerConfig {
   getOperationalState: ValueGetter<OperationalState>;
   pause: ValueSetter<void>;
@@ -80,18 +89,7 @@ class RvcOperationalStateServerBase extends Base {
       newState === OperationalState.Error
         ? ErrorState.Stuck
         : ErrorState.NoError;
-    // Force a structural difference on every call so matter.js Datasource
-    // never deep-equals this away. A unique errorStateDetails string
-    // guarantees the struct differs from its predecessor, producing a
-    // subscription report even during steady-state (same operationalState).
-    //
-    // Why not a toggling boolean/nonce? matter.js behavior reactors run on
-    // transient proxy instances, private instance properties reset to their
-    // initial value on every invocation, so a toggle never actually flips.
-    const operationalError = {
-      errorStateId,
-      errorStateDetails: String(Date.now()),
-    };
+    const operationalError = makeRvcOperationalError(errorStateId);
 
     applyPatchState(
       this.state,

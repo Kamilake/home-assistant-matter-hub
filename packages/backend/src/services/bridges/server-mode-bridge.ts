@@ -48,6 +48,25 @@ export function parseSessionMaxAgeHours(
   return n;
 }
 
+export function seedExistingSessionStarts(
+  startedAt: Map<number, number>,
+  sessions: Iterable<{ id: number }>,
+  now = Date.now(),
+): void {
+  for (const session of sessions) {
+    if (!startedAt.has(session.id)) {
+      startedAt.set(session.id, now);
+    }
+  }
+}
+
+export function makeWarmStartState<T extends { last_updated?: string }>(
+  state: T,
+  now = new Date().toISOString(),
+): T {
+  return { ...state, last_updated: now };
+}
+
 /**
  * ServerModeBridge exposes a single device as a standalone Matter device.
  * This is required for Apple Home to properly support Siri voice commands
@@ -393,6 +412,7 @@ export class ServerModeBridge {
       };
       sessionManager.sessions.added.on(this.sessionAddedHandler);
       sessionManager.sessions.deleted.on(this.sessionDeletedHandler);
+      seedExistingSessionStarts(this.sessionStartedAt, sessionManager.sessions);
     } catch {
       // SessionManager not yet available
     }
@@ -640,7 +660,7 @@ export class ServerModeBridge {
         await device.setStateOf(HomeAssistantEntityBehavior, {
           entity: {
             ...currentEntity,
-            state: { ...currentEntity.state },
+            state: makeWarmStartState(currentEntity.state),
           },
         });
         this.log.info("Warm-start: Pushed initial device state");
