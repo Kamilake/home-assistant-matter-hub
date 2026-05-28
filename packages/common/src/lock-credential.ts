@@ -4,9 +4,12 @@
 export interface LockCredential {
   /** The entity ID of the lock (e.g., lock.front_door) */
   entityId: string;
-  /** The hashed PIN code (PBKDF2 with salt) */
+  /**
+   * The hashed PIN code (PBKDF2 with salt). May be empty when the slot was
+   * created by a Matter controller via SetUser before any SetCredential.
+   */
   pinCodeHash: string;
-  /** Salt used for PIN hashing */
+  /** Salt used for PIN hashing. Empty when no PIN is set yet. */
   pinCodeSalt: string;
   /** Optional friendly name for this credential */
   name?: string;
@@ -16,6 +19,14 @@ export interface LockCredential {
   createdAt: number;
   /** Timestamp when this credential was last updated */
   updatedAt: number;
+  /** Matter user name set via SetUser, if any */
+  userName?: string;
+  /** Matter UserUniqueID set via SetUser, if any */
+  userUniqueId?: number;
+  /** Fabric index that originally created the slot */
+  creatorFabricIndex?: number;
+  /** Fabric index that last modified the slot */
+  lastModifiedFabricIndex?: number;
 }
 
 /**
@@ -39,6 +50,10 @@ export interface LockCredentialRequest {
   pinCode: string;
   name?: string;
   enabled?: boolean;
+  userName?: string;
+  userUniqueId?: number;
+  creatorFabricIndex?: number;
+  lastModifiedFabricIndex?: number;
 }
 
 /**

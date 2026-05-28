@@ -132,6 +132,14 @@ export class LockCredentialStorage extends Service {
     return !!credential?.enabled && !!credential.pinCodeHash;
   }
 
+  /**
+   * True if a user slot exists, even when no PIN was set yet
+   * (Apple Home does SetUser before SetCredential)
+   */
+  hasUser(entityId: string): boolean {
+    return this.credentials.has(entityId);
+  }
+
   getAllCredentials(): LockCredential[] {
     return Array.from(this.credentials.values());
   }
@@ -156,13 +164,54 @@ export class LockCredentialStorage extends Service {
       entityId: request.entityId,
       pinCodeHash: hash,
       pinCodeSalt: salt,
-      name: request.name?.trim() || undefined,
+      name: request.name?.trim() || existing?.name,
       enabled: request.enabled ?? true,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
+      userName: request.userName ?? existing?.userName,
+      userUniqueId: request.userUniqueId ?? existing?.userUniqueId,
+      creatorFabricIndex:
+        existing?.creatorFabricIndex ?? request.creatorFabricIndex,
+      lastModifiedFabricIndex:
+        request.lastModifiedFabricIndex ??
+        request.creatorFabricIndex ??
+        existing?.lastModifiedFabricIndex,
     };
 
     this.credentials.set(request.entityId, credential);
+    await this.persist();
+    return credential;
+  }
+
+  /**
+   * Upsert user metadata for an entity without changing the PIN. Used by the
+   * Matter SetUser flow (Apple Home calls SetUser before SetCredential).
+   */
+  async setUser(params: {
+    entityId: string;
+    userName?: string;
+    userUniqueId?: number;
+    fabricIndex?: number;
+  }): Promise<LockCredential> {
+    const now = Date.now();
+    const existing = this.credentials.get(params.entityId);
+    const credential: LockCredential = {
+      entityId: params.entityId,
+      pinCodeHash: existing?.pinCodeHash ?? "",
+      pinCodeSalt: existing?.pinCodeSalt ?? "",
+      name: existing?.name,
+      // A user slot without a PIN should not unlock anything, but it has to
+      // exist so subsequent GetUser calls report Occupied.
+      enabled: existing?.enabled ?? false,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      userName: params.userName ?? existing?.userName,
+      userUniqueId: params.userUniqueId ?? existing?.userUniqueId,
+      creatorFabricIndex: existing?.creatorFabricIndex ?? params.fabricIndex,
+      lastModifiedFabricIndex:
+        params.fabricIndex ?? existing?.lastModifiedFabricIndex,
+    };
+    this.credentials.set(params.entityId, credential);
     await this.persist();
     return credential;
   }
