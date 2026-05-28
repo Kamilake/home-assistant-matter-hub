@@ -2,7 +2,11 @@ import type { HomeAssistantEntityInformation } from "@home-assistant-matter-hub/
 import { Logger } from "@matter/general";
 import { DoorLockServer as Base } from "@matter/main/behaviors";
 import { DoorLock } from "@matter/main/clusters";
-import { StatusCode, StatusResponseError } from "@matter/main/types";
+import {
+  FabricIndex,
+  StatusCode,
+  StatusResponseError,
+} from "@matter/main/types";
 import { LockCredentialStorage } from "../../services/storage/lock-credential-storage.js";
 import { applyPatchState } from "../../utils/apply-patch-state.js";
 import { HomeAssistantEntityBehavior } from "./home-assistant-entity-behavior.js";
@@ -36,6 +40,10 @@ export function normalizeSupportedIndex(
 type EnvLike = {
   get: (type: typeof LockCredentialStorage) => LockCredentialStorage;
 };
+
+function asFabricIndex(value: number | undefined): FabricIndex | null {
+  return value === undefined ? null : FabricIndex(value);
+}
 
 // Shared PIN credential helpers (used by both PinCredential variants)
 function hasStoredCredentialHelper(env: EnvLike, entityId: string): boolean {
@@ -104,8 +112,8 @@ export function buildGetUserResponse(
           },
         ]
       : [],
-    creatorFabricIndex: credential.creatorFabricIndex ?? null,
-    lastModifiedFabricIndex: credential.lastModifiedFabricIndex ?? null,
+    creatorFabricIndex: asFabricIndex(credential.creatorFabricIndex),
+    lastModifiedFabricIndex: asFabricIndex(credential.lastModifiedFabricIndex),
     nextUserIndex: null,
   };
 }
@@ -144,10 +152,10 @@ export function buildGetCredentialStatusResponse(
     credentialExists: exists,
     userIndex: exists ? SUPPORTED_SLOT : null,
     creatorFabricIndex: exists
-      ? (credential?.creatorFabricIndex ?? null)
+      ? asFabricIndex(credential?.creatorFabricIndex)
       : null,
     lastModifiedFabricIndex: exists
-      ? (credential?.lastModifiedFabricIndex ?? null)
+      ? asFabricIndex(credential?.lastModifiedFabricIndex)
       : null,
     nextCredentialIndex: null,
   };
