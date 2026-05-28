@@ -15,6 +15,7 @@ import { Logger } from "@matter/general";
 import { callService } from "home-assistant-js-websocket";
 import { keys, pickBy, values } from "lodash-es";
 import { sendHaMessage } from "../../utils/send-ha-message.js";
+import { resolveBatteryPercent } from "./entity-state-provider.js";
 import type { HomeAssistantClient } from "../home-assistant/home-assistant-client.js";
 import type {
   HomeAssistantDevices,
@@ -82,7 +83,7 @@ export class BridgeRegistry {
     const entities = values(this.registry.entities);
     const sameDevice = entities.filter((e) => e.device_id === deviceId);
 
-    // Prefer numeric sensor.* battery entities (percentage values)
+    // Prefer numeric sensor.* battery entities (percentage values).
     for (const entity of sameDevice) {
       if (!entity.entity_id.startsWith("sensor.")) continue;
 
@@ -92,7 +93,10 @@ export class BridgeRegistry {
       }
 
       const attrs = state.attributes as SensorDeviceAttributes;
-      if (attrs.device_class === SensorDeviceClass.battery) {
+      if (
+        attrs.device_class === SensorDeviceClass.battery &&
+        resolveBatteryPercent(state.state) != null
+      ) {
         this._batteryEntityCache.set(deviceId, entity.entity_id);
         return entity.entity_id;
       }
@@ -107,7 +111,27 @@ export class BridgeRegistry {
       if (!state) continue;
 
       const attrs = state.attributes as { device_class?: string };
-      if (attrs.device_class === "battery") {
+      if (
+        attrs.device_class === "battery" &&
+        resolveBatteryPercent(state.state) != null
+      ) {
+        this._batteryEntityCache.set(deviceId, entity.entity_id);
+        return entity.entity_id;
+      }
+    }
+
+    // Fallback: enum-like HA battery sensors such as Overkiz full/normal/low.
+    for (const entity of sameDevice) {
+      if (!entity.entity_id.startsWith("sensor.")) continue;
+
+      const state = this.registry.states[entity.entity_id];
+      if (!state) continue;
+
+      const attrs = state.attributes as { device_class?: string };
+      if (
+        (attrs.device_class === "enum" || attrs.device_class == null) &&
+        resolveBatteryPercent(state.state) != null
+      ) {
         this._batteryEntityCache.set(deviceId, entity.entity_id);
         return entity.entity_id;
       }
