@@ -15,7 +15,6 @@ import { Logger } from "@matter/general";
 import { callService } from "home-assistant-js-websocket";
 import { keys, pickBy, values } from "lodash-es";
 import { sendHaMessage } from "../../utils/send-ha-message.js";
-import { resolveBatteryPercent } from "./entity-state-provider.js";
 import type { HomeAssistantClient } from "../home-assistant/home-assistant-client.js";
 import type {
   HomeAssistantDevices,
@@ -24,6 +23,7 @@ import type {
   HomeAssistantStates,
 } from "../home-assistant/home-assistant-registry.js";
 import type { BridgeDataProvider } from "./bridge-data-provider.js";
+import { resolveBatteryPercent } from "./entity-state-provider.js";
 import { testMatchers } from "./matcher/matches-entity-filter.js";
 
 export interface BridgeRegistryProps {

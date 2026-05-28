@@ -23,7 +23,9 @@ function provider(states: HomeAssistantStates) {
 
 describe("EntityStateProvider.getBatteryPercent", () => {
   it("keeps numeric battery states unchanged", () => {
-    const sut = provider({ "sensor.battery": entity("sensor.battery", "42.5") });
+    const sut = provider({
+      "sensor.battery": entity("sensor.battery", "42.5"),
+    });
 
     expect(sut.getBatteryPercent("sensor.battery")).toBe(42.5);
   });
@@ -59,13 +61,17 @@ describe("EntityStateProvider.getBatteryPercent", () => {
   });
 
   it("treats enum states case-insensitively", () => {
-    const sut = provider({ "sensor.battery": entity("sensor.battery", "VeryLow") });
+    const sut = provider({
+      "sensor.battery": entity("sensor.battery", "VeryLow"),
+    });
 
     expect(sut.getBatteryPercent("sensor.battery")).toBe(5);
   });
 
   it("returns null for unknown battery states", () => {
-    const sut = provider({ "sensor.battery": entity("sensor.battery", "Unknown") });
+    const sut = provider({
+      "sensor.battery": entity("sensor.battery", "Unknown"),
+    });
 
     expect(sut.getBatteryPercent("sensor.battery")).toBeNull();
   });

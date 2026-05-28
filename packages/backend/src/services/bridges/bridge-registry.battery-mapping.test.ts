@@ -1,13 +1,13 @@
 import {
-  SensorDeviceClass,
   type HomeAssistantDeviceRegistry,
   type HomeAssistantEntityRegistry,
   type HomeAssistantEntityState,
+  SensorDeviceClass,
 } from "@home-assistant-matter-hub/common";
 import { describe, expect, it } from "vitest";
+import type { HomeAssistantRegistry } from "../home-assistant/home-assistant-registry.js";
 import type { BridgeDataProvider } from "./bridge-data-provider.js";
 import { BridgeRegistry } from "./bridge-registry.js";
-import type { HomeAssistantRegistry } from "../home-assistant/home-assistant-registry.js";
 
 const deviceId = "device-1";
 
@@ -95,7 +95,9 @@ describe("BridgeRegistry battery mapping", () => {
       }),
     });
 
-    expect(registry.findBatteryEntityForDevice(deviceId)).toBe("sensor.battery");
+    expect(registry.findBatteryEntityForDevice(deviceId)).toBe(
+      "sensor.battery",
+    );
   });
 
   it("keeps valid numeric battery sensors preferred over enum fallback", () => {
