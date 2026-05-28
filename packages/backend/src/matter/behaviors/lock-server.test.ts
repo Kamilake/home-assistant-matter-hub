@@ -3,6 +3,7 @@ import { DoorLock } from "@matter/main/clusters";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { LockCredentialStorage } from "../../services/storage/lock-credential-storage.js";
 import {
+  applyClearCredential,
   applySetCredential,
   applySetUser,
   buildGetCredentialStatusResponse,
@@ -51,6 +52,10 @@ class FakeStorage {
     };
     this.credentials.set(request.entityId, credential);
     return credential;
+  }
+
+  async deleteCredential(entityId: string): Promise<void> {
+    this.credentials.delete(entityId);
   }
 
   async setUser(params: SetUserArgs): Promise<LockCredential> {
@@ -418,5 +423,55 @@ describe("Apple Home setup flow parity", () => {
     expect(credentialResponse.userIndex).toBe(1);
     expect(credentialResponse.creatorFabricIndex).toBe(5);
     expect(credentialResponse.lastModifiedFabricIndex).toBe(5);
+  });
+});
+
+describe("applyClearCredential", () => {
+  let storage: FakeStorage;
+
+  beforeEach(async () => {
+    storage = new FakeStorage();
+    await storage.setCredential({
+      entityId: ENTITY,
+      pinCode: "1234",
+      enabled: true,
+      creatorFabricIndex: 1,
+      lastModifiedFabricIndex: 1,
+    });
+  });
+
+  it("clears the PIN when credential is null (clear-all)", async () => {
+    await applyClearCredential(makeEnv(storage), ENTITY, { credential: null });
+    expect(storage.hasCredential(ENTITY)).toBe(false);
+  });
+
+  it("clears the PIN for a supported credentialIndex (1)", async () => {
+    await applyClearCredential(makeEnv(storage), ENTITY, {
+      credential: {
+        credentialType: DoorLock.CredentialType.Pin,
+        credentialIndex: 1,
+      },
+    });
+    expect(storage.hasCredential(ENTITY)).toBe(false);
+  });
+
+  it("does NOT delete when credentialIndex is unsupported", async () => {
+    await applyClearCredential(makeEnv(storage), ENTITY, {
+      credential: {
+        credentialType: DoorLock.CredentialType.Pin,
+        credentialIndex: 9,
+      },
+    });
+    expect(storage.hasCredential(ENTITY)).toBe(true);
+  });
+
+  it("does NOT delete for a non-PIN credential type", async () => {
+    await applyClearCredential(makeEnv(storage), ENTITY, {
+      credential: {
+        credentialType: DoorLock.CredentialType.Rfid,
+        credentialIndex: 1,
+      },
+    });
+    expect(storage.hasCredential(ENTITY)).toBe(true);
   });
 });

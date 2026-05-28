@@ -4,6 +4,7 @@ import { DoorLockServer as Base } from "@matter/main/behaviors";
 import { DoorLock } from "@matter/main/clusters";
 import {
   FabricIndex,
+  Status,
   StatusCode,
   StatusResponseError,
 } from "@matter/main/types";
@@ -42,7 +43,7 @@ type EnvLike = {
 };
 
 function asFabricIndex(value: number | undefined): FabricIndex | null {
-  return value === undefined ? null : FabricIndex(value);
+  return value === undefined || value === 0 ? null : FabricIndex(value);
 }
 
 // Shared PIN credential helpers (used by both PinCredential variants)
@@ -177,7 +178,7 @@ export async function applySetCredential(
     normalizeSupportedIndex(request.credential.credentialIndex) === null
   ) {
     return {
-      status: 0x01 as never,
+      status: Status.Failure,
       userIndex: null,
       nextCredentialIndex: null,
     };
@@ -185,7 +186,7 @@ export async function applySetCredential(
   const userSlot = normalizeSupportedIndex(request.userIndex ?? SUPPORTED_SLOT);
   if (userSlot === null) {
     return {
-      status: 0x01 as never,
+      status: Status.Failure,
       userIndex: null,
       nextCredentialIndex: null,
     };
@@ -202,7 +203,7 @@ export async function applySetCredential(
     });
   }
   return {
-    status: 0x00 as never,
+    status: Status.Success,
     userIndex: SUPPORTED_SLOT,
     nextCredentialIndex: null,
   };
@@ -229,6 +230,25 @@ export async function applySetUser(
     userUniqueId: request.userUniqueId ?? undefined,
     fabricIndex,
   });
+}
+
+export async function applyClearCredential(
+  env: EnvLike,
+  entityId: string,
+  request: DoorLock.ClearCredentialRequest,
+): Promise<void> {
+  if (request.credential === null) {
+    const storage = env.get(LockCredentialStorage);
+    await storage.deleteCredential(entityId);
+    return;
+  }
+  if (
+    request.credential.credentialType === DoorLock.CredentialType.Pin &&
+    normalizeSupportedIndex(request.credential.credentialIndex) !== null
+  ) {
+    const storage = env.get(LockCredentialStorage);
+    await storage.deleteCredential(entityId);
+  }
 }
 
 /**
@@ -481,14 +501,8 @@ class LockServerWithPinBase extends PinCredentialBase {
   override async clearCredential(
     request: DoorLock.ClearCredentialRequest,
   ): Promise<void> {
-    if (
-      request.credential === null ||
-      request.credential.credentialType === DoorLock.CredentialType.Pin
-    ) {
-      const homeAssistant = this.agent.get(HomeAssistantEntityBehavior);
-      const storage = this.env.get(LockCredentialStorage);
-      await storage.deleteCredential(homeAssistant.entityId);
-    }
+    const homeAssistant = this.agent.get(HomeAssistantEntityBehavior);
+    await applyClearCredential(this.env, homeAssistant.entityId, request);
   }
 }
 
@@ -742,14 +756,8 @@ class LockServerWithPinAndUnboltBase extends PinCredentialUnboltBase {
   override async clearCredential(
     request: DoorLock.ClearCredentialRequest,
   ): Promise<void> {
-    if (
-      request.credential === null ||
-      request.credential.credentialType === DoorLock.CredentialType.Pin
-    ) {
-      const homeAssistant = this.agent.get(HomeAssistantEntityBehavior);
-      const storage = this.env.get(LockCredentialStorage);
-      await storage.deleteCredential(homeAssistant.entityId);
-    }
+    const homeAssistant = this.agent.get(HomeAssistantEntityBehavior);
+    await applyClearCredential(this.env, homeAssistant.entityId, request);
   }
 }
 
