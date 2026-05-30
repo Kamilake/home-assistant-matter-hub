@@ -69,6 +69,7 @@ import { SwitchDevice } from "./switch/index.js";
 import { VacuumDevice } from "./vacuum/index.js";
 import { ValveDevice } from "./valve/index.js";
 import { WaterHeaterDevice } from "./water-heater/index.js";
+import { WeatherDevice } from "./weather/index.js";
 
 const legacyLogger = Logger.get("LegacyEndpointType");
 
@@ -207,6 +208,7 @@ const deviceCtrs: Partial<
   remote: RemoteDevice,
   water_heater: WaterHeaterDevice,
   event: EventDevice,
+  weather: WeatherDevice,
 };
 
 const matterDeviceTypeFactories: Partial<
