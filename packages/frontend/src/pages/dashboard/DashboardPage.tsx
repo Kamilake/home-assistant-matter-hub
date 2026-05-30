@@ -465,7 +465,7 @@ export const DashboardPage = () => {
             <Button
               size="small"
               endIcon={<OpenInNewIcon sx={{ fontSize: 14 }} />}
-              href="https://t0bst4r.github.io/home-assistant-matter-hub/"
+              href={navigation.documentation}
               target="_blank"
               rel="noopener"
             >
