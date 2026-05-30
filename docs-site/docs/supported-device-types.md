@@ -15,6 +15,7 @@ All device types Home-Assistant-Matter-Hub supports, with their capabilities, co
 | `climate` | Thermostat |
 | `fan` | Fan |
 | `sensor` | Temperature / Humidity / Pressure / Flow / Illuminance / Air Quality |
+| `weather` | Temperature + Humidity + Pressure (composed) |
 | `binary_sensor` | Contact / Occupancy / Smoke/CO / OnOff Sensor |
 | `media_player` | Speaker |
 | `valve` | Water Valve |
@@ -279,6 +280,26 @@ You can also manually assign sensors via **Entity Mapping**:
 - `pressureEntity`, Pressure sensor entity ID
 
 See [Temperature & Humidity Sensor](./devices/temperature-humidity-sensor.md) for detailed setup instructions.
+
+---
+
+### Weather (`weather`)
+
+Mapped to **TemperatureSensor** with Humidity and Pressure measurement clusters stacked on one device. A weather entity's state is the text condition (e.g. `sunny`), so the readings come from its attributes.
+
+**Supported Attributes:**
+- `temperature` + `temperature_unit` → Temperature
+- `humidity` (%) → Humidity
+- `pressure` + `pressure_unit` (`hPa`, `mbar`, `inHg`, `mmHg`) → Pressure (converted to hPa)
+
+**Behavior:**
+- On by default. A `weather.*` entity matching your bridge filter is exposed automatically. Use the per-entity `disabled` mapping to suppress one you do not want.
+- Humidity and Pressure are optional; a missing reading reports no value instead of zero.
+
+**Controller Notes:**
+- Temperature and Humidity work where the standalone sensor types do (Apple, Google, Alexa).
+- Pressure is Google-only. Apple Home does not display barometric pressure and Alexa does not support the Pressure cluster.
+- The three measurements are stacked on a single TemperatureSensor device. How each controller renders the extra clusters is not yet community-tested.
 
 ---
 

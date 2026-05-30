@@ -44,6 +44,7 @@ Rows flagged with a footnote number link to the vendor source that establishes t
 | `event` | GenericSwitch | ✅ | ❓ | ✅ [²](#sources) | ❓ |
 | `humidifier` | Fan | ✅ | ✅ [¹](#sources) | ✅ [²](#sources) | ❓ |
 | `dishwasher` (override) | Dishwasher | ❌ [³](#sources) | ✅ [¹](#sources) | ✅ [²](#sources) | ✅ |
+| `weather` | TemperatureSensor (+Humidity, +Pressure) | ⚠️**** | ⚠️**** | ⚠️**** | ❓ |
 
 ### Legend
 
@@ -57,6 +58,8 @@ Rows flagged with a footnote number link to the vendor source that establishes t
 \*\* Alexa does not support the standalone ModeSelect device type (0x0027). The ModeSelect cluster is only recognized on specific device types like Lamp or Fan. See [Alexa Supported Device Categories](https://developer.amazon.com/en-US/docs/alexa/smarthome/supported-matter-device-categories.html) and [#273](https://github.com/RiDDiX/home-assistant-matter-hub/issues/273).
 
 \*\*\* Google Home does not render the option labels of the standalone ModeSelect device type (0x0027): reports show either no usable options or raw indices (0/1/2/3) instead of the configured names. The labels are sent correctly on the wire, so this is a controller-side rendering gap, not a bridge bug. Workaround: expose the entity as an HA template switch or script instead. See [#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356) and [#296](https://github.com/RiDDiX/home-assistant-matter-hub/issues/296).
+
+\*\*\*\* A `weather` entity is exposed as a TemperatureSensor with Humidity and Pressure clusters stacked on one device. Temperature and Humidity should work where the standalone sensor rows do; Pressure is Google-only (see the PressureSensor row). The stacked-cluster shape on a single device is not yet community-tested, so treat these cells as expected, not confirmed.
 
 ### Sources
 
