@@ -40,7 +40,7 @@ Rows flagged with a footnote number link to the vendor source that establishes t
 | `vacuum` | RoboticVacuumCleaner | ✅ [³](#sources) | ✅ [¹](#sources) | ✅* [²](#sources) | ❓ |
 | `water_heater` | Thermostat | ✅ | ✅ | ✅ | ❓ |
 | `alarm_control_panel` | ModeSelect | ❓ | ❓ | ❌** | ❓ |
-| `select` | ModeSelect | ❓ | ⚠️*** | ❌** | ❓ |
+| `select` | ModeSelect | ❓ | ❌*** | ❌** | ❓ |
 | `event` | GenericSwitch | ✅ | ❓ | ✅ [²](#sources) | ❓ |
 | `humidifier` | Fan | ✅ | ✅ [¹](#sources) | ✅ [²](#sources) | ❓ |
 | `dishwasher` (override) | Dishwasher | ❌ [³](#sources) | ✅ [¹](#sources) | ✅ [²](#sources) | ✅ |
@@ -57,7 +57,7 @@ Rows flagged with a footnote number link to the vendor source that establishes t
 
 \*\* Alexa does not support the standalone ModeSelect device type (0x0027). The ModeSelect cluster is only recognized on specific device types like Lamp or Fan. See [Alexa Supported Device Categories](https://developer.amazon.com/en-US/docs/alexa/smarthome/supported-matter-device-categories.html) and [#273](https://github.com/RiDDiX/home-assistant-matter-hub/issues/273).
 
-\*\*\* Google Home does not render the option labels of the standalone ModeSelect device type (0x0027): reports show either no usable options or raw indices (0/1/2/3) instead of the configured names. The labels are sent correctly on the wire, so this is a controller-side rendering gap, not a bridge bug. Workaround: expose the entity as an HA template switch or script instead. See [#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356) and [#296](https://github.com/RiDDiX/home-assistant-matter-hub/issues/296).
+\*\*\* Google Home does not support the standalone ModeSelect device type (0x0027): it is absent from Google's published Matter device types, so Google shows a generic info screen with no options control (#356). The option labels are sent correctly on the wire, this is a controller-side device-type gap, not a bridge bug. The Home Assistant Google Assistant cloud integration does expose these entities as Google "Modes", but that is a separate non-Matter path, not the HAMH bridge. Workaround: use that cloud integration, or expose the entity as an HA template switch or script. See [#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356) and [#296](https://github.com/RiDDiX/home-assistant-matter-hub/issues/296).
 
 \*\*\*\* A `weather` entity is exposed as a TemperatureSensor with Humidity and Pressure clusters stacked on one device. Temperature and Humidity should work where the standalone sensor rows do; Pressure is Google-only (see the PressureSensor row). The stacked-cluster shape on a single device is not yet community-tested, so treat these cells as expected, not confirmed.
 
