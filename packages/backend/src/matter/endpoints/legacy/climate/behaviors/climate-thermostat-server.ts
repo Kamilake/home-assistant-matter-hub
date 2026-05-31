@@ -67,7 +67,7 @@ const systemModeToHvacMode: Record<Thermostat.SystemMode, ClimateHvacMode> = {
   [Thermostat.SystemMode.Sleep]: ClimateHvacMode.off,
   [Thermostat.SystemMode.Off]: ClimateHvacMode.off,
 };
-const hvacActionToRunningMode: Record<
+export const hvacActionToRunningMode: Record<
   ClimateHvacAction,
   Thermostat.ThermostatRunningMode
 > = {
@@ -83,6 +83,23 @@ const hvacActionToRunningMode: Record<
   [ClimateHvacAction.idle]: Thermostat.ThermostatRunningMode.Off,
   [ClimateHvacAction.off]: Thermostat.ThermostatRunningMode.Off,
 };
+
+// Pure derivation of the Matter ThermostatRunningMode from HA hvac_action.
+// Exported for characterization tests; the thermostat config delegates here.
+// Returns Off when hvac_action is absent, which is exactly the IR/SmartIR case
+// in #309 where the controller then guesses heat/cool from the setpoints.
+export function getRunningModeFromHvacAction(
+  entity: HomeAssistantEntityState,
+): Thermostat.ThermostatRunningMode {
+  const action = attributes(entity).hvac_action;
+  if (!action) {
+    return Thermostat.ThermostatRunningMode.Off;
+  }
+  return (
+    hvacActionToRunningMode[action] ?? Thermostat.ThermostatRunningMode.Off
+  );
+}
+
 const hvacModeToSystemMode: Record<ClimateHvacMode, Thermostat.SystemMode> = {
   [ClimateHvacMode.heat]: Thermostat.SystemMode.Heat,
   [ClimateHvacMode.cool]: Thermostat.SystemMode.Cool,
@@ -315,15 +332,7 @@ const config: ThermostatServerConfig = {
       homeAssistant.state.mapping?.climateKeepModeOnIdle === true,
     );
   },
-  getRunningMode: (entity) => {
-    const action = attributes(entity).hvac_action;
-    if (!action) {
-      return Thermostat.ThermostatRunningMode.Off;
-    }
-    return (
-      hvacActionToRunningMode[action] ?? Thermostat.ThermostatRunningMode.Off
-    );
-  },
+  getRunningMode: (entity) => getRunningModeFromHvacAction(entity),
   getControlSequence: (entity, agent) => {
     const modes = attributes(entity).hvac_modes ?? [];
 
