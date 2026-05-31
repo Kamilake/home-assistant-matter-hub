@@ -47,6 +47,7 @@ const ClimateDeviceType = (
   hasBattery: boolean,
   features: { heating: boolean; cooling: boolean; autoMode?: boolean },
   initialState: InitialThermostatState = {},
+  includeBasicInformation = true,
 ) => {
   const additionalClusters: ClusterBehavior.Type[] = [];
 
@@ -66,25 +67,32 @@ const ClimateDeviceType = (
   // from the start, critical for negative temperatures (refrigerators).
   const thermostatServer = ClimateThermostatServer(initialState, features);
 
+  // BasicInformationServer is dropped when this type is used as a composed
+  // sub-endpoint; the BridgedNode parent carries the basic info instead, the
+  // same way the composed sensor and air purifier sub-endpoints are built.
+  const basicInfo: ClusterBehavior.Type[] = includeBasicInformation
+    ? [BasicInformationServer]
+    : [];
+
   if (supportsFanMode) {
     return RoomAirConditionerDevice.with(
-      BasicInformationServer,
       IdentifyServer,
       HomeAssistantEntityBehavior,
       thermostatServer,
       ThermostatUiConfigServer,
       ClimateFanControlServer(rockSupport),
       ...additionalClusters,
+      ...basicInfo,
     );
   }
 
   return ThermostatDevice.with(
-    BasicInformationServer,
     IdentifyServer,
     HomeAssistantEntityBehavior,
     thermostatServer,
     ThermostatUiConfigServer,
     ...additionalClusters,
+    ...basicInfo,
   );
 };
 
@@ -119,6 +127,7 @@ function toMatterTemp(
 
 export function ClimateDevice(
   homeAssistantEntity: HomeAssistantEntityBehavior.State,
+  includeBasicInformation = true,
 ): EndpointType {
   const attributes = homeAssistantEntity.entity.state
     .attributes as ClimateDeviceAttributes & {
@@ -258,6 +267,7 @@ export function ClimateDevice(
       autoMode,
     },
     initialState,
+    includeBasicInformation,
   ).set({
     homeAssistantEntity,
     thermostat: {

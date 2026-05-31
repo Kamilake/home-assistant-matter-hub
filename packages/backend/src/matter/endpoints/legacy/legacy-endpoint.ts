@@ -4,7 +4,10 @@ import type {
   SensorDeviceAttributes,
   VacuumDeviceAttributes,
 } from "@home-assistant-matter-hub/common";
-import { SensorDeviceClass } from "@home-assistant-matter-hub/common";
+import {
+  ClimateDeviceFeature,
+  SensorDeviceClass,
+} from "@home-assistant-matter-hub/common";
 import {
   DestroyedDependencyError,
   Logger,
@@ -21,6 +24,7 @@ import {
   getMappedEntityIds,
 } from "../../endpoints/entity-endpoint.js";
 import { ComposedAirPurifierEndpoint } from "../composed/composed-air-purifier-endpoint.js";
+import { ComposedClimateFanEndpoint } from "../composed/composed-climate-fan-endpoint.js";
 import { ComposedSensorEndpoint } from "../composed/composed-sensor-endpoint.js";
 import { UserComposedEndpoint } from "../composed/user-composed-endpoint.js";
 import { createLegacyEndpointType } from "./create-legacy-endpoint-type.js";
@@ -427,6 +431,34 @@ export class LegacyEndpoint extends EntityEndpoint {
             return composed as unknown as LegacyEndpoint;
           }
         }
+      }
+    }
+
+    // Companion Fan for climate ACs (#309): when opted in per-entity and the
+    // climate entity supports fan modes, expose a second Matter Fan device
+    // bound to the same entity so Apple Home gets a usable fan_only tile.
+    if (
+      entityId.startsWith("climate.") &&
+      effectiveMapping?.climateExposeFan === true
+    ) {
+      const climateFeatures =
+        (state.attributes as { supported_features?: number })
+          .supported_features ?? 0;
+      if ((climateFeatures & ClimateDeviceFeature.FAN_MODE) !== 0) {
+        const composedAreaName = registry.getAreaName(entityId);
+        const composed = await ComposedClimateFanEndpoint.create({
+          registry,
+          primaryEntityId: entityId,
+          mapping: effectiveMapping,
+          customName: effectiveMapping?.customName,
+          areaName: composedAreaName,
+        });
+        if (composed) {
+          return composed as unknown as LegacyEndpoint;
+        }
+        logger.warn(
+          `Companion fan creation failed for ${entityId}, falling back to standalone`,
+        );
       }
     }
 
