@@ -176,6 +176,8 @@ Mapped to **Thermostat** with heating, cooling, and auto modes.
 - `hvac_action` → Running State (active heating/cooling display)
 - `min_temp` / `max_temp` → Thermostat limits
 
+> **Auto display needs `hvac_action`:** Under Auto, controllers show whether the device is heating or cooling right now from the running state, which HAMH maps from HA `hvac_action`. ACs that do not publish `hvac_action` (many IR / SmartIR blasters) leave it empty, so Apple Home falls back to comparing the temperature against the setpoints and may show Cooling then flip to Heating once the target is reached, even while the AC keeps cooling ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)).
+
 **Feature Variants (auto-detected from HA hvac_modes):**
 - **Heating Only**: Heat-only TRVs, water heaters, exposes only `Heating` feature
 - **Cooling Only**: Cool-only ACs, exposes only `Cooling` feature
