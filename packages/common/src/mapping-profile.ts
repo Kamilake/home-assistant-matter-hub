@@ -31,6 +31,7 @@ export interface MappingProfileEntry {
   readonly disableClimateOnOff?: boolean;
   readonly disableClimateFanControl?: boolean;
   readonly climateKeepModeOnIdle?: boolean;
+  readonly climateExposeFan?: boolean;
 }
 
 export interface MappingProfile {

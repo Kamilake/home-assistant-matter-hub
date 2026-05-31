@@ -127,6 +127,7 @@ export function EntityMappingDialog({
   const [disableClimateFanControl, setDisableClimateFanControl] =
     useState(false);
   const [climateKeepModeOnIdle, setClimateKeepModeOnIdle] = useState(false);
+  const [climateExposeFan, setClimateExposeFan] = useState(false);
   const composedKeyRef = useRef(0);
   const [composedEntities, setComposedEntities] = useState<
     (ComposedSubEntity & { _key: number })[]
@@ -196,6 +197,7 @@ export function EntityMappingDialog({
         currentMapping?.disableClimateFanControl || false,
       );
       setClimateKeepModeOnIdle(currentMapping?.climateKeepModeOnIdle || false);
+      setClimateExposeFan(currentMapping?.climateExposeFan || false);
       composedKeyRef.current = 0;
       setComposedEntities(
         (currentMapping?.composedEntities || []).map((e) => ({
@@ -285,6 +287,7 @@ export function EntityMappingDialog({
       disableClimateOnOff: disableClimateOnOff || undefined,
       disableClimateFanControl: disableClimateFanControl || undefined,
       climateKeepModeOnIdle: climateKeepModeOnIdle || undefined,
+      climateExposeFan: climateExposeFan || undefined,
       composedEntities:
         composedEntities.filter((e) => e.entityId?.trim()).length > 0
           ? composedEntities
@@ -322,6 +325,7 @@ export function EntityMappingDialog({
     disableClimateOnOff,
     disableClimateFanControl,
     climateKeepModeOnIdle,
+    climateExposeFan,
     composedEntities,
     onSave,
   ]);
@@ -974,6 +978,16 @@ export function EntityMappingDialog({
                 />
               }
               label="Keep last mode on Matter while off + idle (workaround for ACs that report off + hvac_action=idle during internal cleaning, so the controller's Off button stays actionable)"
+              sx={{ mt: 1, display: "block" }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={climateExposeFan}
+                  onChange={(e) => setClimateExposeFan(e.target.checked)}
+                />
+              }
+              label="Expose a companion Fan device (adds a separate Apple Home fan tile for fan_only mode and speed, only for ACs with a fan mode, and re-pairs this AC once)"
               sx={{ mt: 1, display: "block" }}
             />
           </>

@@ -140,6 +140,7 @@ export class EntityMappingStorage extends Service {
       disableClimateOnOff: request.disableClimateOnOff || undefined,
       disableClimateFanControl: request.disableClimateFanControl || undefined,
       climateKeepModeOnIdle: request.climateKeepModeOnIdle || undefined,
+      climateExposeFan: request.climateExposeFan || undefined,
       composedEntities:
         request.composedEntities?.filter((e) => e.entityId?.trim()) ??
         undefined,
@@ -175,6 +176,7 @@ export class EntityMappingStorage extends Service {
       !config.disableClimateOnOff &&
       !config.disableClimateFanControl &&
       !config.climateKeepModeOnIdle &&
+      !config.climateExposeFan &&
       (!config.composedEntities || config.composedEntities.length === 0)
     ) {
       bridgeMap.delete(request.entityId);
