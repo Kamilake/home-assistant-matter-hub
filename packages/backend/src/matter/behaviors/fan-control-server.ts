@@ -8,6 +8,7 @@ import {
 import { FanControl } from "@matter/main/clusters";
 import { applyPatchState } from "../../utils/apply-patch-state.js";
 import { FanMode } from "../../utils/converters/fan-mode.js";
+import { toAscendingSpeedPresets } from "../../utils/converters/fan-mode-order.js";
 import { FanSpeed } from "../../utils/converters/fan-speed.js";
 import { transactionIsOffline } from "../../utils/transaction-is-offline.js";
 import { HomeAssistantEntityBehavior } from "./home-assistant-entity-behavior.js";
@@ -181,8 +182,8 @@ export class FanControlServerBase extends FeaturedBase {
     } else {
       // Fan only supports preset modes - map presets to speeds
       // Filter out "Auto" as it's handled separately
-      const speedPresets = presetModes.filter(
-        (m) => m.toLowerCase() !== "auto",
+      const speedPresets = toAscendingSpeedPresets(
+        presetModes.filter((m) => m.toLowerCase() !== "auto"),
       );
       speedMax = Math.max(
         minSpeedMax,
@@ -406,8 +407,8 @@ export class FanControlServerBase extends FeaturedBase {
     } else {
       const presetModes =
         config.getPresetModes(homeAssistant.entity.state, this.agent) ?? [];
-      const speedPresets = presetModes.filter(
-        (m) => m.toLowerCase() !== "auto",
+      const speedPresets = toAscendingSpeedPresets(
+        presetModes.filter((m) => m.toLowerCase() !== "auto"),
       );
 
       if (speedPresets.length > 0) {
