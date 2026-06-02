@@ -126,4 +126,47 @@ describe("BridgeRegistry battery mapping", () => {
       "binary_sensor.low_battery",
     );
   });
+
+  it("does not map a classless numeric sensor like last_clean_area", () => {
+    const registry = sut({
+      "sensor.last_clean_area": state("sensor.last_clean_area", "27", {}),
+    });
+
+    expect(registry.findBatteryEntityForDevice(deviceId)).toBeUndefined();
+  });
+
+  it("maps a classless percentage battery sensor (e.g. Roborock)", () => {
+    const registry = sut({
+      "sensor.roborock_battery": state("sensor.roborock_battery", "85", {
+        unit_of_measurement: "%",
+      }),
+    });
+
+    expect(registry.findBatteryEntityForDevice(deviceId)).toBe(
+      "sensor.roborock_battery",
+    );
+  });
+
+  it("maps a classless battery-named enum sensor", () => {
+    const registry = sut({
+      "sensor.door_battery": state("sensor.door_battery", "normal", {}),
+    });
+
+    expect(registry.findBatteryEntityForDevice(deviceId)).toBe(
+      "sensor.door_battery",
+    );
+  });
+
+  it("prefers a real battery sensor over a classless last_clean_area sibling", () => {
+    const registry = sut({
+      "sensor.last_clean_area": state("sensor.last_clean_area", "27", {}),
+      "sensor.battery_level": state("sensor.battery_level", "74", {
+        device_class: SensorDeviceClass.battery,
+      }),
+    });
+
+    expect(registry.findBatteryEntityForDevice(deviceId)).toBe(
+      "sensor.battery_level",
+    );
+  });
 });

@@ -121,15 +121,24 @@ export class BridgeRegistry {
     }
 
     // Fallback: enum-like HA battery sensors such as Overkiz full/normal/low.
+    // A classless sensor needs a real battery hint (unit "%" or "batt" in the
+    // id), otherwise things like last_clean_area=27 get mistaken for a battery.
     for (const entity of sameDevice) {
       if (!entity.entity_id.startsWith("sensor.")) continue;
 
       const state = this.registry.states[entity.entity_id];
       if (!state) continue;
 
-      const attrs = state.attributes as { device_class?: string };
+      const attrs = state.attributes as {
+        device_class?: string;
+        unit_of_measurement?: string;
+      };
+      const looksLikeBattery =
+        attrs.unit_of_measurement === "%" ||
+        entity.entity_id.toLowerCase().includes("batt");
       if (
-        (attrs.device_class === "enum" || attrs.device_class == null) &&
+        (attrs.device_class === "enum" ||
+          (attrs.device_class == null && looksLikeBattery)) &&
         resolveBatteryPercent(state.state) != null
       ) {
         this._batteryEntityCache.set(deviceId, entity.entity_id);
