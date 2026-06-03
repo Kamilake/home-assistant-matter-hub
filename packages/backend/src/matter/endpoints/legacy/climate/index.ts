@@ -15,7 +15,10 @@ import { HomeAssistantEntityBehavior } from "../../../behaviors/home-assistant-e
 import { IdentifyServer } from "../../../behaviors/identify-server.js";
 import { DefaultPowerSourceServer } from "../../../behaviors/power-source-server.js";
 import { ThermostatUiConfigServer } from "../../../behaviors/thermostat-ui-config-server.js";
-import { ClimateFanControlServer } from "./behaviors/climate-fan-control-server.js";
+import {
+  ClimateFanControlServer,
+  swingModesToRockSupport,
+} from "./behaviors/climate-fan-control-server.js";
 import { ClimateHumidityMeasurementServer } from "./behaviors/climate-humidity-measurement-server.js";
 import { ClimateOnOffServer } from "./behaviors/climate-on-off-server.js";
 import { ClimateThermostatServer } from "./behaviors/climate-thermostat-server.js";
@@ -38,9 +41,13 @@ const ClimateDeviceType = (
   supportsOnOff: boolean,
   supportsHumidity: boolean,
   supportsFanMode: boolean,
+  rockSupport:
+    | { rockLeftRight?: boolean; rockUpDown?: boolean; rockRound?: boolean }
+    | undefined,
   hasBattery: boolean,
   features: { heating: boolean; cooling: boolean; autoMode?: boolean },
   initialState: InitialThermostatState = {},
+  includeBasicInformation = true,
 ) => {
   const additionalClusters: ClusterBehavior.Type[] = [];
 
@@ -60,25 +67,32 @@ const ClimateDeviceType = (
   // from the start, critical for negative temperatures (refrigerators).
   const thermostatServer = ClimateThermostatServer(initialState, features);
 
+  // BasicInformationServer is dropped when this type is used as a composed
+  // sub-endpoint; the BridgedNode parent carries the basic info instead, the
+  // same way the composed sensor and air purifier sub-endpoints are built.
+  const basicInfo: ClusterBehavior.Type[] = includeBasicInformation
+    ? [BasicInformationServer]
+    : [];
+
   if (supportsFanMode) {
     return RoomAirConditionerDevice.with(
-      BasicInformationServer,
       IdentifyServer,
       HomeAssistantEntityBehavior,
       thermostatServer,
       ThermostatUiConfigServer,
-      ClimateFanControlServer,
+      ClimateFanControlServer(rockSupport),
       ...additionalClusters,
+      ...basicInfo,
     );
   }
 
   return ThermostatDevice.with(
-    BasicInformationServer,
     IdentifyServer,
     HomeAssistantEntityBehavior,
     thermostatServer,
     ThermostatUiConfigServer,
     ...additionalClusters,
+    ...basicInfo,
   );
 };
 
@@ -113,6 +127,7 @@ function toMatterTemp(
 
 export function ClimateDevice(
   homeAssistantEntity: HomeAssistantEntityBehavior.State,
+  includeBasicInformation = true,
 ): EndpointType {
   const attributes = homeAssistantEntity.entity.state
     .attributes as ClimateDeviceAttributes & {
@@ -176,6 +191,31 @@ export function ClimateDevice(
   const supportsFanMode =
     testBit(supportedFeatures, ClimateDeviceFeature.FAN_MODE) &&
     homeAssistantEntity.mapping?.disableClimateFanControl !== true;
+  const supportsVerticalSwing = testBit(
+    supportedFeatures,
+    ClimateDeviceFeature.SWING_MODE,
+  );
+  const supportsHorizontalSwing = testBit(
+    supportedFeatures,
+    ClimateDeviceFeature.SWING_HORIZONTAL_MODE,
+  );
+  const swingModesRockSupport = swingModesToRockSupport(attributes.swing_modes);
+  const rockSupport =
+    supportsVerticalSwing ||
+    supportsHorizontalSwing ||
+    swingModesRockSupport.rockLeftRight ||
+    swingModesRockSupport.rockUpDown
+      ? {
+          rockLeftRight:
+            swingModesRockSupport.rockLeftRight ||
+            supportsHorizontalSwing ||
+            undefined,
+          rockUpDown:
+            swingModesRockSupport.rockUpDown ||
+            supportsVerticalSwing ||
+            undefined,
+        }
+      : undefined;
 
   // Extract initial thermostat state from HA entity attributes.
   // These values are passed to Matter.js during registration to prevent
@@ -219,6 +259,7 @@ export function ClimateDevice(
     supportsOnOff,
     supportsHumidity,
     supportsFanMode,
+    rockSupport,
     hasBattery,
     {
       heating: supportsHeating,
@@ -226,6 +267,7 @@ export function ClimateDevice(
       autoMode,
     },
     initialState,
+    includeBasicInformation,
   ).set({
     homeAssistantEntity,
     thermostat: {

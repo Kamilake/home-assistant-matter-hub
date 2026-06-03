@@ -19,6 +19,7 @@ import {
   SensorDeviceClass,
   type VacuumDeviceAttributes,
   type WaterHeaterDeviceAttributes,
+  type WeatherEntityAttributes,
 } from "@home-assistant-matter-hub/common";
 import { Endpoint, type EndpointType } from "@matter/main";
 import { uniq } from "lodash-es";
@@ -235,6 +236,15 @@ const testEntities: Record<
       temperature: 60,
       operation_mode: "off",
       operation_list: ["off", "eco", "electric"],
+    }),
+  ],
+  [HomeAssistantDomain.weather]: [
+    createEntity<WeatherEntityAttributes>("weather.home", "sunny", {
+      temperature: 21,
+      temperature_unit: "°C",
+      humidity: 55,
+      pressure: 1013,
+      pressure_unit: "hPa",
     }),
   ],
 };

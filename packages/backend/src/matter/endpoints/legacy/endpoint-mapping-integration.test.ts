@@ -617,12 +617,10 @@ describe("endpoint mapping integration", () => {
       const fanControlWithDirection = (
         typeWithDirection.behaviors as Record<
           string,
-          { cluster?: { supportedFeatures?: { airflowDirection?: boolean } } }
+          { features?: { airflowDirection?: boolean } }
         >
       ).fanControl;
-      expect(
-        fanControlWithDirection?.cluster?.supportedFeatures?.airflowDirection,
-      ).toBe(true);
+      expect(fanControlWithDirection?.features?.airflowDirection).toBe(true);
 
       const withoutDirection = createEntity<FanDeviceAttributes>(
         "fan.beh7_nodir",
@@ -638,13 +636,12 @@ describe("endpoint mapping integration", () => {
       const fanControlWithoutDirection = (
         typeWithoutDirection.behaviors as Record<
           string,
-          { cluster?: { supportedFeatures?: { airflowDirection?: boolean } } }
+          { features?: { airflowDirection?: boolean } }
         >
       ).fanControl;
-      expect(
-        fanControlWithoutDirection?.cluster?.supportedFeatures
-          ?.airflowDirection,
-      ).toBe(false);
+      expect(fanControlWithoutDirection?.features?.airflowDirection).toBe(
+        false,
+      );
     });
 
     it("temperature sensor has temperatureMeasurement behavior", () => {

@@ -24,7 +24,7 @@ const TRANSIENT_CONNECT_ERROR_CODES = new Set<string>([
   "ENETUNREACH",
   "EPIPE",
 ]);
-function isTransientConnectError(reason: unknown): boolean {
+export function isTransientConnectError(reason: unknown): boolean {
   if (reason === ERR_CANNOT_CONNECT) return true;
   const code = (reason as NodeJS.ErrnoException | undefined)?.code;
   if (code && TRANSIENT_CONNECT_ERROR_CODES.has(code)) return true;

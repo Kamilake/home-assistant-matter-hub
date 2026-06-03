@@ -4,7 +4,10 @@ import { ModeSelectDevice } from "@matter/main/devices";
 import { BasicInformationServer } from "../../../behaviors/basic-information-server.js";
 import { HomeAssistantEntityBehavior } from "../../../behaviors/home-assistant-entity-behavior.js";
 import { IdentifyServer } from "../../../behaviors/identify-server.js";
-import { ModeSelectServer } from "../../../behaviors/mode-select-server.js";
+import {
+  buildSupportedModes,
+  ModeSelectServer,
+} from "../../../behaviors/mode-select-server.js";
 
 interface SelectAttributes {
   options?: string[];
@@ -30,14 +33,6 @@ const SelectModeServer = buildSelectModeServer("select.select_option");
 const InputSelectModeServer = buildSelectModeServer(
   "input_select.select_option",
 );
-
-function buildSupportedModes(options: string[]) {
-  return options.map((label, index) => ({
-    label: label.length > 64 ? label.substring(0, 64) : label,
-    mode: index,
-    semanticTags: [],
-  }));
-}
 
 const SelectEndpointType = ModeSelectDevice.with(
   BasicInformationServer,

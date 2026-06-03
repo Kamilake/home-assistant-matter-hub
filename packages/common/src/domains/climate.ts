@@ -51,4 +51,6 @@ export interface ClimateDeviceAttributes {
   supported_features?: number;
   fan_mode?: string | null | undefined;
   fan_modes?: string[] | null | undefined;
+  swing_mode?: string | null | undefined;
+  swing_modes?: string[] | null | undefined;
 }

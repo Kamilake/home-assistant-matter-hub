@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SESSION_MAX_AGE_HOURS,
+  makeWarmStartState,
   parseSessionMaxAgeHours,
   SESSION_MAX_AGE_HOURS_RANGE,
+  seedExistingSessionStarts,
 } from "./server-mode-bridge.js";
 
 describe("parseSessionMaxAgeHours", () => {
@@ -54,5 +56,40 @@ describe("parseSessionMaxAgeHours", () => {
   it("parses leading-digit strings like Number.parseInt does", () => {
     // Mirrors Number.parseInt behaviour (existing semantics, not new).
     expect(parseSessionMaxAgeHours("12abc")).toBe(12);
+  });
+});
+
+describe("seedExistingSessionStarts", () => {
+  it("adds existing sessions that were restored before diagnostics were wired", () => {
+    const startedAt = new Map<number, number>([[1, 1000]]);
+
+    seedExistingSessionStarts(
+      startedAt,
+      [{ id: 1 }, { id: 2 }, { id: 3 }],
+      5000,
+    );
+
+    expect(startedAt.get(1)).toBe(1000);
+    expect(startedAt.get(2)).toBe(5000);
+    expect(startedAt.get(3)).toBe(5000);
+  });
+});
+
+describe("makeWarmStartState", () => {
+  it("forces a structural state change while preserving existing values", () => {
+    const current = {
+      state: "docked",
+      attributes: { battery_level: 100 },
+      last_updated: "old",
+    };
+
+    const next = makeWarmStartState(current, "new");
+
+    expect(next).toEqual({
+      state: "docked",
+      attributes: { battery_level: 100 },
+      last_updated: "new",
+    });
+    expect(next).not.toBe(current);
   });
 });

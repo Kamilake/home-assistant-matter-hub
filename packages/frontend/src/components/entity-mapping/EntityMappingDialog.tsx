@@ -48,6 +48,25 @@ function parseVendorId(value: string): number | undefined {
   return n;
 }
 
+// Parses the optional per-area JSON data field. Empty is valid (no data).
+// Only plain objects are accepted; arrays and primitives are rejected.
+function parseAreaData(raw: string): {
+  value?: Record<string, unknown>;
+  valid: boolean;
+} {
+  const trimmed = raw.trim();
+  if (!trimmed) return { value: undefined, valid: true };
+  try {
+    const parsed: unknown = JSON.parse(trimmed);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return { value: parsed as Record<string, unknown>, valid: true };
+    }
+    return { valid: false };
+  } catch {
+    return { valid: false };
+  }
+}
+
 function parseDebounceMs(value: string): number | undefined {
   const trimmed = value.trim();
   if (!trimmed) return undefined;
@@ -100,6 +119,7 @@ export function EntityMappingDialog({
   const [customServiceAreas, setCustomServiceAreas] = useState<
     CustomServiceArea[]
   >([]);
+  const [areaDataDrafts, setAreaDataDrafts] = useState<string[]>([]);
   const [valetudoIdentifier, setValetudoIdentifier] = useState("");
   const [coverSwapOpenClose, setCoverSwapOpenClose] = useState(false);
   const [coverSliderDebounceMs, setCoverSliderDebounceMs] = useState("");
@@ -107,6 +127,7 @@ export function EntityMappingDialog({
   const [disableClimateFanControl, setDisableClimateFanControl] =
     useState(false);
   const [climateKeepModeOnIdle, setClimateKeepModeOnIdle] = useState(false);
+  const [climateExposeFan, setClimateExposeFan] = useState(false);
   const composedKeyRef = useRef(0);
   const [composedEntities, setComposedEntities] = useState<
     (ComposedSubEntity & { _key: number })[]
@@ -159,6 +180,11 @@ export function EntityMappingDialog({
       setMopIntensityEntity(currentMapping?.mopIntensityEntity || "");
       setCurrentRoomEntity(currentMapping?.currentRoomEntity || "");
       setCustomServiceAreas(currentMapping?.customServiceAreas || []);
+      setAreaDataDrafts(
+        (currentMapping?.customServiceAreas || []).map((a) =>
+          a.data ? JSON.stringify(a.data) : "",
+        ),
+      );
       setValetudoIdentifier(currentMapping?.valetudoIdentifier || "");
       setCoverSwapOpenClose(currentMapping?.coverSwapOpenClose || false);
       setCoverSliderDebounceMs(
@@ -171,6 +197,7 @@ export function EntityMappingDialog({
         currentMapping?.disableClimateFanControl || false,
       );
       setClimateKeepModeOnIdle(currentMapping?.climateKeepModeOnIdle || false);
+      setClimateExposeFan(currentMapping?.climateExposeFan || false);
       composedKeyRef.current = 0;
       setComposedEntities(
         (currentMapping?.composedEntities || []).map((e) => ({
@@ -260,6 +287,7 @@ export function EntityMappingDialog({
       disableClimateOnOff: disableClimateOnOff || undefined,
       disableClimateFanControl: disableClimateFanControl || undefined,
       climateKeepModeOnIdle: climateKeepModeOnIdle || undefined,
+      climateExposeFan: climateExposeFan || undefined,
       composedEntities:
         composedEntities.filter((e) => e.entityId?.trim()).length > 0
           ? composedEntities
@@ -297,6 +325,7 @@ export function EntityMappingDialog({
     disableClimateOnOff,
     disableClimateFanControl,
     climateKeepModeOnIdle,
+    climateExposeFan,
     composedEntities,
     onSave,
   ]);
@@ -743,78 +772,136 @@ export function EntityMappingDialog({
             >
               Define custom zones mapped to HA service calls. Works for lawn
               mowers, pool cleaners, or any zone-based robot. When configured,
-              these replace auto-detected rooms.
+              these replace auto-detected rooms. Data is extra JSON sent with
+              the call. Batch fires one combined call for all selected zones
+              instead of one per zone.
             </Typography>
-            {customServiceAreas.map((area, index) => (
-              <Box
-                key={`area-${area.name || index}`}
-                sx={{
-                  display: "flex",
-                  gap: 1,
-                  mb: 1,
-                  alignItems: "flex-start",
-                }}
-              >
-                <TextField
-                  size="small"
-                  label="Name"
-                  value={area.name}
-                  onChange={(e) => {
-                    const updated = [...customServiceAreas];
-                    updated[index] = { ...area, name: e.target.value };
-                    setCustomServiceAreas(updated);
-                  }}
-                  sx={{ flex: 1 }}
-                />
-                <TextField
-                  size="small"
-                  label="Service"
-                  placeholder="script.start_zone"
-                  value={area.service}
-                  onChange={(e) => {
-                    const updated = [...customServiceAreas];
-                    updated[index] = { ...area, service: e.target.value };
-                    setCustomServiceAreas(updated);
-                  }}
-                  sx={{ flex: 1 }}
-                />
-                <TextField
-                  size="small"
-                  label="Target (optional)"
-                  placeholder="button.zone_1"
-                  value={area.target || ""}
-                  onChange={(e) => {
-                    const updated = [...customServiceAreas];
-                    updated[index] = {
-                      ...area,
-                      target: e.target.value || undefined,
-                    };
-                    setCustomServiceAreas(updated);
-                  }}
-                  sx={{ flex: 1 }}
-                />
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => {
-                    setCustomServiceAreas(
-                      customServiceAreas.filter((_, i) => i !== index),
-                    );
+            {customServiceAreas.map((area, index) => {
+              const dataValid = parseAreaData(
+                areaDataDrafts[index] ?? "",
+              ).valid;
+              return (
+                <Box
+                  key={`area-${area.name || index}`}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                    mb: 2,
                   }}
                 >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            ))}
+                  <Box
+                    sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}
+                  >
+                    <TextField
+                      size="small"
+                      label="Name"
+                      value={area.name}
+                      onChange={(e) => {
+                        const updated = [...customServiceAreas];
+                        updated[index] = { ...area, name: e.target.value };
+                        setCustomServiceAreas(updated);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      size="small"
+                      label="Service"
+                      placeholder="script.start_zone"
+                      value={area.service}
+                      onChange={(e) => {
+                        const updated = [...customServiceAreas];
+                        updated[index] = { ...area, service: e.target.value };
+                        setCustomServiceAreas(updated);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      size="small"
+                      label="Target (optional)"
+                      placeholder="button.zone_1"
+                      value={area.target || ""}
+                      onChange={(e) => {
+                        const updated = [...customServiceAreas];
+                        updated[index] = {
+                          ...area,
+                          target: e.target.value || undefined,
+                        };
+                        setCustomServiceAreas(updated);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => {
+                        setCustomServiceAreas(
+                          customServiceAreas.filter((_, i) => i !== index),
+                        );
+                        setAreaDataDrafts(
+                          areaDataDrafts.filter((_, i) => i !== index),
+                        );
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                    <TextField
+                      size="small"
+                      label="Data (JSON, optional)"
+                      placeholder={'{"segments": [16, 17]}'}
+                      value={areaDataDrafts[index] ?? ""}
+                      error={!dataValid}
+                      helperText={
+                        !dataValid ? "Invalid JSON object" : undefined
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const drafts = [...areaDataDrafts];
+                        drafts[index] = raw;
+                        setAreaDataDrafts(drafts);
+                        const { value, valid } = parseAreaData(raw);
+                        if (!valid) return;
+                        const { data: _, ...rest } = area;
+                        const updated = [...customServiceAreas];
+                        updated[index] =
+                          value === undefined ? rest : { ...rest, data: value };
+                        setCustomServiceAreas(updated);
+                      }}
+                      sx={{ flex: 2 }}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          size="small"
+                          checked={area.batchDispatch ?? false}
+                          onChange={(e) => {
+                            const updated = [...customServiceAreas];
+                            updated[index] = {
+                              ...area,
+                              batchDispatch: e.target.checked || undefined,
+                            };
+                            setCustomServiceAreas(updated);
+                          }}
+                        />
+                      }
+                      label="Batch"
+                    />
+                  </Box>
+                </Box>
+              );
+            })}
             <Button
               size="small"
               startIcon={<AddCircleOutlineIcon />}
-              onClick={() =>
+              onClick={() => {
                 setCustomServiceAreas([
                   ...customServiceAreas,
                   { name: "", service: "" },
-                ])
-              }
+                ]);
+                setAreaDataDrafts([...areaDataDrafts, ""]);
+              }}
             >
               Add Area
             </Button>
@@ -891,6 +978,16 @@ export function EntityMappingDialog({
                 />
               }
               label="Keep last mode on Matter while off + idle (workaround for ACs that report off + hvac_action=idle during internal cleaning, so the controller's Off button stays actionable)"
+              sx={{ mt: 1, display: "block" }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={climateExposeFan}
+                  onChange={(e) => setClimateExposeFan(e.target.checked)}
+                />
+              }
+              label="Expose a companion Fan device (adds a separate Apple Home fan tile for fan_only mode and speed, only for ACs with a fan mode, and re-pairs this AC once)"
               sx={{ mt: 1, display: "block" }}
             />
           </>

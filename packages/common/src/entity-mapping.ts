@@ -233,6 +233,16 @@ export interface EntityMappingConfig {
    */
   readonly climateKeepModeOnIdle?: boolean;
   /**
+   * Optional: Expose a second Matter Fan device alongside this climate AC,
+   * bound to the same HA entity. Apple Home does not surface a thermostat
+   * fan / fan_only mode, so this companion Fan tile turns the AC's fan_only
+   * operation on and off via climate.set_hvac_mode and drives its speed via
+   * climate.set_fan_mode. Off by default. Only takes effect when the climate
+   * entity reports the FAN_MODE feature. Enabling re-registers this AC as a
+   * composed device, which forces a one-time re-pair of this AC only.
+   */
+  readonly climateExposeFan?: boolean;
+  /**
    * Auto-populated at runtime when the vacuum supports HA 2026.3 CLEAN_AREA.
    * Maps HA areas (from the user's segment-to-area mapping in HA) to Matter
    * ServiceArea area IDs. When set, vacuum.clean_area is used instead of
@@ -250,6 +260,15 @@ export interface CustomServiceArea {
   readonly target?: string;
   /** Optional: Additional data to pass to the service call */
   readonly data?: Record<string, unknown>;
+  /**
+   * Optional: Fire a single combined call for all selected areas instead of
+   * one call per area. Set on any area in the selection; the first matched
+   * area's service/target is used as the template. Matching data keys are
+   * combined where possible (arrays are concatenated, primitive values are
+   * joined with commas), and selection metadata is injected into data.
+   * Default: false (sequential dispatch, compatible with Roborock).
+   */
+  readonly batchDispatch?: boolean;
 }
 
 export interface EntityMappingRequest {
@@ -283,6 +302,7 @@ export interface EntityMappingRequest {
   readonly disableClimateOnOff?: boolean;
   readonly disableClimateFanControl?: boolean;
   readonly climateKeepModeOnIdle?: boolean;
+  readonly climateExposeFan?: boolean;
   readonly composedEntities?: ComposedSubEntity[];
 }
 

@@ -75,9 +75,18 @@ Google Home does not support WindowCovering devices as actions in Automations. W
 2. Create Home Assistant scripts and expose them as switches via HAMH
 3. Use Home Assistant automations instead
 
+### Cover cannot be used in Alexa routines
+
+Alexa does not expose Matter WindowCovering devices as actions in its routine builder. The covers appear in the Alexa device list and respond to manual open/close and voice commands, but they are not offered when building a routine. This is an Alexa limitation, not a bridge issue: the [Matter ecosystem table](https://github.com/project-chip/matter.js/blob/main/docs/ECOSYSTEMS.md) lists Window Covering (0x0202) as not supported by Amazon, and Amazon only maps the cluster to manual open/close control. No `device_class` or Matter type change makes the cover routine-selectable.
+
+**Workarounds:**
+1. Wrap the cover in a Home Assistant script or scene and expose that to Alexa, scripts and scenes do show up as routine actions.
+2. Use Home Assistant automations instead of Alexa routines.
+3. Voice control still works ("Alexa, close the blinds"), only the routine builder is affected.
+
 ### Cover doesn't appear in Alexa routine picker after changing `device_class`
 
-Matter `Type` and `EndProductType` are spec-defined as fixed attributes, controllers cache them at commissioning and don't re-read after that. So changing `device_class` in HA doesn't move the cover into a different Alexa sub-category (`Tapparelle interne`, `Tendine`, `Tende`, `Tende da sole`, etc.) on its own. After fixing `device_class`, restart HAMH and remove + re-add the bridge in the Alexa app for the routine picker to re-categorize.
+Matter `Type` and `EndProductType` are spec-defined as fixed attributes, controllers cache them at commissioning and don't re-read after that. So changing `device_class` in HA doesn't move the cover into a different Alexa sub-category (`Tapparelle interne`, `Tendine`, `Tende`, `Tende da sole`, etc.) on its own. After fixing `device_class`, restart HAMH and remove + re-add the bridge in the Alexa app so Alexa picks up the new type. This re-categorizes the device for the device list and manual control; it does not make covers available as routine actions, which is a separate Alexa limitation (see above).
 
 ### Position not updating
 

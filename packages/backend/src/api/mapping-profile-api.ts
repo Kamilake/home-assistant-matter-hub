@@ -40,6 +40,7 @@ function configToProfileEntry(
     disableClimateOnOff: config.disableClimateOnOff,
     disableClimateFanControl: config.disableClimateFanControl,
     climateKeepModeOnIdle: config.climateKeepModeOnIdle,
+    climateExposeFan: config.climateExposeFan,
   };
 }
 
@@ -201,6 +202,7 @@ export function mappingProfileApi(
           disableClimateOnOff: entry.disableClimateOnOff,
           disableClimateFanControl: entry.disableClimateFanControl,
           climateKeepModeOnIdle: entry.climateKeepModeOnIdle,
+          climateExposeFan: entry.climateExposeFan,
         });
         applied++;
       } catch (e) {

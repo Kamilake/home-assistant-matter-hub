@@ -34,6 +34,10 @@ When PIN credentials are configured, controllers will prompt for a code before u
 
 Locking is always allowed without a PIN. Only the unlock action requires PIN entry when credentials are configured.
 
+### Apple Home access code prompt
+
+After commissioning a lock with PIN support, Apple Home may show a one-time "Set Up an Access Code" prompt the first time you open the lock's details. Enter the same PIN you configured for this entity in HAMH so Apple Home and the bridge agree on the credential. If you do not want PIN prompts at all, set `disableLockPin` on the entity mapping; HAMH then advertises the lock without the PinCredential feature and Apple Home will skip the access code setup.
+
 ## Unlatch (Unbolting)
 
 Since v2.0.25, the Unbolting feature is automatically enabled when your HA lock entity supports the `OPEN` feature (reported in `supported_features`).

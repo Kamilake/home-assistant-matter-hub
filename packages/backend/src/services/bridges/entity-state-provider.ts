@@ -2,6 +2,26 @@ import type { HomeAssistantEntityState } from "@home-assistant-matter-hub/common
 import { Service } from "../../core/ioc/service.js";
 import type { HomeAssistantRegistry } from "../home-assistant/home-assistant-registry.js";
 
+const BATTERY_ENUM_PERCENT: Record<string, number> = {
+  empty: 0,
+  full: 100,
+  high: 90,
+  low: 20,
+  medium: 50,
+  normal: 70,
+  verylow: 5,
+};
+
+export function resolveBatteryPercent(state: string): number | null {
+  const numericValue = Number.parseFloat(state);
+  if (!Number.isNaN(numericValue)) {
+    return numericValue;
+  }
+  if (state === "off") return 100;
+  if (state === "on") return 0;
+  return BATTERY_ENUM_PERCENT[state.toLowerCase()] ?? null;
+}
+
 /**
  * Service that provides access to Home Assistant entity states.
  * Used by behaviors that need to read states from entities other than their own
@@ -47,12 +67,7 @@ export class EntityStateProvider extends Service {
     if (!state) {
       return null;
     }
-    const numericValue = Number.parseFloat(state.state);
-    if (!Number.isNaN(numericValue)) {
-      return numericValue;
-    }
-    if (state.state === "off") return 100;
-    if (state.state === "on") return 0;
-    return null;
+    const numericValue = resolveBatteryPercent(state.state);
+    return numericValue;
   }
 }

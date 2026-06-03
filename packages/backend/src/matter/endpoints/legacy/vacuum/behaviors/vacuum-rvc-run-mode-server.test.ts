@@ -1,0 +1,114 @@
+import type { CustomServiceArea } from "@home-assistant-matter-hub/common";
+import { describe, expect, it } from "vitest";
+import type { CleaningSession } from "../../../../behaviors/rvc-run-mode-server.js";
+import { handleCustomServiceAreas } from "./vacuum-rvc-run-mode-server.js";
+
+function session(): CleaningSession {
+  return {
+    activeAreas: [],
+    completedAreas: new Set(),
+    lastCurrentArea: null,
+    loggedShortCircuits: new Set(),
+    observedCleaning: false,
+    pendingDispatches: [],
+  };
+}
+
+const areas: CustomServiceArea[] = [
+  {
+    name: "Kitchen",
+    service: "xiaomi_home.vacuum_clean_room_ids",
+    target: "vacuum.xiaomi_robot",
+    batchDispatch: true,
+    data: { room_ids: [1] },
+  },
+  {
+    name: "Living Room",
+    service: "xiaomi_home.vacuum_clean_room_ids",
+    target: "vacuum.xiaomi_robot",
+    batchDispatch: true,
+    data: { room_ids: [2] },
+  },
+  {
+    name: "Bedroom",
+    service: "xiaomi_home.vacuum_clean_room_ids",
+    target: "vacuum.xiaomi_robot",
+    batchDispatch: true,
+    data: { room_ids: [3] },
+  },
+];
+
+describe("handleCustomServiceAreas", () => {
+  it("keeps sequential dispatch as the default", () => {
+    const s = session();
+    const sequentialAreas: CustomServiceArea[] = areas.map(
+      ({ batchDispatch: _batchDispatch, ...area }) => area,
+    );
+
+    const action = handleCustomServiceAreas([1, 2], sequentialAreas, s);
+
+    expect(action).toEqual({
+      action: "xiaomi_home.vacuum_clean_room_ids",
+      target: "vacuum.xiaomi_robot",
+      data: { room_ids: [1] },
+    });
+    expect(s.pendingDispatches).toEqual([
+      {
+        areaId: 2,
+        action: {
+          action: "xiaomi_home.vacuum_clean_room_ids",
+          target: "vacuum.xiaomi_robot",
+          data: { room_ids: [2] },
+        },
+      },
+    ]);
+  });
+
+  it("combines batch area data into one call", () => {
+    const s = session();
+
+    const action = handleCustomServiceAreas([1, 2], areas, s);
+
+    expect(action).toEqual({
+      action: "xiaomi_home.vacuum_clean_room_ids",
+      target: "vacuum.xiaomi_robot",
+      data: {
+        room_ids: [1, 2],
+        selected_area_ids: [1, 2],
+        selected_area_ids_csv: "1,2",
+        selected_area_names: ["Kitchen", "Living Room"],
+        selected_area_names_csv: "Kitchen,Living Room",
+        selected_area_data: [{ room_ids: [1] }, { room_ids: [2] }],
+      },
+    });
+    expect(s.pendingDispatches).toEqual([]);
+  });
+
+  it("combines primitive batch data as comma-separated values", () => {
+    const s = session();
+    const notifyAreas: CustomServiceArea[] = [
+      {
+        name: "Kitchen",
+        service: "notify.send_message",
+        target: "notify.xiaomi_vacuum",
+        batchDispatch: true,
+        data: { message: "6" },
+      },
+      {
+        name: "Bedroom",
+        service: "notify.send_message",
+        target: "notify.xiaomi_vacuum",
+        batchDispatch: true,
+        data: { message: "3" },
+      },
+    ];
+
+    const action = handleCustomServiceAreas([1, 2], notifyAreas, s);
+
+    expect(action.data).toMatchObject({
+      message: "6,3",
+      selected_area_ids_csv: "1,2",
+      selected_area_names_csv: "Kitchen,Bedroom",
+    });
+  });
+});

@@ -385,6 +385,66 @@ Configure `customServiceAreas` in the Entity Mapping for your vacuum. Each entry
 
 See [#177](https://github.com/RiDDiX/home-assistant-matter-hub/issues/177) for details.
 
+### Batch Dispatch Mode
+
+By default, HAMH fires **one service call per selected room** in sequence (the correct behavior for Roborock button entities, as introduced in v2.0.44). Some integrations, notably **Xiaomi Home**, instead expect all room IDs in a **single call**. Sending N sequential calls to these integrations causes N separate cleaning trips and effectively cleans only the last room.
+
+Set `batchDispatch: true` on any area definition to opt in. HAMH will fire **one combined call** using that area's `service` and `target` as the template. Matching data keys are combined where possible: arrays are concatenated and primitive values are joined with commas.
+
+HAMH also injects selection metadata into `data`:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `selected_area_ids` | `number[]` | Matter area IDs selected by the controller |
+| `selected_area_ids_csv` | `string` | The selected Matter area IDs joined by `","` |
+| `selected_area_names` | `string[]` | Display names of every selected area |
+| `selected_area_names_csv` | `string` | The selected display names joined by `","` |
+| `selected_area_data` | `Record<string, unknown>[]` | The original `data` object of each selected area (empty object `{}` for areas with no data) |
+
+Sequential dispatch remains the default, no existing configuration is affected. For predictable batch output, set `batchDispatch: true` on every area that belongs to the same batch-capable integration.
+
+#### Example: Xiaomi Home multi-room cleaning
+
+```yaml
+customServiceAreas:
+  - name: Kitchen
+    service: xiaomi_home.vacuum_clean_room_ids
+    target: vacuum.xiaomi_robot
+    batchDispatch: true
+    data:
+      room_ids: [1]
+  - name: Living Room
+    service: xiaomi_home.vacuum_clean_room_ids
+    target: vacuum.xiaomi_robot
+    batchDispatch: true
+    data:
+      room_ids: [2]
+  - name: Bedroom
+    service: xiaomi_home.vacuum_clean_room_ids
+    target: vacuum.xiaomi_robot
+    batchDispatch: true
+    data:
+      room_ids: [3]
+```
+
+When "Kitchen" and "Living Room" are selected, HAMH fires a single call with:
+
+```yaml
+action: xiaomi_home.vacuum_clean_room_ids
+target: vacuum.xiaomi_robot
+data:
+  room_ids: [1, 2]
+  selected_area_ids: [1, 2]
+  selected_area_ids_csv: "1,2"
+  selected_area_names: [Kitchen, Living Room]
+  selected_area_names_csv: "Kitchen,Living Room"
+  selected_area_data: [{ room_ids: [1] }, { room_ids: [2] }]
+```
+
+For integrations that expect a comma-separated field instead of an array, configure each area with that field as a primitive value. HAMH joins the selected values with commas in batch mode.
+
+See [#291](https://github.com/RiDDiX/home-assistant-matter-hub/issues/291) for the original request.
+
 ---
 
 ## Identify / Locate

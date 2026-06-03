@@ -140,8 +140,48 @@ function buildSupportedModes(
  * Build the primary action for custom service areas and queue the rest
  * for sequential dispatch. Custom areas use 1-based IDs matching
  * createCustomServiceAreaServer.
+ *
+ * When any matched area has batchDispatch === true, a single combined call
+ * is fired instead of sequential per-area calls (opt-in, for integrations
+ * like Xiaomi Home that accept all room IDs in one call).
  */
-function handleCustomServiceAreas(
+function mergeBatchData(areas: CustomServiceArea[]) {
+  const dataEntries = areas.map((area) => area.data ?? {});
+  const keys = new Set(dataEntries.flatMap((data) => Object.keys(data)));
+  const data: Record<string, unknown> = {};
+
+  for (const key of keys) {
+    const values = dataEntries
+      .map((entry) => entry[key])
+      .filter((value) => value !== undefined);
+
+    if (values.length === 0) continue;
+    if (
+      values.every(
+        (value) => JSON.stringify(value) === JSON.stringify(values[0]),
+      )
+    ) {
+      data[key] = values[0];
+    } else if (values.every(Array.isArray)) {
+      data[key] = values.flat();
+    } else if (
+      values.every(
+        (value) =>
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean",
+      )
+    ) {
+      data[key] = values.join(",");
+    } else {
+      data[key] = values[0];
+    }
+  }
+
+  return data;
+}
+
+export function handleCustomServiceAreas(
   selectedAreas: number[],
   customAreas: CustomServiceArea[],
   session: CleaningSession,
@@ -155,6 +195,31 @@ function handleCustomServiceAreas(
       `Custom service areas: no match for selected IDs ${selectedAreas.join(", ")}`,
     );
     return { action: "vacuum.start" };
+  }
+
+  // Batch dispatch: one call for all selected areas, injecting combined data.
+  const batchArea = matched.find(({ area }) => area.batchDispatch === true);
+  if (batchArea) {
+    logger.info(
+      `Custom service areas (batch): single call for ${matched.length} room(s): ${matched.map(({ area }) => area.name).join(", ")}`,
+    );
+    session.pendingDispatches = [];
+    const template = batchArea.area;
+    const areas = matched.map(({ area }) => area);
+    const areaIds = matched.map(({ areaId }) => areaId);
+    const areaNames = matched.map(({ area }) => area.name);
+    return {
+      action: template.service,
+      target: template.target,
+      data: {
+        ...mergeBatchData(areas),
+        selected_area_ids: areaIds,
+        selected_area_ids_csv: areaIds.join(","),
+        selected_area_names: areaNames,
+        selected_area_names_csv: areaNames.join(","),
+        selected_area_data: areas.map((area) => area.data ?? {}),
+      },
+    };
   }
 
   logger.info(

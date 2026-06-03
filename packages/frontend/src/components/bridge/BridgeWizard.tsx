@@ -467,6 +467,16 @@ export function BridgeWizard({ open, onClose, onComplete }: BridgeWizardProps) {
         margin="normal"
         helperText={t("bridgeWizard.portAutoAssign")}
       />
+      {selectedController &&
+        (selectedController.id === "alexa" ||
+          selectedController.id === "multi_controller") &&
+        currentBridge.port !== 5540 && (
+          <Alert severity="warning" sx={{ mt: 1 }}>
+            Alexa only pairs on port <strong>5540</strong>. This bridge uses{" "}
+            {currentBridge.port}, so Alexa will not discover it. Set the port
+            back to 5540 for the Alexa bridge.
+          </Alert>
+        )}
       <Tooltip
         title="Required for Robot Vacuums to work with Apple Home (Siri) and Alexa. Server Mode bridges support only ONE device."
         placement="right"

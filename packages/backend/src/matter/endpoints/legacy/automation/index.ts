@@ -6,12 +6,11 @@ import { IdentifyServer } from "../../../behaviors/identify-server.js";
 import { OnOffServer } from "../../../behaviors/on-off-server.js";
 
 const AutomationOnOffServer = OnOffServer({
+  isOn: () => false,
   turnOn: () => ({
     action: "automation.trigger",
   }),
-  turnOff: () => ({
-    action: "automation.turn_off",
-  }),
+  turnOff: null,
 }).with("Lighting");
 
 const AutomationDeviceType = OnOffPlugInUnitDevice.with(

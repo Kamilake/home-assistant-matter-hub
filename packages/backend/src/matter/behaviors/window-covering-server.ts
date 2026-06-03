@@ -27,7 +27,6 @@ const FeaturedBase = Base.with(
   "PositionAwareLift",
   "Tilt",
   "PositionAwareTilt",
-  "AbsolutePosition",
 );
 
 export interface WindowCoveringConfig {

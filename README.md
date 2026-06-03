@@ -37,7 +37,7 @@ of port forwarding etc.
 
 | Channel | Branch | Current Version | Description |
 |---------|--------|-----------------|-------------|
-| **Stable** | `main` | v2.0.44 | Production-ready, recommended for most users |
+| **Stable** | `main` | v2.0.46 | Production-ready, recommended for most users |
 | **Alpha** | `alpha` | v2.1.0-alpha.x | Pre-release with new features, for early adopters |
 | **Testing** | `testing` | v4.1.0-testing.x | ⚠️ **Highly unstable!** Experimental features, may break |
 
@@ -52,9 +52,32 @@ of port forwarding etc.
 ## 🎉 What's New
 
 <details>
-<summary><strong>📦 Stable Features (v2.0.44)</strong> - Click to expand</summary>
+<summary><strong>📦 Stable Features (v2.0.46)</strong> - Click to expand</summary>
 
-**New in v2.0.44:**
+**New in v2.0.46:**
+
+- ❄️ Opt-in **companion fan** for climate ACs — a per-entity toggle exposes the AC's fan as its own Matter fan endpoint, the setting is persisted, and fan-speed presets are now ordered low→high ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309))
+- 🌦️ **Weather domain support** — `weather.*` entities are exposed as a composed Temperature + Humidity + Pressure sensor read from the entity's attributes (pressure converted to hPa, shown on Google Home)
+- 🤖 **Vacuum service-area editing** — edit area data inline in Entity Mapping and dispatch room cleaning in batches, plus a batch-room-data fix ([#291](https://github.com/RiDDiX/home-assistant-matter-hub/issues/291))
+- 🔒 **Door Lock credential hardening** — safer access-code handling and fabric-index casting on the lock cluster ([#313](https://github.com/RiDDiX/home-assistant-matter-hub/issues/313))
+- ⚡ **Skip unchanged endpoints on HA updates** — only endpoints whose entity or a mapped sub-entity actually changed are refreshed, so CPU no longer scales with entity count × event rate ([#351](https://github.com/RiDDiX/home-assistant-matter-hub/issues/351))
+- 🔌 **Registry stays resilient when HA drops** — an initial reload failure no longer puts the add-on in a restart loop on a flaky HA boot, and a mid-flight "Connection lost" retries once ([#352](https://github.com/RiDDiX/home-assistant-matter-hub/issues/352))
+- 🔁 **RVC sessions refreshed safely** so vacuum reactors don't go stale ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287))
+- 🪟 **Tilt-only covers** use the tilt channel for lift commands ([#350](https://github.com/RiDDiX/home-assistant-matter-hub/issues/350))
+- 🔋 **Battery auto-mapping narrowed** to avoid false matches, plus support for enum battery states ([#359](https://github.com/RiDDiX/home-assistant-matter-hub/issues/359))
+- 🔘 **`automation` entities are momentary** — turning one on triggers it and snaps back to off ([#364](https://github.com/RiDDiX/home-assistant-matter-hub/issues/364))
+- 🌀 **Climate swing-mode handling fix**
+- 🚨 **Non-5540 Alexa bridge warning** — a bridge on any other port now warns, since Alexa only pairs on port 5540
+- 🧵 **matter.js 0.17.0** — upgraded from 0.16.11; the local LG-TV NOC-serial patch is dropped because upstream now tolerates 21-octet operational cert serials ([#305](https://github.com/RiDDiX/home-assistant-matter-hub/issues/305))
+- 🧰 Build/runtime fixes — `bun:sqlite` `constants` export stubbed so the esbuild bundle builds against matter.js 0.17.0, add-on heap flag preserved ([#358](https://github.com/RiDDiX/home-assistant-matter-hub/issues/358))
+- ⬆️ Dependency vulnerabilities resolved
+- 📝 Docs — `hvac_action` requirement for the Auto running-state display ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)), Google Home ModeSelect label gap ([#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356)), Alexa cover-routine limitation ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312)), and the new weather domain
+
+**Previously in v2.0.45 (hotfix release):**
+
+- ⌨️ Typed text now binds in the entity-id autocomplete, so a partial entity id isn't dropped when you pick a suggestion ([#348](https://github.com/RiDDiX/home-assistant-matter-hub/issues/348))
+
+**Previously in v2.0.44:**
 
 - 🪟 Cover reliability overhaul — Matter state/target/current reports split and correctly ordered, deferred target writes de-duplicated, legacy position attributes dropped from updates, cluster profile aligned with the certified Eve blind, current position held during external motion ([#328](https://github.com/RiDDiX/home-assistant-matter-hub/issues/328))
 - 🎚️ Per-bridge and per-entity cover slider debounce, window widened to 300 ms for smoother slider control ([#331](https://github.com/RiDDiX/home-assistant-matter-hub/issues/331))
@@ -170,7 +193,7 @@ of port forwarding etc.
 <details>
 <summary><strong>🧪 Alpha Features (v2.1.0-alpha.x)</strong> - Click to expand</summary>
 
-**Alpha is currently level with Stable (v2.0.44).** All alpha work up to the latest pre-release has been promoted into v2.0.44. New alpha work continues from the next pre-release tag onward and will appear here as development progresses.
+**Alpha is currently level with Stable (v2.0.46).** All alpha work up to the latest pre-release has been promoted into v2.0.46. New alpha work continues from the next pre-release tag onward and will appear here as development progresses.
 
 </details>
 

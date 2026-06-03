@@ -10,3 +10,4 @@ export * from "./media-player.js";
 export * from "./sensor.js";
 export * from "./vacuum.js";
 export * from "./water-heater.js";
+export * from "./weather.js";

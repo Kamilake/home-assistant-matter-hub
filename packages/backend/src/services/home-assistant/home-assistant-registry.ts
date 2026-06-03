@@ -67,7 +67,17 @@ export class HomeAssistantRegistry extends Service {
   }
 
   protected override async initialize(): Promise<void> {
-    await this.reload();
+    try {
+      await this.reload();
+    } catch (e) {
+      // HA's WS endpoint can drop in-flight queries during HA's own startup,
+      // and after maxAttempts withRetry gives up. Start empty rather than
+      // tear down the addon. enableAutoRefresh keeps trying every tick.
+      logger.warn(
+        "Initial registry fetch failed, starting empty and relying on auto-refresh:",
+        e,
+      );
+    }
   }
 
   override async dispose(): Promise<void> {
@@ -121,31 +131,45 @@ export class HomeAssistantRegistry extends Service {
   }
 
   private async fetchRegistries(): Promise<boolean> {
-    const connection = this.client.connection;
-
-    // Wait for the WS connection to be live before sending commands.
-    // The HA WS library auto-reconnects on drop, but commands sent
-    // while disconnected fail immediately with ERR_CONNECTION_LOST.
-    if (!connection.connected) {
-      logger.debug("Connection not ready, waiting for reconnect...");
-      await new Promise<void>((resolve) => {
-        const timeout = setTimeout(() => {
-          connection.removeEventListener("ready", onReady);
-          resolve();
-        }, 30_000);
-        const onReady = () => {
-          clearTimeout(timeout);
-          connection.removeEventListener("ready", onReady);
-          resolve();
-        };
-        connection.addEventListener("ready", onReady);
-        if (connection.connected) {
-          clearTimeout(timeout);
-          connection.removeEventListener("ready", onReady);
-          resolve();
-        }
-      });
+    await this.waitForConnection(30_000);
+    try {
+      return await this.runRegistryQueries();
+    } catch (e) {
+      if (!isConnectionLost(e)) throw e;
+      // WS dropped mid-flight; the library auto-reconnects. Wait for the
+      // next 'ready' and try once more before this attempt is consumed
+      // by withRetry's backoff.
+      logger.debug("Registry fetch hit connection drop, waiting for reconnect");
+      await this.waitForConnection(60_000);
+      return await this.runRegistryQueries();
     }
+  }
+
+  private async waitForConnection(timeoutMs: number): Promise<void> {
+    const connection = this.client.connection;
+    if (connection.connected) return;
+    logger.debug("Connection not ready, waiting for reconnect...");
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        connection.removeEventListener("ready", onReady);
+        resolve();
+      }, timeoutMs);
+      const onReady = () => {
+        clearTimeout(timeout);
+        connection.removeEventListener("ready", onReady);
+        resolve();
+      };
+      connection.addEventListener("ready", onReady);
+      if (connection.connected) {
+        clearTimeout(timeout);
+        connection.removeEventListener("ready", onReady);
+        resolve();
+      }
+    });
+  }
+
+  private async runRegistryQueries(): Promise<boolean> {
+    const connection = this.client.connection;
 
     // Fire the five HA queries in parallel. Label and area registries aren't
     // guaranteed on older HA versions, catch and fall back to empty arrays
@@ -230,6 +254,13 @@ export class HomeAssistantRegistry extends Service {
 
     return true;
   }
+}
+
+function isConnectionLost(e: unknown): boolean {
+  if (e instanceof Error && e.message.includes("Connection lost")) return true;
+  const inner = (e as { error?: { code?: number; message?: string } } | null)
+    ?.error;
+  return inner?.code === 3 || inner?.message === "Connection lost";
 }
 
 function mockDeviceId(entityId: string) {

@@ -361,6 +361,7 @@ export function matterApi(
       "light",
       "switch",
       "sensor",
+      "weather",
       "binary_sensor",
       "climate",
       "cover",

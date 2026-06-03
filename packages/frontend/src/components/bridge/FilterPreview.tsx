@@ -58,6 +58,7 @@ const domainToMatterType: Record<string, string> = {
   select: "Mode Select",
   input_select: "Mode Select",
   siren: "On/Off Plug-in Unit",
+  weather: "Sensor",
 };
 
 const tryParseJson = (text: string): unknown => {

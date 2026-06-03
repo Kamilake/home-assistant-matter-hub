@@ -66,7 +66,7 @@ export function FanDevice(
     return onOffDevice.set({ homeAssistantEntity });
   }
 
-  const features: FeatureSelection<FanControl.Cluster> = new Set();
+  const features: FeatureSelection<typeof FanControl.Cluster> = new Set();
 
   // Enable MultiSpeed and Step for fans with percentage control OR preset modes
   // For preset-only fans, speeds are mapped to preset modes (Low/Medium/High etc.)
