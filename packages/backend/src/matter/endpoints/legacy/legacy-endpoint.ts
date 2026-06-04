@@ -27,6 +27,7 @@ import { ComposedAirPurifierEndpoint } from "../composed/composed-air-purifier-e
 import { ComposedClimateFanEndpoint } from "../composed/composed-climate-fan-endpoint.js";
 import { ComposedSensorEndpoint } from "../composed/composed-sensor-endpoint.js";
 import { UserComposedEndpoint } from "../composed/user-composed-endpoint.js";
+import { asStandaloneEndpointType } from "../standalone-endpoint-type.js";
 import { createLegacyEndpointType } from "./create-legacy-endpoint-type.js";
 import { supportsCleaningModes } from "./vacuum/behaviors/vacuum-rvc-clean-mode-server.js";
 
@@ -41,6 +42,7 @@ export class LegacyEndpoint extends EntityEndpoint {
     entityId: string,
     mapping?: EntityMappingConfig,
     pluginDomainMappings?: Map<string, string>,
+    standalone = false,
   ): Promise<LegacyEndpoint | undefined> {
     const deviceRegistry = registry.deviceOf(entityId);
     let state = registry.initialState(entityId);
@@ -498,13 +500,17 @@ export class LegacyEndpoint extends EntityEndpoint {
     }
 
     const areaName = registry.getAreaName(entityId);
-    const type = createLegacyEndpointType(payload, effectiveMapping, areaName, {
+    let type = createLegacyEndpointType(payload, effectiveMapping, areaName, {
       vacuumOnOff: registry.isVacuumOnOffEnabled(),
       cleaningModeOptions,
       pluginDomainMappings,
     });
     if (!type) {
       return;
+    }
+    // server mode: present the device on its own node, not as a bridged child
+    if (standalone) {
+      type = asStandaloneEndpointType(type);
     }
     const customName = effectiveMapping?.customName;
     const mappedIds = getMappedEntityIds(effectiveMapping);

@@ -216,12 +216,14 @@ export class ServerModeEndpointManager extends Service {
         return;
       }
 
-      // For other entity types, fall back to LegacyEndpoint (bridged)
-      // Note: Server mode is primarily designed for vacuums
+      // Other domains: same endpoint, but standalone so it sits on its own
+      // node instead of looking like a bridged child device.
       const endpoint = await LegacyEndpoint.create(
         this.registry,
         entityId,
         mapping,
+        undefined,
+        true,
       );
 
       if (!endpoint) {
