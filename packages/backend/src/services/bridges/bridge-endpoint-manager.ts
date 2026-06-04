@@ -24,6 +24,10 @@ import { EntityIsolationService } from "./entity-isolation-service.js";
 
 const MAX_ENTITY_ID_LENGTH = 150;
 
+// Keep an endpoint this long after its entity leaves the registry, so a
+// transient HA restart does not erase its persisted number and drop groups.
+const ENDPOINT_REMOVAL_GRACE_MS = 60_000;
+
 // matter.js Observable is dynamically typed per endpoint.
 // biome-ignore lint/suspicious/noExplicitAny: matter.js Observable has no static type
 type PluginObservable = any;
@@ -38,6 +42,9 @@ export class BridgeEndpointManager extends Service {
   private unsubscribe?: () => void;
   private _failedEntities: FailedEntity[] = [];
   private readonly mappingFingerprints = new Map<string, string>();
+  // entityId -> first time it went missing from the registry (grace window)
+  private readonly pendingRemovals = new Map<string, number>();
+  private removalRecheckTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly pluginEndpoints = new Map<string, Endpoint>();
   private readonly pluginStateUpdating = new Set<string>();
   private readonly pluginListeners = new Map<string, PluginListenerRef[]>();
@@ -332,7 +339,26 @@ export class BridgeEndpointManager extends Service {
       } catch (e) {
         this.log.error(`Failed to delete isolated endpoint:`, e);
       }
+      this.pendingRemovals.delete(endpoint.entityId);
+      this.mappingFingerprints.delete(endpoint.entityId);
     }
+  }
+
+  // refreshDevices only runs on registry-fingerprint changes, which may not
+  // recur, so drive any held removals to completion ourselves once the grace
+  // window has passed.
+  private scheduleRemovalRecheck() {
+    if (this.removalRecheckTimer) {
+      clearTimeout(this.removalRecheckTimer);
+      this.removalRecheckTimer = null;
+    }
+    if (this.pendingRemovals.size === 0) return;
+    this.removalRecheckTimer = setTimeout(() => {
+      this.removalRecheckTimer = null;
+      this.refreshDevices().catch((e) =>
+        this.log.warn("Endpoint removal recheck failed:", e),
+      );
+    }, ENDPOINT_REMOVAL_GRACE_MS + 5_000);
   }
 
   private getPluginDomainMappings(): Map<string, string> | undefined {
@@ -359,6 +385,11 @@ export class BridgeEndpointManager extends Service {
 
   override async dispose(): Promise<void> {
     this.stopObserving();
+    if (this.removalRecheckTimer) {
+      clearTimeout(this.removalRecheckTimer);
+      this.removalRecheckTimer = null;
+    }
+    this.pendingRemovals.clear();
     EntityIsolationService.unregisterIsolationCallback(this.bridgeId);
     EntityIsolationService.clearIsolatedEntities(this.bridgeId);
 
@@ -454,14 +485,34 @@ export class BridgeEndpointManager extends Service {
     }
 
     const existingEndpoints: EntityEndpoint[] = [];
+    const now = Date.now();
     for (const endpoint of endpoints) {
-      if (!this.entityIds.includes(endpoint.entityId)) {
+      const present = this.entityIds.includes(endpoint.entityId);
+      if (present) {
+        this.pendingRemovals.delete(endpoint.entityId);
+      }
+      if (!present) {
+        // An entity can vanish from the registry briefly during an HA restart.
+        // delete() erases the persisted endpoint number, so controllers (Alexa)
+        // treat the recreated device as new and lose groups. Wait out a grace
+        // window before removing it for good.
+        const since = this.pendingRemovals.get(endpoint.entityId);
+        if (since == null) {
+          this.pendingRemovals.set(endpoint.entityId, now);
+          existingEndpoints.push(endpoint);
+          continue;
+        }
+        if (now - since < ENDPOINT_REMOVAL_GRACE_MS) {
+          existingEndpoints.push(endpoint);
+          continue;
+        }
         try {
           await endpoint.delete();
         } catch (e) {
           this.log.warn(`Failed to delete endpoint ${endpoint.entityId}:`, e);
         }
         this.mappingFingerprints.delete(endpoint.entityId);
+        this.pendingRemovals.delete(endpoint.entityId);
       } else if (
         this.registry.isAutoComposedDevicesEnabled() &&
         this.registry.isComposedSubEntityUsed(endpoint.entityId)
@@ -505,6 +556,8 @@ export class BridgeEndpointManager extends Service {
         }
       }
     }
+
+    this.scheduleRemovalRecheck();
 
     let memoryLimitReached = false;
 
