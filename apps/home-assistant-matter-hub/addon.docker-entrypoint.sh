@@ -3,7 +3,7 @@
 # Dynamically limit Node.js heap based on available container memory.
 # Docker containers may have cgroup memory limits that are lower than
 # the host's total RAM. We check (in order):
-#   1. cgroups v2 limit (/sys/fs/cgroup/memory.max) — used by HA OS
+#   1. cgroups v2 limit (/sys/fs/cgroup/memory.max), used by HA OS
 #   2. cgroups v1 limit (/sys/fs/cgroup/memory/memory.limit_in_bytes)
 #   3. MemAvailable from /proc/meminfo (actual free memory)
 #   4. MemTotal from /proc/meminfo (fallback)

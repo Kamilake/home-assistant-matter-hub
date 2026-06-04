@@ -301,7 +301,7 @@ const featureFlagSchema: JSONSchema7 = {
         "target. Set to the time the bridge should wait after the last update " +
         "before sending the final value to Home Assistant. 0 keeps the built-in " +
         "two-phase debounce (400 ms initial / 150 ms subsequent), which fits " +
-        "most controllers. Try 800–1500 ms for slow blinds. " +
+        "most controllers. Try 800-1500 ms for slow blinds. " +
         "A per-entity override on a single cover wins over this flag.",
       type: "number",
       minimum: 0,

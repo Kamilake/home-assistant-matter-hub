@@ -104,7 +104,7 @@ To express AND, stack lookaheads. To express OR, use alternation. Example: inclu
 (?=.*\bdomain=light\b)(?=.*\barea=living_room\b)|(?=.*\bdomain=switch\b)(?=.*\bentity_labels=.*\bvoice\b)
 ```
 
-`\b` anchors keep `domain=light` from matching `domain=lightning`. The same matcher also works in the `exclude` list — give it the inverse pattern.
+`\b` anchors keep `domain=light` from matching `domain=lightning`. The same matcher also works in the `exclude` list, just give it the inverse pattern.
 
 ### Device Name Filter
 

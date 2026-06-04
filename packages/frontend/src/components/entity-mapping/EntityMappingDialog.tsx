@@ -933,7 +933,7 @@ export function EntityMappingDialog({
               size="small"
               value={coverSliderDebounceMs}
               onChange={(e) => setCoverSliderDebounceMs(e.target.value)}
-              helperText="Override for slow blinds. 0 / empty uses bridge setting (default 400/150ms two-phase). Try 800–1500 for sluggish covers. Max 5000."
+              helperText="Override for slow blinds. 0 / empty uses bridge setting (default 400/150ms two-phase). Try 800-1500 for sluggish covers. Max 5000."
               slotProps={{ htmlInput: { min: 0, max: 5000, step: 50 } }}
               sx={{ mt: 1, display: "block" }}
             />
