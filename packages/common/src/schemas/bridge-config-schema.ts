@@ -383,10 +383,10 @@ export const bridgeConfigSchema: JSONSchema7 = {
       title: "Session Rotation Max Age (hours)",
       type: "number",
       description:
-        "Server Mode only. Rotate matter sessions older than this many hours " +
-        "so iPhone clients re-subscribe and Apple Home unsticks 'Updating' " +
-        "tiles. Set 0 to disable rotation. Range 0-168, default 4. (#287)",
-      default: 4,
+        "Rotate matter sessions older than this many hours so controllers " +
+        "re-establish and re-subscribe. Server Mode rotates every 4h by " +
+        "default; standard bridges only rotate when you set a value here. " +
+        "Set 0 to disable. Range 0 to 168. (#287)",
       minimum: 0,
       maximum: 168,
     },

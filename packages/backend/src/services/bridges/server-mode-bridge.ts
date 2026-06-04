@@ -15,6 +15,13 @@ import type {
   BridgeServerStatus,
 } from "./bridge-data-provider.js";
 import type { ServerModeEndpointManager } from "./server-mode-endpoint-manager.js";
+import {
+  DEFAULT_SESSION_MAX_AGE_HOURS,
+  parseSessionMaxAgeHours,
+  ROTATION_CHECK_INTERVAL_MS,
+  SESSION_MAX_AGE_HOURS_RANGE,
+  seedExistingSessionStarts,
+} from "./session-rotation.js";
 
 // Auto Force Sync interval in milliseconds (90 seconds).
 // When autoForceSync is enabled, this pushes changed entity states to
@@ -27,38 +34,6 @@ const AUTO_FORCE_SYNC_INTERVAL_MS = 90_000;
 // where the controller holds a stale CASE session and never re-subscribes
 // because it doesn't know the server canceled its subscriptions (#266).
 const DEAD_SESSION_TIMEOUT_MS = 60_000;
-
-// Rotate sessions so iPhone re-subscribes and the tile unsticks (#287).
-export const DEFAULT_SESSION_MAX_AGE_HOURS = 4;
-export const SESSION_MAX_AGE_HOURS_RANGE = { min: 1, max: 168 };
-const ROTATION_CHECK_INTERVAL_MS = 5 * 60 * 1000;
-
-// Returns the parsed hours, 0 (disabled), or null when the raw value is
-// malformed and the caller should log + fall back to the default.
-export function parseSessionMaxAgeHours(
-  raw: string | undefined | null,
-): number | null {
-  if (raw == null || raw === "") return DEFAULT_SESSION_MAX_AGE_HOURS;
-  const n = Number.parseInt(raw, 10);
-  if (Number.isNaN(n) || n < 0) return null;
-  if (n === 0) return 0;
-  const { min, max } = SESSION_MAX_AGE_HOURS_RANGE;
-  if (n < min) return min;
-  if (n > max) return max;
-  return n;
-}
-
-export function seedExistingSessionStarts(
-  startedAt: Map<number, number>,
-  sessions: Iterable<{ id: number }>,
-  now = Date.now(),
-): void {
-  for (const session of sessions) {
-    if (!startedAt.has(session.id)) {
-      startedAt.set(session.id, now);
-    }
-  }
-}
 
 export function makeWarmStartState<T extends { last_updated?: string }>(
   state: T,

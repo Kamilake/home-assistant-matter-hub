@@ -16,6 +16,12 @@ import type {
   BridgeServerStatus,
 } from "./bridge-data-provider.js";
 import type { BridgeEndpointManager } from "./bridge-endpoint-manager.js";
+import {
+  parseSessionMaxAgeHours,
+  ROTATION_CHECK_INTERVAL_MS,
+  SESSION_MAX_AGE_HOURS_RANGE,
+  seedExistingSessionStarts,
+} from "./session-rotation.js";
 
 // Auto Force Sync interval in milliseconds (90 seconds).
 // When autoForceSync is enabled, this pushes changed entity states to
@@ -46,6 +52,12 @@ export class Bridge {
   private autoForceSyncTimer: ReturnType<typeof setInterval> | null = null;
   private deadSessionTimer: ReturnType<typeof setTimeout> | null = null;
   private staleSessionTimers = new Map<number, ReturnType<typeof setTimeout>>();
+
+  // Age-based session rotation (#287): track when each session opened so an
+  // aged controller session can be rotated, forcing it to re-subscribe.
+  private sessionStartedAt = new Map<number, number>();
+  private rotationTimer: ReturnType<typeof setInterval> | null = null;
+  private maxSessionAgeMs = 0;
 
   // Serialize concurrent lifecycle calls so auto-recovery and a manual
   // restartBridge can't race past each other's Starting/Stopping states.
@@ -270,6 +282,7 @@ export class Bridge {
       }
 
       this.wireSessionDiagnostics();
+      this.startSessionRotation();
       logMemoryUsage(this.log, "bridge running");
       diagnosticEventBus.emit("bridge_started", `Bridge started`, {
         bridgeId: this.id,
@@ -343,6 +356,7 @@ export class Bridge {
   private wireSessionDiagnostics() {
     try {
       const sessionManager = this.server.env.get(SessionManager);
+      seedExistingSessionStarts(this.sessionStartedAt, sessionManager.sessions);
       this.sessionDiagHandler = (session: {
         id: number;
         peerNodeId: unknown;
@@ -420,6 +434,7 @@ export class Bridge {
         peerNodeId: unknown;
         fabric?: { fabricIndex: unknown };
       }) => {
+        this.sessionStartedAt.set(newSession.id, Date.now());
         this.log.info(
           `Session opened: id=${newSession.id} peer=${newSession.peerNodeId}`,
         );
@@ -457,6 +472,7 @@ export class Bridge {
         id: number;
         peerNodeId: unknown;
       }) => {
+        this.sessionStartedAt.delete(session.id);
         const sessions = [...sessionManager.sessions];
         this.log.warn(
           `Session closed: id=${session.id} peer=${session.peerNodeId} | remaining sessions=${sessions.length}`,
@@ -577,6 +593,8 @@ export class Bridge {
       clearTimeout(timer);
     }
     this.staleSessionTimers.clear();
+    this.stopSessionRotation();
+    this.sessionStartedAt.clear();
   }
 
   private stopAutoForceSync() {
@@ -586,13 +604,110 @@ export class Bridge {
     }
   }
 
+  // Start periodic age-based session rotation (#287). Aging out a controller's
+  // session forces it to re-establish and re-subscribe, recovering a wedged
+  // Alexa subscription that would otherwise stay stuck until a restart.
+  private startSessionRotation() {
+    this.stopSessionRotation();
+    const hours = this.readSessionMaxAgeHours();
+    if (hours === 0) {
+      this.log.info(
+        "Session rotation disabled (HAMH_MATTER_SESSION_MAX_AGE_HOURS=0)",
+      );
+      return;
+    }
+    this.maxSessionAgeMs = hours * 60 * 60 * 1000;
+    this.rotationTimer = setInterval(
+      () => this.rotateAgedSessions(),
+      ROTATION_CHECK_INTERVAL_MS,
+    );
+    this.log.info(
+      `Session rotation: max age ${hours}h, check every ${ROTATION_CHECK_INTERVAL_MS / 60_000}min`,
+    );
+  }
+
+  private stopSessionRotation() {
+    if (this.rotationTimer) {
+      clearInterval(this.rotationTimer);
+      this.rotationTimer = null;
+    }
+  }
+
+  // Resolve the rotation max age. Bridge config wins, then the env var. An
+  // aggregator bridge holds many devices on one controller session, so
+  // rotating it re-subscribes them all at once. Rotation is therefore opt-in
+  // here: it stays disabled unless set via config or the env var.
+  private readSessionMaxAgeHours(): number {
+    const { min, max } = SESSION_MAX_AGE_HOURS_RANGE;
+    const fromConfig = this.dataProvider.sessionMaxAgeHours;
+    if (fromConfig != null && Number.isFinite(fromConfig) && fromConfig >= 0) {
+      if (fromConfig === 0) return 0;
+      if (fromConfig < min) return min;
+      if (fromConfig > max) return max;
+      return fromConfig;
+    }
+    const raw = process.env.HAMH_MATTER_SESSION_MAX_AGE_HOURS;
+    if (raw == null || raw === "") {
+      return 0;
+    }
+    const parsed = parseSessionMaxAgeHours(raw);
+    if (parsed == null) {
+      this.log.warn(
+        `Invalid HAMH_MATTER_SESSION_MAX_AGE_HOURS=${raw}, disabling session rotation`,
+      );
+      return 0;
+    }
+    return parsed;
+  }
+
+  // Gracefully close sessions older than maxSessionAgeMs that still hold
+  // subscriptions, so the controller re-establishes CASE and re-subscribes.
+  // 0-sub sessions are handled by the dead/stale-session path.
+  private rotateAgedSessions() {
+    if (this.maxSessionAgeMs === 0) return;
+    try {
+      const sessionManager = this.server.env.get(SessionManager);
+      const now = Date.now();
+      const closes: Promise<void>[] = [];
+      for (const s of [...sessionManager.sessions]) {
+        const startedAt = this.sessionStartedAt.get(s.id);
+        if (startedAt == null) continue;
+        const ageMs = now - startedAt;
+        if (
+          ageMs < this.maxSessionAgeMs ||
+          s.isClosing ||
+          s.subscriptions.size === 0
+        ) {
+          continue;
+        }
+        const ageMin = Math.round(ageMs / 60_000);
+        this.log.info(
+          `Rotating session ${s.id} (peer ${s.peerNodeId}, age ${ageMin}min, subs ${s.subscriptions.size})`,
+        );
+        closes.push(
+          s.initiateClose().catch(() => {
+            return s.initiateForceClose({
+              cause: new Error("session rotation, forcing"),
+            });
+          }),
+        );
+      }
+      if (closes.length > 0) {
+        Promise.allSettled(closes).then(() => this.triggerMdnsReAnnounce());
+      }
+    } catch {
+      // SessionManager may be disposed
+    }
+  }
+
   async update(update: UpdateBridgeRequest) {
     try {
       this.dataProvider.update(update);
       await this.refreshDevices();
-      // Re-evaluate auto force sync setting after config update
+      // Re-evaluate auto force sync and session rotation after config update
       if (this.status.code === BridgeStatus.Running) {
         this.startAutoForceSyncIfEnabled();
+        this.startSessionRotation();
       }
     } catch (e) {
       const reason = "Failed to update bridge due to error:";

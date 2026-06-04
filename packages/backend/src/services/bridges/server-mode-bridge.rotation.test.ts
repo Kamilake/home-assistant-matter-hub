@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { makeWarmStartState } from "./server-mode-bridge.js";
 import {
   DEFAULT_SESSION_MAX_AGE_HOURS,
-  makeWarmStartState,
   parseSessionMaxAgeHours,
   SESSION_MAX_AGE_HOURS_RANGE,
   seedExistingSessionStarts,
-} from "./server-mode-bridge.js";
+} from "./session-rotation.js";
 
 describe("parseSessionMaxAgeHours", () => {
   it("returns the default when raw is undefined", () => {
