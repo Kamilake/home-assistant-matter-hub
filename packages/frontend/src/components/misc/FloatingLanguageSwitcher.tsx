@@ -24,6 +24,7 @@ const BUILT_IN_LANGUAGES: LanguageOption[] = [
   { code: "fr", flag: "🇫🇷", name: "Français" },
   { code: "es", flag: "🇪🇸", name: "Español" },
   { code: "it", flag: "🇮🇹", name: "Italiano" },
+  { code: "hu", flag: "🇭🇺", name: "Magyar" },
   { code: "zh", flag: "🇨🇳", name: "中文" },
   { code: "zh-TW", flag: "🇹🇼", name: "繁體中文" },
   { code: "ja", flag: "🇯🇵", name: "日本語" },

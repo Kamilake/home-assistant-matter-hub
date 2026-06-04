@@ -5,6 +5,7 @@ import de from "./locales/de.json";
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import fr from "./locales/fr.json";
+import hu from "./locales/hu.json";
 import it from "./locales/it.json";
 import ja from "./locales/ja.json";
 import pl from "./locales/pl.json";
@@ -97,6 +98,7 @@ i18n
     resources: {
       en: { translation: en },
       de: { translation: de },
+      hu: { translation: hu },
       fr: { translation: fr },
       it: { translation: it },
       ja: { translation: ja },
