@@ -302,13 +302,23 @@ export class ServerModeVacuumEndpoint extends EntityEndpoint {
     }, 55_000);
   }
 
-  override async delete() {
+  private clearTimers(): void {
     if (this.keepaliveTimer) {
       clearInterval(this.keepaliveTimer);
       this.keepaliveTimer = undefined;
     }
     this.flushUpdate.clear();
+  }
+
+  // dispose calls close(), not delete(), so clean up in both
+  override async delete() {
+    this.clearTimers();
     await super.delete();
+  }
+
+  override async close() {
+    this.clearTimers();
+    await super.close();
   }
 
   /**
