@@ -62,6 +62,7 @@
   "nav": {
     "bridges": "Bridges",
     "devices": "All Devices",
+    "standaloneDevices": "Standalone Devices",
     "health": "Health & Diagnostics",
     "diagnostics": "Live Events",
     "settings": "Settings",
@@ -73,6 +74,22 @@
     "systemLogs": "System Logs",
     "lightMode": "Light Mode",
     "darkMode": "Dark Mode"
+  },
+  "standaloneDevices": {
+    "title": "Standalone Devices",
+    "subtitle": "Each device runs on its own Matter node with its own pairing code, instead of inside a bridge.",
+    "create": "Add device",
+    "name": "Name",
+    "entity": "Entity",
+    "entityHelp": "Exactly one entity is exposed as this device.",
+    "creating": "Creating",
+    "empty": "No standalone devices yet. Add one to expose a single entity as its own Matter device.",
+    "noEntity": "no entity",
+    "openBridge": "Open details and pairing",
+    "created": "Standalone device created",
+    "createFailed": "Could not create device",
+    "deleted": "Standalone device deleted",
+    "deleteFailed": "Could not delete device"
   },
   "status": {
     "error": "Error",

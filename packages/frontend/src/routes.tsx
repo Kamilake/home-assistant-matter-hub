@@ -14,6 +14,7 @@ import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { NetworkMapPage } from "./pages/network-map/NetworkMapPage.tsx";
 import { PluginsPage } from "./pages/plugins/PluginsPage.tsx";
 import { SettingsPage } from "./pages/settings/SettingsPage.tsx";
+import { StandaloneDevicesPage } from "./pages/standalone-devices/StandaloneDevicesPage.tsx";
 import { StartupPage } from "./pages/startup/StartupPage.tsx";
 
 const documentationUrl = "https://riddix.github.io/home-assistant-matter-hub";
@@ -25,6 +26,7 @@ export const navigation = {
   areaSetup: "/bridges/area-setup",
   editBridge: (bridgeId: string) => `/bridges/${bridgeId}/edit`,
   devices: "/devices",
+  standaloneDevices: "/standalone-devices",
   networkMap: "/network-map",
   health: "/health",
   labels: "/labels",
@@ -57,6 +59,10 @@ export const routes: RouteObject[] = [
       { path: navigation.bridge(":bridgeId"), element: <BridgeDetailsPage /> },
       { path: navigation.editBridge(":bridgeId"), element: <EditBridgePage /> },
       { path: navigation.devices, element: <DevicesPage /> },
+      {
+        path: navigation.standaloneDevices,
+        element: <StandaloneDevicesPage />,
+      },
       { path: navigation.networkMap, element: <NetworkMapPage /> },
       { path: navigation.health, element: <HealthPage /> },
       { path: navigation.labels, element: <LabelsPage /> },

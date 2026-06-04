@@ -11,6 +11,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import MenuIcon from "@mui/icons-material/Menu";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import RouterIcon from "@mui/icons-material/Router";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -68,6 +69,11 @@ export const AppTopBar = () => {
     },
     { label: t("nav.bridges"), icon: <HubIcon />, to: navigation.bridges },
     { label: t("nav.devices"), icon: <DevicesIcon />, to: navigation.devices },
+    {
+      label: t("nav.standaloneDevices", "Standalone Devices"),
+      icon: <RouterIcon />,
+      to: navigation.standaloneDevices,
+    },
     {
       label: t("nav.networkMap"),
       icon: <AccountTreeIcon />,

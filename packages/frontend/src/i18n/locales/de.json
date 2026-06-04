@@ -62,6 +62,7 @@
   "nav": {
     "bridges": "Bridges",
     "devices": "Alle Geräte",
+    "standaloneDevices": "Eigenständige Geräte",
     "health": "Status & Diagnose",
     "diagnostics": "Live-Ereignisse",
     "settings": "Einstellungen",
@@ -73,6 +74,22 @@
     "systemLogs": "Systemlogs",
     "lightMode": "Heller Modus",
     "darkMode": "Dunkler Modus"
+  },
+  "standaloneDevices": {
+    "title": "Eigenständige Geräte",
+    "subtitle": "Jedes Gerät läuft auf einem eigenen Matter-Node mit eigenem Pairing-Code, statt in einer Bridge.",
+    "create": "Gerät hinzufügen",
+    "name": "Name",
+    "entity": "Entity",
+    "entityHelp": "Genau ein Entity wird als dieses Gerät bereitgestellt.",
+    "creating": "Wird erstellt",
+    "empty": "Noch keine eigenständigen Geräte. Füge eines hinzu, um ein einzelnes Entity als eigenes Matter-Gerät bereitzustellen.",
+    "noEntity": "kein Entity",
+    "openBridge": "Details und Pairing öffnen",
+    "created": "Eigenständiges Gerät erstellt",
+    "createFailed": "Gerät konnte nicht erstellt werden",
+    "deleted": "Eigenständiges Gerät gelöscht",
+    "deleteFailed": "Gerät konnte nicht gelöscht werden"
   },
   "status": {
     "error": "Fehler",
