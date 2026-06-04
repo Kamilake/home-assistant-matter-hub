@@ -278,6 +278,10 @@ export class ServerModeEndpointManager extends Service {
       mapping,
       friendlyName,
     );
+    const deviceType = this.deviceEndpoint?.type?.deviceType;
+    if (deviceType != null) {
+      await this.serverNode.updateAdvertisedDeviceType(deviceType);
+    }
   }
 
   /**

@@ -149,6 +149,16 @@ export class ServerModeServerNode extends ServerNode {
     }
   }
 
+  // align the pairing device-type hint with the real device (default is vacuum)
+  async updateAdvertisedDeviceType(deviceType: DeviceTypeId): Promise<void> {
+    try {
+      await this.set({ productDescription: { deviceType } });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      logger.warn(`Failed to set server-mode device type: ${msg}`);
+    }
+  }
+
   async factoryReset(): Promise<void> {
     await this.cancel();
     await this.erase();
