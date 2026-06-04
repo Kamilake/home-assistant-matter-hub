@@ -38,13 +38,13 @@ of port forwarding etc.
 | Channel | Branch | Current Version | Description |
 |---------|--------|-----------------|-------------|
 | **Stable** | `main` | v2.0.46 | Production-ready, recommended for most users |
-| **Alpha** | `alpha` | v2.1.0-alpha.x | Pre-release with new features, for early adopters |
+| **Alpha** | `alpha` | v2.1.0-alpha.x (next) | Currently level with Stable; next pre-release lands here first |
 | **Testing** | `testing` | v4.1.0-testing.x | ⚠️ **Highly unstable!** Experimental features, may break |
 
 ### Which version should I use?
 
 - **Most users**: Use **Stable** (`main` branch) - thoroughly tested
-- **Early adopters**: Use **Alpha** (`alpha` branch) - new features, occasional bugs
+- **Early adopters**: Use **Alpha** (`alpha` branch) - currently level with Stable until the next pre-release lands
 - **Developers/Testers**: Use **Testing** (`testing` branch) - bleeding edge, expect breakage
 
 ---

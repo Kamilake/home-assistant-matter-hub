@@ -227,7 +227,7 @@ See [#276](https://github.com/RiDDiX/home-assistant-matter-hub/issues/276) for d
 ## What's the difference between Stable and Alpha?
 
 - **Stable** (v2.0.46): Production-ready, recommended for daily use
-- **Alpha**: New features for testing, may contain bugs
+- **Alpha**: Currently level with Stable (v2.0.46); the next pre-release lands here first and may contain bugs
 
 See the [Alpha Features Guide](./guides/alpha-features.md) for details on alpha features.
 

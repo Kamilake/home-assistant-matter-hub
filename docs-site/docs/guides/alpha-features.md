@@ -31,7 +31,7 @@ docker run -d \
 
 ## Current Alpha Features
 
-All previously alpha-only features have been promoted to Stable. New alpha features will appear here as development continues.
+All previously alpha-only features have been promoted to Stable v2.0.46. The alpha channel is currently level with Stable; new alpha-only features will appear here again once the next pre-release is cut.
 
 For a complete list of all supported features and device types, see [Supported Device Types](../supported-device-types.md).
 
