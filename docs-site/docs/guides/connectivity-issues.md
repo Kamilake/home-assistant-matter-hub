@@ -97,17 +97,14 @@ Many routers, access points, and managed switches have features that **filter, t
 
 ### mDNS Network Interface Binding
 
-If your host has multiple network interfaces (e.g., `eth0`, `wlan0`, Docker bridges), Matter.js may advertise on the wrong interface. You can bind mDNS to a specific interface:
+On a host with several network interfaces (Docker bridges like `docker0` / `hassio` / `veth*`, the container's own bridge such as `eth0` on `172.16.x`, plus your real LAN NIC), Matter advertises its operational records on **all** of them and writes every interface address into those records. A controller can then latch onto a Docker-internal or otherwise unreachable address and show devices as **"No Response"** (Apple Home) or **"Offline"** (Google Home), even though pairing succeeded. A power outage or reboot can trigger this by reshuffling interfaces or addresses.
 
-**Add-on configuration:**
-```
---mdns-network-interface eth0
-```
+HAMH detects this at startup and, when Docker-internal interfaces are present, logs a warning that names your likely LAN interface. Bind mDNS to that LAN interface yourself (**not** a Docker one):
 
-Common interface names:
-- `eth0`, `end0`, `enp0s18`, Wired Ethernet
-- `wlan0`, Wi-Fi
-- Check with `ip addr` or `ifconfig` on your host
+- **HA OS add-on:** set the `mdns_network_interface` option to the LAN NIC (e.g. `end0`, `eth0`, `enp0s18`), not `docker0`, `hassio`, or any `veth*`.
+- **Plain container:** pass `--mdns-network-interface eth1` (your LAN NIC on `192.168.x`), not the Docker bridge (e.g. `eth0` on `172.16.x`), or run the container with `--network=host` (recommended for Matter).
+
+Check names and addresses with `ip addr`. After changing it on an add-on, **reboot HAOS** (not just the add-on) so mDNS re-reads addresses, then re-commission the bridge in your controller.
 
 ### Network Topology Best Practices
 

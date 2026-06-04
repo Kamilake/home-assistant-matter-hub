@@ -1,5 +1,6 @@
 import * as os from "node:os";
 import express from "express";
+import { selectMdnsInterface } from "../core/app/select-mdns-interface.js";
 
 export interface NetworkInterfaceInfo {
   name: string;
@@ -190,15 +191,27 @@ function runDiagnostics(
     });
   }
 
-  // Check 6: Multiple external interfaces (potential routing issues)
-  if (external.length > 1 && !mdnsInterface) {
-    checks.push({
-      name: "multiple_interfaces",
-      status: "warn",
-      message: `${external.length} external interfaces detected without explicit binding`,
-      detail:
-        "mDNS will broadcast on all interfaces. If controllers are on a specific VLAN, consider binding to a specific interface with --mdns-network-interface.",
-    });
+  // Check 6: Multiple external interfaces, often Docker-internal ones that make
+  // controllers show devices as offline (#361).
+  if (!mdnsInterface) {
+    const choice = selectMdnsInterface(os.networkInterfaces());
+    if (choice.suspicious || choice.external.length > 1) {
+      const suggestion = choice.selected
+        ? `Bind to "${choice.selected}" via mdns-network-interface.`
+        : `Set mdns-network-interface to your LAN interface (${choice.external
+            .map((i) => i.name)
+            .join(", ")}).`;
+      checks.push({
+        name: "multiple_interfaces",
+        status: "warn",
+        message: choice.suspicious
+          ? "mDNS is advertising on Docker-internal or extra interfaces, which can make controllers show devices as offline"
+          : `${choice.external.length} external interfaces detected without explicit binding`,
+        detail: choice.suspicious
+          ? `Matter bakes every interface address into its operational records, so controllers may pick an unreachable one. ${suggestion}`
+          : `mDNS will broadcast on all interfaces. If controllers are on a specific VLAN, ${suggestion}`,
+      });
+    }
   }
 
   return {
