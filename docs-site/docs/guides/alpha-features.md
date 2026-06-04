@@ -31,7 +31,7 @@ docker run -d \
 
 ## Current Alpha Features
 
-All previously alpha-only features have been promoted to Stable v2.0.46. The alpha channel is currently level with Stable; new alpha-only features will appear here again once the next pre-release is cut.
+- **Standalone Devices**: expose a single Home Assistant entity as its own Matter device with its own pairing code, managed from a dedicated page in the UI. Any device type can run standalone now, not only robot vacuums. See [Standalone Devices](../getting-started/standalone-devices.md).
 
 For a complete list of all supported features and device types, see [Supported Device Types](../supported-device-types.md).
 
