@@ -44,6 +44,14 @@ function isLinkLocal(family: string, address: string): boolean {
   return address.toLowerCase().startsWith("fe80");
 }
 
+// fe80::/10 link-local and fc00::/7 ULA IPv6 are reachable on the local link. A
+// global IPv6 advertised over mDNS can point a controller at an address it
+// cannot reach back on the LAN (#361).
+export function isLinkLocalOrUla(address: string): boolean {
+  const a = address.toLowerCase();
+  return /^fe[89ab]/.test(a) || /^f[cd]/.test(a);
+}
+
 export function selectMdnsInterface(raw: RawInterfaces): MdnsInterfaceChoice {
   const external: MdnsInterfaceAddrs[] = [];
   const dockerLike: string[] = [];

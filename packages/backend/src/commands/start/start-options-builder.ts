@@ -62,6 +62,12 @@ export function startOptionsBuilder(yargs: Argv): Argv<StartOptions> {
       type: "string",
       description: "Limit mDNS to this network interface",
     })
+    .option("mdns-strip-global-ipv6", {
+      type: "boolean",
+      default: false,
+      description:
+        "Drop global IPv6 (GUA) from mDNS so controllers use a locally reachable address (#361)",
+    })
     .option("home-assistant-url", {
       type: "string",
       description: "The HTTP-URL of your Home Assistant URL",

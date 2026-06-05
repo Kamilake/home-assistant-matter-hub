@@ -7,6 +7,7 @@ export interface StartOptions {
   "json-logs": boolean;
   "storage-location": string | undefined;
   "mdns-network-interface": string | undefined;
+  "mdns-strip-global-ipv6": boolean;
   "home-assistant-url": string;
   "home-assistant-access-token": string;
   "home-assistant-refresh-interval": number;

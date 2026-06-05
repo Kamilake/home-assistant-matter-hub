@@ -1,19 +1,26 @@
 import * as os from "node:os";
 import { Logger } from "@matter/general";
-import type { Environment } from "@matter/main";
+import { type Environment, Network } from "@matter/main";
 import { MdnsService } from "@matter/main/protocol";
-import { selectMdnsInterface } from "./select-mdns-interface.js";
+import { FilteredNetwork } from "./filtered-network.js";
+import {
+  isLinkLocalOrUla,
+  selectMdnsInterface,
+} from "./select-mdns-interface.js";
 
 const logger = Logger.get("Mdns");
 
 export interface MdnsOptions {
   ipv4: boolean;
   networkInterface?: string;
+  stripGlobalIpv6: boolean;
 }
 
 export function mdns(env: Environment, options: MdnsOptions) {
-  if (!options.networkInterface) {
-    warnIfMisadvertising();
+  if (options.stripGlobalIpv6) {
+    env.set(Network, new FilteredNetwork());
+  } else {
+    warnAboutAdvertising(options);
   }
   new MdnsService(env, {
     ipv4: options.ipv4,
@@ -21,14 +28,20 @@ export function mdns(env: Environment, options: MdnsOptions) {
   });
 }
 
-// With no interface configured, matter advertises on every interface and bakes
-// each address into the operational records, so controllers can pick an
-// unreachable Docker-internal address and show devices as offline (#361). We do
-// not auto-pick the interface (which one is the LAN cannot be told reliably),
-// but warn and suggest the LAN interface so the user can set it.
-function warnIfMisadvertising() {
+// Warn about advertised addresses controllers often cannot reach. A global IPv6
+// can be stripped with mdns-strip-global-ipv6 (#361); Docker-internal
+// interfaces are narrowed with mdns-network-interface.
+function warnAboutAdvertising(options: MdnsOptions) {
   const choice = selectMdnsInterface(os.networkInterfaces());
-  if (!choice.suspicious) {
+  const hasGlobalIpv6 = choice.external.some((i) =>
+    i.ipv6.some((a) => !isLinkLocalOrUla(a)),
+  );
+  if (hasGlobalIpv6) {
+    logger.warn(
+      "Matter mDNS is advertising a global IPv6 address that controllers may not reach on the LAN, so devices can show No Response (#361). Set mdns-strip-global-ipv6 if devices stay unreachable.",
+    );
+  }
+  if (options.networkInterface || !choice.suspicious) {
     return;
   }
   const suggestion = choice.selected

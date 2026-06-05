@@ -42,6 +42,7 @@ export class Options {
     return {
       ipv4: true,
       networkInterface: notEmpty(this.startOptions.mdnsNetworkInterface),
+      stripGlobalIpv6: this.startOptions.mdnsStripGlobalIpv6 ?? false,
     };
   }
 
