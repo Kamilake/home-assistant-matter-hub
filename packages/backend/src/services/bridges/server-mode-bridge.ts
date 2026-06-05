@@ -297,7 +297,7 @@ export class ServerModeBridge {
         for (const s of sessions) {
           totalSubs += s.subscriptions.size;
         }
-        this.log.info(
+        this.log.debug(
           `Session ${session.id} (peer ${session.peerNodeId}): subscriptions=${session.subscriptions.size} | total: sessions=${sessions.length} subscriptions=${totalSubs}`,
         );
         if (totalSubs === 0 && sessions.length > 0) {
