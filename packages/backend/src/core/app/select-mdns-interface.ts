@@ -20,6 +20,9 @@ export interface MdnsInterfaceChoice {
   readonly dockerLike: readonly string[];
   // True when a Docker-internal interface name or a Docker IPv4 range is seen.
   readonly suspicious: boolean;
+  // True when an external interface carries a global IPv6 that mDNS would
+  // advertise but a controller may not reach on the LAN (#361).
+  readonly hasGlobalIpv6: boolean;
 }
 
 type RawInterfaces = Record<
@@ -74,5 +77,8 @@ export function selectMdnsInterface(raw: RawInterfaces): MdnsInterfaceChoice {
   const selected = lan.length === 1 ? lan[0].name : undefined;
   const suspicious =
     dockerLike.length > 0 || external.some((i) => i.ipv4.some(inDockerRange));
-  return { selected, external, dockerLike, suspicious };
+  const hasGlobalIpv6 = external.some((i) =>
+    i.ipv6.some((a) => !isLinkLocalOrUla(a)),
+  );
+  return { selected, external, dockerLike, suspicious, hasGlobalIpv6 };
 }

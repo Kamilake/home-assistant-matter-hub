@@ -82,4 +82,24 @@ describe("selectMdnsInterface", () => {
     expect(choice.selected).toBe("br-lan");
     expect(choice.dockerLike).toEqual([]);
   });
+
+  it("flags a global IPv6 advertised on the LAN interface", () => {
+    const choice = selectMdnsInterface({
+      lo: [v4("127.0.0.1", true)],
+      end0: [
+        v4("10.0.0.209"),
+        v6("2601:647:c000:d8e0::2190"),
+        v6("fe80::fac5:cb1c:5a1:41a9"),
+      ],
+    });
+    expect(choice.hasGlobalIpv6).toBe(true);
+  });
+
+  it("does not flag a host with only link-local and ULA IPv6", () => {
+    const choice = selectMdnsInterface({
+      lo: [v4("127.0.0.1", true)],
+      eth0: [v4("192.168.1.5"), v6("fd00::5"), v6("fe80::5")],
+    });
+    expect(choice.hasGlobalIpv6).toBe(false);
+  });
 });

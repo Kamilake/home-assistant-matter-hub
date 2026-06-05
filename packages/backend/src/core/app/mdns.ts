@@ -3,10 +3,7 @@ import { Logger } from "@matter/general";
 import { type Environment, Network } from "@matter/main";
 import { MdnsService } from "@matter/main/protocol";
 import { FilteredNetwork } from "./filtered-network.js";
-import {
-  isLinkLocalOrUla,
-  selectMdnsInterface,
-} from "./select-mdns-interface.js";
+import { selectMdnsInterface } from "./select-mdns-interface.js";
 
 const logger = Logger.get("Mdns");
 
@@ -33,10 +30,7 @@ export function mdns(env: Environment, options: MdnsOptions) {
 // interfaces are narrowed with mdns-network-interface.
 function warnAboutAdvertising(options: MdnsOptions) {
   const choice = selectMdnsInterface(os.networkInterfaces());
-  const hasGlobalIpv6 = choice.external.some((i) =>
-    i.ipv6.some((a) => !isLinkLocalOrUla(a)),
-  );
-  if (hasGlobalIpv6) {
+  if (choice.hasGlobalIpv6) {
     logger.warn(
       "Matter mDNS is advertising a global IPv6 address that controllers may not reach on the LAN, so devices can show No Response (#361). Set mdns-strip-global-ipv6 if devices stay unreachable.",
     );
