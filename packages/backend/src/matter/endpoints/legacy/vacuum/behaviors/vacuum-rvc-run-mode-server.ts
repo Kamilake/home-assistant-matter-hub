@@ -147,6 +147,64 @@ function buildSupportedModes(
  * is fired instead of sequential per-area calls (opt-in, for integrations
  * like Xiaomi Home that accept all room IDs in one call).
  */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Combine the per-area values stored under one data key into a single batch
+ * value, without ever dropping a room id:
+ * - all equal: keep one
+ * - all arrays: concatenate
+ * - all plain objects: merge key by key (recurses, so nested room lists like
+ *   data.params.segments are concatenated instead of collapsed to the first)
+ * - all primitives: comma-join
+ * - mixed array/scalar: flatten into one array (room ids survive)
+ *
+ * The previous else-branch returned values[0], which silently kept only the
+ * first selected room when the room-bearing key was a nested object or a
+ * mixed array/scalar (#367).
+ */
+function mergeBatchValues(values: unknown[]): unknown {
+  if (values.length === 1) {
+    return values[0];
+  }
+  if (
+    values.every((value) => JSON.stringify(value) === JSON.stringify(values[0]))
+  ) {
+    return values[0];
+  }
+  if (values.every(Array.isArray)) {
+    return values.flat();
+  }
+  if (values.every(isPlainObject)) {
+    const keys = new Set(values.flatMap((value) => Object.keys(value)));
+    const merged: Record<string, unknown> = {};
+    for (const key of keys) {
+      const nested = values
+        .map((value) => value[key])
+        .filter((value) => value !== undefined);
+      if (nested.length > 0) {
+        merged[key] = mergeBatchValues(nested);
+      }
+    }
+    return merged;
+  }
+  if (
+    values.every(
+      (value) =>
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean",
+    )
+  ) {
+    return values.join(",");
+  }
+  // Mixed array/scalar (or otherwise incompatible): flatten into one array so
+  // every room id is preserved instead of dropping all but the first.
+  return values.flatMap((value) => (Array.isArray(value) ? value : [value]));
+}
+
 function mergeBatchData(areas: CustomServiceArea[]) {
   const dataEntries = areas.map((area) => area.data ?? {});
   const keys = new Set(dataEntries.flatMap((data) => Object.keys(data)));
@@ -158,26 +216,7 @@ function mergeBatchData(areas: CustomServiceArea[]) {
       .filter((value) => value !== undefined);
 
     if (values.length === 0) continue;
-    if (
-      values.every(
-        (value) => JSON.stringify(value) === JSON.stringify(values[0]),
-      )
-    ) {
-      data[key] = values[0];
-    } else if (values.every(Array.isArray)) {
-      data[key] = values.flat();
-    } else if (
-      values.every(
-        (value) =>
-          typeof value === "string" ||
-          typeof value === "number" ||
-          typeof value === "boolean",
-      )
-    ) {
-      data[key] = values.join(",");
-    } else {
-      data[key] = values[0];
-    }
+    data[key] = mergeBatchValues(values);
   }
 
   return data;

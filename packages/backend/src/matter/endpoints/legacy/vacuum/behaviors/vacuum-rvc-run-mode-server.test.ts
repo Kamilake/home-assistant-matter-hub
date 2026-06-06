@@ -84,6 +84,66 @@ describe("handleCustomServiceAreas", () => {
     expect(s.pendingDispatches).toEqual([]);
   });
 
+  it("concatenates nested room lists into one batch call (#367)", () => {
+    const s = session();
+    const nestedAreas: CustomServiceArea[] = [
+      {
+        name: "Kitchen",
+        service: "vacuum.send_command",
+        target: "vacuum.robot",
+        batchDispatch: true,
+        data: { params: { segments: [16] } },
+      },
+      {
+        name: "Living Room",
+        service: "vacuum.send_command",
+        target: "vacuum.robot",
+        batchDispatch: true,
+        data: { params: { segments: [17] } },
+      },
+      {
+        name: "Bedroom",
+        service: "vacuum.send_command",
+        target: "vacuum.robot",
+        batchDispatch: true,
+        data: { params: { segments: [18] } },
+      },
+    ];
+
+    const action = handleCustomServiceAreas([1, 2, 3], nestedAreas, s);
+
+    expect(action.data).toMatchObject({
+      params: { segments: [16, 17, 18] },
+      selected_area_ids: [1, 2, 3],
+    });
+    expect(s.pendingDispatches).toEqual([]);
+  });
+
+  it("flattens mixed array/scalar room data without dropping rooms (#367)", () => {
+    const s = session();
+    const mixedAreas: CustomServiceArea[] = [
+      {
+        name: "Kitchen",
+        service: "vacuum.send_command",
+        target: "vacuum.robot",
+        batchDispatch: true,
+        data: { rooms: [16] },
+      },
+      {
+        name: "Living Room",
+        service: "vacuum.send_command",
+        target: "vacuum.robot",
+        batchDispatch: true,
+        data: { rooms: 17 },
+      },
+    ];
+
+    const action = handleCustomServiceAreas([1, 2], mixedAreas, s);
+
+    expect(action.data).toMatchObject({ rooms: [16, 17] });
+    expect(s.pendingDispatches).toEqual([]);
+  });
+
   it("combines primitive batch data as comma-separated values", () => {
     const s = session();
     const notifyAreas: CustomServiceArea[] = [
