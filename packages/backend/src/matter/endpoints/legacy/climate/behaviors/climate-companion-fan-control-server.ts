@@ -3,51 +3,29 @@ import {
   ClimateHvacMode,
   type HomeAssistantEntityState,
 } from "@home-assistant-matter-hub/common";
-import type { Agent } from "@matter/main";
+import type { HomeAssistantAction } from "../../../../../services/home-assistant/home-assistant-actions.js";
 import {
   FanControlServer,
   type FanControlServerConfig,
 } from "../../../../behaviors/fan-control-server.js";
-import { HomeAssistantEntityBehavior } from "../../../../behaviors/home-assistant-entity-behavior.js";
 import { OnOffServer } from "../../../../behaviors/on-off-server.js";
 
 const attributes = (entity: HomeAssistantEntityState) =>
   entity.attributes as ClimateDeviceAttributes;
 
-// Preference order for the hvac_mode to restore when the companion Fan is
-// switched off: a real operating mode, never off or fan_only.
-const restoreModePreference: ClimateHvacMode[] = [
-  ClimateHvacMode.cool,
-  ClimateHvacMode.heat,
-  ClimateHvacMode.heat_cool,
-  ClimateHvacMode.auto,
-  ClimateHvacMode.dry,
-];
-
-/** Pick the hvac_mode to restore when the Fan is turned off. Exported for tests. */
-export function pickRestoreMode(
-  hvacModes: ClimateHvacMode[] | undefined,
-): ClimateHvacMode {
-  const modes = hvacModes ?? [];
-  for (const mode of restoreModePreference) {
-    if (modes.includes(mode)) {
-      return mode;
-    }
-  }
-  const fallback = modes.find(
-    (mode) => mode !== ClimateHvacMode.off && mode !== ClimateHvacMode.fan_only,
-  );
-  return fallback ?? ClimateHvacMode.cool;
+/**
+ * Action sent when the companion Fan is switched off. The Fan tile only drives
+ * the AC fan_only operation, so turning it off stops the AC instead of forcing
+ * a cooling or heating mode (#309). Cool and heat stay on the thermostat tile.
+ * Exported for tests.
+ */
+export function fanOffAction(): HomeAssistantAction {
+  return { action: "climate.turn_off" };
 }
 
 /** The companion Fan reads on only while the AC is in fan_only. Exported for tests. */
 export function isFanOnly(state: HomeAssistantEntityState): boolean {
   return state.state === ClimateHvacMode.fan_only;
-}
-
-function restoreModeFromAgent(agent: Agent): ClimateHvacMode {
-  const entity = agent.get(HomeAssistantEntityBehavior).entity;
-  return pickRestoreMode(attributes(entity.state).hvac_modes);
 }
 
 const config: FanControlServerConfig = {
@@ -69,11 +47,8 @@ const config: FanControlServerConfig = {
   supportsWind: () => false,
 
   // Fan on/off (including speed-zero) mirrors the OnOff cluster below:
-  // on => fan_only, off => restore a real mode so the AC keeps running.
-  turnOff: (_value, agent) => ({
-    action: "climate.set_hvac_mode",
-    data: { hvac_mode: restoreModeFromAgent(agent) },
-  }),
+  // on => fan_only, off => climate.turn_off so the Fan tile stops the AC.
+  turnOff: () => fanOffAction(),
   turnOn: () => ({
     action: "climate.set_hvac_mode",
     data: { hvac_mode: ClimateHvacMode.fan_only },
@@ -93,17 +68,14 @@ const config: FanControlServerConfig = {
 };
 
 // OnOff cluster owns the fan_only operation (the actual reporter intent in
-// #309): on => climate.set_hvac_mode fan_only, off => restore a real mode.
+// #309): on => climate.set_hvac_mode fan_only, off => climate.turn_off.
 export const ClimateCompanionFanOnOffServer = OnOffServer({
   isOn: (entity) => isFanOnly(entity),
   turnOn: () => ({
     action: "climate.set_hvac_mode",
     data: { hvac_mode: ClimateHvacMode.fan_only },
   }),
-  turnOff: (_value, agent) => ({
-    action: "climate.set_hvac_mode",
-    data: { hvac_mode: restoreModeFromAgent(agent) },
-  }),
+  turnOff: () => fanOffAction(),
 });
 
 const features: ("MultiSpeed" | "Step" | "Auto")[] = [
