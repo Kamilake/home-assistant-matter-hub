@@ -57,7 +57,7 @@ export function VacuumDevice(
 
   // Add RvcRunModeServer with initial supportedModes (including room modes if available).
   // Custom service areas are passed so they get registered as room modes.
-  // Apple Home uses RvcRunMode (not ServiceArea.selectAreas) for zone selection.
+  // Room modes are a fallback; Apple Home also uses ServiceArea.selectAreas (#317).
   const cleanAreaRooms = homeAssistantEntity.mapping?.cleanAreaRooms;
   let device = VacuumEndpointType.with(
     cleanAreaRooms && cleanAreaRooms.length > 0

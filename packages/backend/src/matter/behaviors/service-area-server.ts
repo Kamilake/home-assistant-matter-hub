@@ -53,6 +53,11 @@ export class ServiceAreaServerBase extends ServiceAreaWithProgress {
       status: ServiceArea.OperationalStatus.Pending,
     }));
 
+    // A fresh selection means the device is no longer operating in a
+    // previously cleaned area. A stale currentArea makes Apple Home treat
+    // the vacuum as busy and drop part of the new selection (#335, #367).
+    this.state.currentArea = null;
+
     logger.info(
       `ServiceArea: Stored ${uniqueAreas.length} areas for cleaning: ${uniqueAreas.join(", ")}`,
     );
@@ -151,6 +156,11 @@ class ServiceAreaServerWithMapsBase extends ServiceAreaWithMapsAndProgress {
       areaId,
       status: ServiceArea.OperationalStatus.Pending,
     }));
+
+    // A fresh selection means the device is no longer operating in a
+    // previously cleaned area. A stale currentArea makes Apple Home treat
+    // the vacuum as busy and drop part of the new selection (#335, #367).
+    this.state.currentArea = null;
 
     logger.info(
       `ServiceArea: Stored ${uniqueAreas.length} areas for cleaning: ${uniqueAreas.join(", ")}`,
