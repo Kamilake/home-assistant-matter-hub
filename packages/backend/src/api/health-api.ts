@@ -7,6 +7,13 @@ export interface SessionInfo {
   peerNodeId: string;
   fabricIndex: number | null;
   subscriptionCount: number;
+  // #365 diagnostics: tell a healthy session from a wedged one. lastActiveMsAgo
+  // is ms since the controller last sent us anything (resets on each keepalive
+  // ack); lastAnyActivityMsAgo is ms since any traffic in either direction.
+  lastActiveMsAgo: number | null;
+  lastAnyActivityMsAgo: number | null;
+  isPeerActive: boolean;
+  ageMsFromOpen: number | null;
 }
 
 export interface FabricSessionSummary {

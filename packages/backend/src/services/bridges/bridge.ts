@@ -95,6 +95,10 @@ export class Bridge {
       peerNodeId: string;
       fabricIndex: number | null;
       subscriptionCount: number;
+      lastActiveMsAgo: number | null;
+      lastAnyActivityMsAgo: number | null;
+      isPeerActive: boolean;
+      ageMsFromOpen: number | null;
     }>;
     totalSessions: number;
     totalSubscriptions: number;
@@ -128,11 +132,26 @@ export class Bridge {
           existing.subscriptions += subCount;
           fabricMap.set(fi, existing);
         }
+        // #365: per-session liveness so a wedged subscription (counted alive
+        // but the controller stopped processing) can be told from a healthy
+        // one. activeTimestamp advances only on inbound from the peer.
+        const nowMs = Date.now();
+        const lastActiveMsAgo =
+          typeof s.activeTimestamp === "number" && s.activeTimestamp > 0
+            ? nowMs - s.activeTimestamp
+            : null;
+        const lastAnyActivityMsAgo =
+          typeof s.timestamp === "number" ? nowMs - s.timestamp : null;
+        const startedAt = this.sessionStartedAt.get(s.id);
         return {
           id: s.id,
           peerNodeId: String(s.peerNodeId),
           fabricIndex: fi,
           subscriptionCount: subCount,
+          lastActiveMsAgo,
+          lastAnyActivityMsAgo,
+          isPeerActive: Boolean(s.isPeerActive),
+          ageMsFromOpen: startedAt != null ? nowMs - startedAt : null,
         };
       });
       const fabrics = [...fabricMap.entries()].map(([fabricIndex, data]) => ({

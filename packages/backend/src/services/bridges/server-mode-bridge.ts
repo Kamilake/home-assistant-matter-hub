@@ -98,6 +98,10 @@ export class ServerModeBridge {
       id: number;
       peerNodeId: string;
       subscriptionCount: number;
+      lastActiveMsAgo: number | null;
+      lastAnyActivityMsAgo: number | null;
+      isPeerActive: boolean;
+      ageMsFromOpen: number | null;
     }>;
     totalSessions: number;
     totalSubscriptions: number;
@@ -109,10 +113,23 @@ export class ServerModeBridge {
       const sessionList = sessions.map((s) => {
         const subCount = s.subscriptions.size;
         totalSubscriptions += subCount;
+        // #365: per-session liveness, mirrors Bridge.getSessionInfo.
+        const nowMs = Date.now();
+        const lastActiveMsAgo =
+          typeof s.activeTimestamp === "number" && s.activeTimestamp > 0
+            ? nowMs - s.activeTimestamp
+            : null;
+        const lastAnyActivityMsAgo =
+          typeof s.timestamp === "number" ? nowMs - s.timestamp : null;
+        const startedAt = this.sessionStartedAt.get(s.id);
         return {
           id: s.id,
           peerNodeId: String(s.peerNodeId),
           subscriptionCount: subCount,
+          lastActiveMsAgo,
+          lastAnyActivityMsAgo,
+          isPeerActive: Boolean(s.isPeerActive),
+          ageMsFromOpen: startedAt != null ? nowMs - startedAt : null,
         };
       });
       return {
