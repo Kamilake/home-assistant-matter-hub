@@ -4,7 +4,7 @@ import type {
   HomeAssistantEntityState,
 } from "@home-assistant-matter-hub/common";
 import { describe, expect, it } from "vitest";
-import { AutomationDevice } from "./index.js";
+import { InputButtonDevice } from "./index.js";
 
 function createEntity(
   entityId: string,
@@ -31,19 +31,14 @@ function createEntity(
   return { entity_id: entityId, registry, state: entityState };
 }
 
-describe("AutomationDevice OnOff mapping (#364)", () => {
-  it("uses momentary trigger semantics instead of disabling the automation", () => {
-    const endpointType = AutomationDevice({
-      entity: createEntity("automation.fan_speed_1_matter", "off"),
+describe("InputButtonDevice OnOff mapping", () => {
+  it("presses the button on turn on and never reports on", () => {
+    const endpointType = InputButtonDevice({
+      entity: createEntity("input_button.doorbell", "off"),
     } as never);
 
     // biome-ignore lint/suspicious/noExplicitAny: inspecting matter.js internals
-    const behaviors = (endpointType as any).behaviors as Record<
-      string,
-      unknown
-    >;
-    // biome-ignore lint/suspicious/noExplicitAny: inspecting matter.js internals
-    const onOff = behaviors.onOff as any;
+    const onOff = (endpointType as any).behaviors.onOff;
     const config = onOff.defaults.config as {
       isOn: () => boolean;
       turnOn: () => { action: string };
@@ -51,13 +46,13 @@ describe("AutomationDevice OnOff mapping (#364)", () => {
     };
 
     expect(config.isOn()).toBe(false);
-    expect(config.turnOn().action).toBe("automation.trigger");
+    expect(config.turnOn().action).toBe("input_button.press");
     expect(config.turnOff).toBeNull();
   });
 
   it("does not advertise the OnOff Lighting feature (#182 Alexa conformance)", () => {
-    const endpointType = AutomationDevice({
-      entity: createEntity("automation.fan_speed_1_matter", "off"),
+    const endpointType = InputButtonDevice({
+      entity: createEntity("input_button.doorbell", "off"),
     } as never);
 
     // biome-ignore lint/suspicious/noExplicitAny: inspecting matter.js internals
