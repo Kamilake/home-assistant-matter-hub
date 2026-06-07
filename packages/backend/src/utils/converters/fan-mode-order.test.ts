@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { toAscendingSpeedPresets } from "./fan-mode-order.js";
+import {
+  percentToPresetIndex,
+  toAscendingSpeedPresets,
+} from "./fan-mode-order.js";
 
 describe("toAscendingSpeedPresets (#309)", () => {
   it("leaves an already-ascending list unchanged", () => {
@@ -54,5 +57,44 @@ describe("toAscendingSpeedPresets (#309)", () => {
     expect(toAscendingSpeedPresets(["high", "fast"])).toEqual(["high", "fast"]);
     expect(toAscendingSpeedPresets(["high"])).toEqual(["high"]);
     expect(toAscendingSpeedPresets([])).toEqual([]);
+  });
+});
+
+describe("percentToPresetIndex (#369)", () => {
+  it("maps exact band boundaries to the matching preset (4 presets)", () => {
+    // Read reports quiet=25, low=50, medium=75, high=100, so the set must
+    // invert to the same preset, not the next one up.
+    expect(percentToPresetIndex(25, 4)).toBe(0);
+    expect(percentToPresetIndex(50, 4)).toBe(1);
+    expect(percentToPresetIndex(75, 4)).toBe(2);
+    expect(percentToPresetIndex(100, 4)).toBe(3);
+  });
+
+  it("keeps within-band percentages on the right preset (4 presets)", () => {
+    expect(percentToPresetIndex(1, 4)).toBe(0);
+    expect(percentToPresetIndex(24, 4)).toBe(0);
+    expect(percentToPresetIndex(26, 4)).toBe(1);
+    expect(percentToPresetIndex(49, 4)).toBe(1);
+    expect(percentToPresetIndex(51, 4)).toBe(2);
+    expect(percentToPresetIndex(99, 4)).toBe(3);
+  });
+
+  it("works for other preset counts", () => {
+    expect(percentToPresetIndex(33, 3)).toBe(0);
+    expect(percentToPresetIndex(34, 3)).toBe(1);
+    expect(percentToPresetIndex(66, 3)).toBe(1);
+    expect(percentToPresetIndex(67, 3)).toBe(2);
+    expect(percentToPresetIndex(100, 3)).toBe(2);
+    expect(percentToPresetIndex(50, 2)).toBe(0);
+    expect(percentToPresetIndex(51, 2)).toBe(1);
+    expect(percentToPresetIndex(100, 2)).toBe(1);
+    expect(percentToPresetIndex(1, 1)).toBe(0);
+    expect(percentToPresetIndex(100, 1)).toBe(0);
+  });
+
+  it("clamps and guards out-of-range input", () => {
+    expect(percentToPresetIndex(150, 4)).toBe(3);
+    expect(percentToPresetIndex(0, 4)).toBe(0);
+    expect(percentToPresetIndex(50, 0)).toBe(0);
   });
 });

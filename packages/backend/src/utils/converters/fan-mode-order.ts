@@ -74,3 +74,21 @@ export function toAscendingSpeedPresets(presets: string[]): string[] {
     .sort((a, b) => a.rank - b.rank || a.index - b.index)
     .map((entry) => entry.value);
 }
+
+/**
+ * Map a Matter rotation-speed percentage to a preset index. The read direction
+ * reports preset i as (i+1)/count * 100, so each preset's percentage is the
+ * upper edge of its band and a boundary value belongs to the lower preset
+ * (25% with four presets is the first, not the second). Same ceil-1 rule as
+ * FanMode.fromSpeedPercent (#369).
+ */
+export function percentToPresetIndex(
+  percentage: number,
+  count: number,
+): number {
+  if (count <= 0) {
+    return 0;
+  }
+  const index = Math.ceil((percentage / 100) * count) - 1;
+  return Math.max(0, Math.min(count - 1, index));
+}

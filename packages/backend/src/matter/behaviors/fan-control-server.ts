@@ -8,7 +8,10 @@ import {
 import { FanControl } from "@matter/main/clusters";
 import { applyPatchState } from "../../utils/apply-patch-state.js";
 import { FanMode } from "../../utils/converters/fan-mode.js";
-import { toAscendingSpeedPresets } from "../../utils/converters/fan-mode-order.js";
+import {
+  percentToPresetIndex,
+  toAscendingSpeedPresets,
+} from "../../utils/converters/fan-mode-order.js";
 import { FanSpeed } from "../../utils/converters/fan-speed.js";
 import { transactionIsOffline } from "../../utils/transaction-is-offline.js";
 import { HomeAssistantEntityBehavior } from "./home-assistant-entity-behavior.js";
@@ -412,9 +415,9 @@ export class FanControlServerBase extends FeaturedBase {
       );
 
       if (speedPresets.length > 0) {
-        const presetIndex = Math.min(
-          Math.floor((percentage / 100) * speedPresets.length),
-          speedPresets.length - 1,
+        const presetIndex = percentToPresetIndex(
+          percentage,
+          speedPresets.length,
         );
         const targetPreset = speedPresets[presetIndex];
         homeAssistant.callAction(
