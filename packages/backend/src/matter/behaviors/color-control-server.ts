@@ -105,6 +105,21 @@ export class ColorControlServerBase extends FeaturedBase {
       );
     }
 
+    // Drop stale hue/sat that an older matter.js persisted, else conformance
+    // rejects them on a color-temp-only light and the endpoint fails (#370).
+    if (!this.features.hueSaturation) {
+      const hsState = this.state as {
+        currentHue?: number;
+        currentSaturation?: number;
+      };
+      if (hsState.currentHue != null) {
+        hsState.currentHue = undefined;
+      }
+      if (hsState.currentSaturation != null) {
+        hsState.currentSaturation = undefined;
+      }
+    }
+
     if (this.features.hueSaturation) {
       // Default hue/saturation to 0 (red, no saturation = white)
       if (this.state.currentHue == null) {
