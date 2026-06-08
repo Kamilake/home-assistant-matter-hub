@@ -6,7 +6,7 @@ import {
   LightDeviceColorMode,
 } from "@home-assistant-matter-hub/common";
 import { Environment, VariableService } from "@matter/general";
-import { Endpoint } from "@matter/main";
+import { Endpoint, VendorId } from "@matter/main";
 import { ServerNode } from "@matter/main/node";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { BridgeDataProvider } from "../../../../services/bridges/bridge-data-provider.js";
@@ -90,7 +90,7 @@ async function bringUp() {
     id: "node370",
     network: { port: 0 },
     commissioning: { passcode: 20202021, discriminator: 3840 },
-    basicInformation: { vendorId: 0xfff1, productId: 0x8000 },
+    basicInformation: { vendorId: VendorId(0xfff1), productId: 0x8000 },
   });
   const aggregator = new AggregatorEndpoint("aggregator");
   await server.add(aggregator);
