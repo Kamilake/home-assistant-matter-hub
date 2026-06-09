@@ -11,6 +11,7 @@ function session(): CleaningSession {
     loggedShortCircuits: new Set(),
     observedCleaning: false,
     pendingDispatches: [],
+    cleanedAreaBaseline: null,
   };
 }
 

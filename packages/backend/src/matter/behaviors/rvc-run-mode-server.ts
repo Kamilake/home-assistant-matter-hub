@@ -11,6 +11,7 @@ import { EntityStateProvider } from "../../services/bridges/entity-state-provide
 import type { HomeAssistantAction } from "../../services/home-assistant/home-assistant-actions.js";
 import { applyPatchState } from "../../utils/apply-patch-state.js";
 import { HomeAssistantEntityBehavior } from "./home-assistant-entity-behavior.js";
+import { inferCleanedAreaProgress } from "./infer-cleaned-area-progress.js";
 import type { ValueGetter, ValueSetter } from "./utils/cluster-config.js";
 
 const logger = Logger.get("RvcRunModeServer");
@@ -79,6 +80,9 @@ export interface CleaningSession {
    *  rooms. Roborock's app_segment_clean replaces the segment list on
    *  each call, so dispatching all N upfront only cleans one room. */
   pendingDispatches: { areaId: number; action: HomeAssistantAction }[];
+  /** Cumulative cleaned area (m2) at clean start, so a lifetime sensor maps
+   *  to per-clean progress (#368). null when no cleanedAreaEntity is set. */
+  cleanedAreaBaseline: number | null;
 }
 
 const cleaningSessions = new WeakMap<object, CleaningSession>();
@@ -93,6 +97,7 @@ export function getSession(endpoint: object): CleaningSession {
       loggedShortCircuits: new Set(),
       observedCleaning: false,
       pendingDispatches: [],
+      cleanedAreaBaseline: null,
     };
     cleaningSessions.set(endpoint, session);
   }
@@ -223,10 +228,15 @@ class RvcRunModeServerBase extends Base {
       }
     }
 
-    // Dynamic room tracking: when cleaning and a currentRoomEntity is
-    // configured, read the sensor to update currentArea in real time.
+    // Dynamic room tracking while cleaning: prefer a currentRoom sensor, else
+    // infer the room from a cumulative cleaned-area sensor (#368).
     if (newMode === RvcSupportedRunMode.Cleaning) {
-      this.updateCurrentRoomFromSensor();
+      const mapping = this.agent.get(HomeAssistantEntityBehavior).state.mapping;
+      if (mapping?.currentRoomEntity) {
+        this.updateCurrentRoomFromSensor();
+      } else if (mapping?.cleanedAreaEntity) {
+        this.updateCurrentRoomFromCleanedArea();
+      }
     }
   }
 
@@ -357,6 +367,92 @@ class RvcRunModeServerBase extends Base {
       const msg = e instanceof Error ? e.message : String(e);
       if (!msg.includes("No provider for") && !msg.includes("not supported")) {
         logger.warn(`currentRoom sensor update failed: ${msg}`);
+      }
+    }
+  }
+
+  /** Read the cumulative cleaned-area sensor (m2), or null if not configured. */
+  private readCleanedAreaSqm(): number | null {
+    try {
+      const mapping = this.agent.get(HomeAssistantEntityBehavior).state.mapping;
+      const entityId = mapping?.cleanedAreaEntity;
+      if (!entityId) {
+        return null;
+      }
+      return this.agent.env.get(EntityStateProvider).getNumericState(entityId);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * For batch vacuums that report cumulative cleaned area but not the current
+   * room, infer currentArea + progress from the cleaned area and the per-room
+   * sizeSqm. Display-only and batch-only; skipped unless every selected area
+   * has a size. The currentRoom sensor path takes priority (#368).
+   */
+  private updateCurrentRoomFromCleanedArea() {
+    try {
+      const s = getSession(this.endpoint);
+      // Batch only: sequential dispatch already advances currentArea as the
+      // vacuum docks between rooms.
+      if (s.pendingDispatches.length > 0 || s.activeAreas.length === 0) {
+        return;
+      }
+      const mapping = this.agent.get(HomeAssistantEntityBehavior).state.mapping;
+      const entityId = mapping?.cleanedAreaEntity;
+      if (!entityId) {
+        return;
+      }
+      const raw = this.agent.env
+        .get(EntityStateProvider)
+        .getNumericState(entityId);
+      if (raw == null) {
+        this.logShortCircuitOnce(
+          "no-cleaned-area-state",
+          `cleanedArea sensor: no numeric state for ${entityId}`,
+        );
+        return;
+      }
+
+      // All-or-nothing: only infer when every selected area has a usable size,
+      // otherwise leave the first-area fallback in place.
+      const customAreas = mapping?.customServiceAreas;
+      const ordered: { areaId: number; sizeSqm: number }[] = [];
+      for (const areaId of s.activeAreas) {
+        const size = customAreas?.[areaId - 1]?.sizeSqm;
+        if (typeof size !== "number" || !Number.isFinite(size) || size <= 0) {
+          this.logShortCircuitOnce(
+            "no-sizes",
+            "cleanedArea sensor: not every selected area has a sizeSqm",
+          );
+          return;
+        }
+        ordered.push({ areaId, sizeSqm: size });
+      }
+
+      // Re-baseline if the sensor dropped below the baseline (per-clean reset).
+      if (s.cleanedAreaBaseline == null || raw < s.cleanedAreaBaseline) {
+        s.cleanedAreaBaseline = raw;
+      }
+      const cleaned = Math.max(0, raw - s.cleanedAreaBaseline);
+
+      const { currentArea, completed } = inferCleanedAreaProgress(
+        cleaned,
+        ordered,
+      );
+      for (const id of completed) {
+        s.completedAreas.add(id);
+      }
+      if (currentArea === s.lastCurrentArea) {
+        return;
+      }
+      s.lastCurrentArea = currentArea;
+      this.trySetCurrentArea(currentArea);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!msg.includes("No provider for") && !msg.includes("not supported")) {
+        logger.warn(`cleanedArea room update failed: ${msg}`);
       }
     }
   }
@@ -496,6 +592,7 @@ class RvcRunModeServerBase extends Base {
           s.lastCurrentArea = null;
           s.loggedShortCircuits.clear();
           s.pendingDispatches = [];
+          s.cleanedAreaBaseline = this.readCleanedAreaSqm();
           this.trySetCurrentArea(s.activeAreas[0]);
           homeAssistant.callAction(this.state.config.start(void 0, this.agent));
           this.state.currentMode = newMode;
@@ -538,6 +635,7 @@ class RvcRunModeServerBase extends Base {
             s.lastCurrentArea = null;
             s.loggedShortCircuits.clear();
             s.pendingDispatches = [];
+            s.cleanedAreaBaseline = this.readCleanedAreaSqm();
             this.trySetCurrentArea(s.activeAreas[0]);
           }
         } catch {
@@ -555,6 +653,7 @@ class RvcRunModeServerBase extends Base {
         s.loggedShortCircuits.clear();
         s.pendingDispatches = [];
         s.observedCleaning = false;
+        s.cleanedAreaBaseline = null;
         homeAssistant.callAction(
           this.state.config.returnToBase(void 0, this.agent),
         );

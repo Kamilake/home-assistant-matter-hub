@@ -52,6 +52,7 @@ export function entityMappingApi(
       customServiceAreas: body.customServiceAreas,
       customFanSpeedTags: body.customFanSpeedTags,
       currentRoomEntity: body.currentRoomEntity,
+      cleanedAreaEntity: body.cleanedAreaEntity,
       valetudoIdentifier: body.valetudoIdentifier,
       coverSwapOpenClose: body.coverSwapOpenClose,
       coverSliderDebounceMs: body.coverSliderDebounceMs,

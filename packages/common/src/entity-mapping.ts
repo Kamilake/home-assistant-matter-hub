@@ -193,6 +193,12 @@ export interface EntityMappingConfig {
    */
   readonly currentRoomEntity?: string;
   /**
+   * Optional: Entity ID of a sensor reporting cumulative cleaned area in m2.
+   * For batch vacuums that report total area but not the current room, the
+   * cleaned area plus per-room sizeSqm advances currentArea/progress (#368).
+   */
+  readonly cleanedAreaEntity?: string;
+  /**
    * Optional: Valetudo MQTT identifier for segment cleaning.
    * HA lowercases entity IDs, but the MQTT topic needs the exact identifier
    * shown in Valetudo under Connectivity → MQTT (e.g., "GentleFinishedSpider").
@@ -278,6 +284,11 @@ export interface CustomServiceArea {
    * Default: false (sequential dispatch, compatible with Roborock).
    */
   readonly batchDispatch?: boolean;
+  /**
+   * Optional: approximate room floor area in m2. Used only to advance
+   * currentArea/progress from a cumulative cleaned-area sensor (#368).
+   */
+  readonly sizeSqm?: number;
 }
 
 export interface EntityMappingRequest {
@@ -305,6 +316,7 @@ export interface EntityMappingRequest {
   readonly customServiceAreas?: CustomServiceArea[];
   readonly customFanSpeedTags?: Record<string, number>;
   readonly currentRoomEntity?: string;
+  readonly cleanedAreaEntity?: string;
   readonly valetudoIdentifier?: string;
   readonly coverSwapOpenClose?: boolean;
   readonly coverSliderDebounceMs?: number;

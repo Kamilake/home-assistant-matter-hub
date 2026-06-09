@@ -117,6 +117,7 @@ export function EntityMappingDialog({
   const [suctionLevelEntity, setSuctionLevelEntity] = useState("");
   const [mopIntensityEntity, setMopIntensityEntity] = useState("");
   const [currentRoomEntity, setCurrentRoomEntity] = useState("");
+  const [cleanedAreaEntity, setCleanedAreaEntity] = useState("");
   const [customServiceAreas, setCustomServiceAreas] = useState<
     CustomServiceArea[]
   >([]);
@@ -183,6 +184,7 @@ export function EntityMappingDialog({
       setSuctionLevelEntity(currentMapping?.suctionLevelEntity || "");
       setMopIntensityEntity(currentMapping?.mopIntensityEntity || "");
       setCurrentRoomEntity(currentMapping?.currentRoomEntity || "");
+      setCleanedAreaEntity(currentMapping?.cleanedAreaEntity || "");
       setCustomServiceAreas(currentMapping?.customServiceAreas || []);
       setAreaDataDrafts(
         (currentMapping?.customServiceAreas || []).map((a) =>
@@ -282,6 +284,7 @@ export function EntityMappingDialog({
       suctionLevelEntity: suctionLevelEntity.trim() || undefined,
       mopIntensityEntity: mopIntensityEntity.trim() || undefined,
       currentRoomEntity: currentRoomEntity.trim() || undefined,
+      cleanedAreaEntity: cleanedAreaEntity.trim() || undefined,
       customFanSpeedTags:
         Object.keys(customFanSpeedTags).length > 0
           ? customFanSpeedTags
@@ -323,6 +326,7 @@ export function EntityMappingDialog({
     suctionLevelEntity,
     mopIntensityEntity,
     currentRoomEntity,
+    cleanedAreaEntity,
     customServiceAreas,
     customFanSpeedTagsList,
     valetudoIdentifier,
@@ -532,6 +536,14 @@ export function EntityMappingDialog({
               label="Current Room Entity (optional)"
               placeholder="sensor.vacuum_current_room"
               helperText="Sensor that reports which room the vacuum is currently in (e.g. Dreame current_room sensor). Enables dynamic room progress tracking during multi-room cleaning."
+              domain="sensor"
+            />
+            <EntityAutocomplete
+              value={cleanedAreaEntity}
+              onChange={setCleanedAreaEntity}
+              label="Cleaned Area Sensor (m², optional)"
+              placeholder="sensor.vacuum_cleaned_area"
+              helperText="Sensor reporting cumulative cleaned area in m². With a Size (m²) set on each area, advances room progress for batch vacuums that report area but not the current room."
               domain="sensor"
             />
             {showValetudoIdentifierField && (
@@ -894,6 +906,23 @@ export function EntityMappingDialog({
                         />
                       }
                       label="Batch"
+                    />
+                    <TextField
+                      size="small"
+                      type="number"
+                      label="Size (m²)"
+                      placeholder="20"
+                      value={area.sizeSqm != null ? String(area.sizeSqm) : ""}
+                      onChange={(e) => {
+                        const n = Number.parseFloat(e.target.value);
+                        const updated = [...customServiceAreas];
+                        updated[index] = {
+                          ...area,
+                          sizeSqm: Number.isFinite(n) && n > 0 ? n : undefined,
+                        };
+                        setCustomServiceAreas(updated);
+                      }}
+                      sx={{ width: 110 }}
                     />
                   </Box>
                 </Box>
