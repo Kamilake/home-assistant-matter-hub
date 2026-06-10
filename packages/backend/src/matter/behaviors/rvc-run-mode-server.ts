@@ -543,6 +543,36 @@ class RvcRunModeServerBase extends Base {
   }
 
   /**
+   * Stop before finishing: mark the areas the vacuum actually reached as
+   * Completed and the rest as Skipped (an out-of-band stop per the Matter
+   * ServiceArea spec), then clear currentArea. The old path marked every
+   * area Completed, which told Apple Home rooms were cleaned when they were
+   * not, so they got dropped from the next selection (#367).
+   */
+  private finalizeProgressOnStop() {
+    const s = getSession(this.endpoint);
+    try {
+      const serviceArea = this.agent.get(ServiceAreaBehavior);
+      if (s.activeAreas.length > 0) {
+        const last = serviceArea.state.currentArea;
+        const state = serviceArea.state as typeof serviceArea.state & {
+          progress?: ServiceArea.Progress[];
+        };
+        state.progress = s.activeAreas.map((id) => ({
+          areaId: id,
+          status:
+            s.completedAreas.has(id) || id === last
+              ? ServiceArea.OperationalStatus.Completed
+              : ServiceArea.OperationalStatus.Skipped,
+        }));
+      }
+      serviceArea.state.currentArea = null;
+    } catch {
+      // ServiceArea not available
+    }
+  }
+
+  /**
    * Find the ServiceArea area ID that corresponds to a run mode value
    * by matching the mode label to the area location name.
    */
@@ -646,7 +676,7 @@ class RvcRunModeServerBase extends Base {
       }
       case RvcSupportedRunMode.Idle:
         // Explicit user command to stop, clear session state
-        this.trySetCurrentArea(null);
+        this.finalizeProgressOnStop();
         s.completedAreas.clear();
         s.lastCurrentArea = null;
         s.activeAreas = [];
