@@ -89,11 +89,11 @@ export class BasicInformationServer extends Base {
   }
 }
 
-function ellipse(maxLength: number, value?: string) {
+export function ellipse(maxLength: number, value?: string) {
   return trimToLength(value, maxLength, "...");
 }
 
-function hash(maxLength: number, value?: string) {
+export function hash(maxLength: number, value?: string) {
   const hashLength = 4;
   const suffix = crypto
     .createHash("md5")

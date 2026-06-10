@@ -34,7 +34,10 @@ export abstract class EntityEndpoint extends Endpoint {
   abstract updateStates(states: HomeAssistantStates): Promise<void>;
 }
 
-function createEndpointId(entityId: string, customName?: string): string {
+export function createEndpointId(
+  entityId: string,
+  customName?: string,
+): string {
   const baseName = customName || entityId;
   return baseName.replace(/\./g, "_").replace(/\s+/g, "_");
 }
