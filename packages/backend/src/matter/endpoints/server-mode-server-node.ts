@@ -4,7 +4,7 @@ import type {
   EntityMappingConfig,
   HomeAssistantDeviceRegistry,
 } from "@home-assistant-matter-hub/common";
-import { Logger } from "@matter/general";
+import { Logger, Seconds } from "@matter/general";
 import type { Environment } from "@matter/main";
 import { RoboticVacuumCleanerDevice } from "@matter/main/devices";
 import { type Endpoint, ServerNode } from "@matter/main/node";
@@ -35,6 +35,15 @@ export class ServerModeServerNode extends ServerNode {
       environment: env,
       network: {
         port: bridgeData.port,
+        // Lower the subscription max interval (default 3 min) so matter.js
+        // sends its keepalive reports more often, shrinking the window where
+        // iOS can show the vacuum as "Updating" on a stale subscription (#287).
+        subscriptionOptions: {
+          maxInterval: Seconds(60),
+          // matter.js defaults, kept explicit since the type needs all three.
+          minInterval: Seconds(2),
+          randomizationWindow: Seconds(10),
+        },
       },
       productDescription: {
         name: bridgeData.name,
