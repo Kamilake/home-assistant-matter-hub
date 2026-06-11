@@ -419,7 +419,7 @@ class RvcRunModeServerBase extends Base {
       // otherwise leave the first-area fallback in place.
       const customAreas = mapping?.customServiceAreas;
       const ordered: { areaId: number; sizeSqm: number }[] = [];
-      for (const areaId of s.activeAreas) {
+      for (const areaId of [...s.activeAreas].sort((a, b) => a - b)) {
         const size = customAreas?.[areaId - 1]?.sizeSqm;
         if (typeof size !== "number" || !Number.isFinite(size) || size <= 0) {
           this.logShortCircuitOnce(

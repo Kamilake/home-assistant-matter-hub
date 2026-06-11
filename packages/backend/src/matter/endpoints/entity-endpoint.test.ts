@@ -1,5 +1,17 @@
+import type { EntityMappingConfig } from "@home-assistant-matter-hub/common";
 import { describe, expect, it } from "vitest";
-import { createEndpointId } from "./entity-endpoint.js";
+import { createEndpointId, getMappedEntityIds } from "./entity-endpoint.js";
+
+describe("getMappedEntityIds (#368)", () => {
+  it("includes the cleaned-area sensor so its changes wake the endpoint", () => {
+    // Without this, the m2 sensor is never subscribed and the cleaned-area
+    // room tracking never re-runs as the sensor grows.
+    const ids = getMappedEntityIds({
+      cleanedAreaEntity: "sensor.vacuum_cleaned_area",
+    } as EntityMappingConfig);
+    expect(ids).toContain("sensor.vacuum_cleaned_area");
+  });
+});
 
 describe("createEndpointId (#366)", () => {
   it("keeps distinct ids for two same-label switches without a custom name", () => {

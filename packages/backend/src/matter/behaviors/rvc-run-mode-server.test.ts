@@ -1,5 +1,6 @@
 import { ServiceArea } from "@matter/main/clusters";
 import { describe, expect, it } from "vitest";
+import { HomeAssistantEntityBehavior } from "./home-assistant-entity-behavior.js";
 import {
   getSession,
   RvcRunModeServer,
@@ -74,5 +75,47 @@ describe("finalizeProgressOnStop (#367)", () => {
 
     expect(serviceArea.state.currentArea).toBeNull();
     expect(serviceArea.state.progress).toEqual([]);
+  });
+});
+
+describe("updateCurrentRoomFromCleanedArea ordering (#368)", () => {
+  it("maps cleaned area onto the configured clean order, not click order", () => {
+    const endpoint = {};
+    const session = getSession(endpoint);
+    // activeAreas is in the home-app click order; the cumulative area must be
+    // mapped onto the configured order (ascending areaId), not this order.
+    session.activeAreas = [3, 1, 2];
+    session.completedAreas = new Set();
+    session.pendingDispatches = [];
+    session.lastCurrentArea = null;
+    session.cleanedAreaBaseline = 0;
+    const serviceArea = {
+      state: { currentArea: 3, progress: [] as ServiceArea.Progress[] },
+    };
+    const mapping = {
+      cleanedAreaEntity: "sensor.cleaned",
+      customServiceAreas: [{ sizeSqm: 10 }, { sizeSqm: 20 }, { sizeSqm: 30 }],
+    };
+    const ctx = {
+      endpoint,
+      agent: {
+        // biome-ignore lint/suspicious/noExplicitAny: stub
+        get: (beh: any) =>
+          beh === HomeAssistantEntityBehavior
+            ? { state: { mapping } }
+            : serviceArea,
+        env: { get: () => ({ getNumericState: () => 15 }) },
+      },
+      logShortCircuitOnce: () => {},
+      trySetCurrentArea: proto.trySetCurrentArea,
+      updateProgress: proto.updateProgress,
+    };
+
+    proto.updateCurrentRoomFromCleanedArea.call(ctx);
+
+    // cleaned = 15: config order [1,2,3] with sizes 10/20/30 -> room 1 done
+    // (15 >= 10), room 2 operating (15 < 30) => currentArea 2. Click order
+    // [3,1,2] would land on room 3 (the bug).
+    expect(serviceArea.state.currentArea).toBe(2);
   });
 });

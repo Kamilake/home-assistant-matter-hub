@@ -56,6 +56,7 @@ export function getMappedEntityIds(mapping?: EntityMappingConfig): string[] {
   if (mapping.powerEntity) ids.push(mapping.powerEntity);
   if (mapping.energyEntity) ids.push(mapping.energyEntity);
   if (mapping.currentRoomEntity) ids.push(mapping.currentRoomEntity);
+  if (mapping.cleanedAreaEntity) ids.push(mapping.cleanedAreaEntity);
   if (mapping.composedEntities) {
     for (const sub of mapping.composedEntities) {
       if (sub.entityId) ids.push(sub.entityId);
