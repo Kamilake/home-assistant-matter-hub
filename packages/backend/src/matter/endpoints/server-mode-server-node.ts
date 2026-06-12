@@ -15,17 +15,19 @@ import { trimToLength } from "../../utils/trim-to-length.js";
 const logger = Logger.get("ServerModeServerNode");
 
 /**
- * ServerModeServerNode exposes a single device directly as the root endpoint.
+ * ServerModeServerNode exposes device endpoints directly under the root node.
  * This is different from BridgeServerNode which uses an AggregatorEndpoint.
  *
  * Server Mode is required for Apple Home to properly support Siri voice commands
  * for certain device types like Robot Vacuums (RVC).
  *
- * In server mode, the device endpoint becomes a child of the root node,
- * but without the Aggregator wrapper - making it appear as a standalone device.
+ * Device endpoints become children of the root node without the Aggregator
+ * wrapper, the Matter composed-device shape. One node can carry several
+ * endpoints (#301); identity and the advertised device type come from the
+ * primary entity.
  */
 export class ServerModeServerNode extends ServerNode {
-  private deviceEndpoint?: Endpoint;
+  private readonly deviceEndpoints = new Map<string, Endpoint>();
   private readonly featureFlags?: BridgeFeatureFlags;
   private readonly serialNumberSuffix?: string;
 
@@ -75,26 +77,34 @@ export class ServerModeServerNode extends ServerNode {
     this.serialNumberSuffix = bridgeData.serialNumberSuffix;
   }
 
+  /** Number of device endpoints currently attached. */
+  get deviceCount(): number {
+    return this.deviceEndpoints.size;
+  }
+
   /**
-   * Add the device endpoint to this server node.
-   * In server mode, only ONE device is allowed.
-   * This method is idempotent - if a device already exists, it's a no-op.
+   * Add a device endpoint to this server node. Several endpoints per node are
+   * supported (#301); the call is idempotent per endpoint id.
    */
   async addDevice(endpoint: Endpoint): Promise<void> {
-    if (this.deviceEndpoint) {
-      // Already have a device - this is fine, just ignore
+    if (this.deviceEndpoints.has(endpoint.id)) {
       return;
     }
-    this.deviceEndpoint = endpoint;
+    this.deviceEndpoints.set(endpoint.id, endpoint);
     await this.add(endpoint);
   }
 
   /**
-   * Clear the device reference after the endpoint has been deleted externally.
-   * Must be called before addDevice() when replacing the device endpoint.
+   * Drop one device reference after the endpoint has been deleted externally.
+   * Must be called before re-adding an endpoint with the same id.
    */
-  clearDevice(): void {
-    this.deviceEndpoint = undefined;
+  forgetDevice(endpoint: Endpoint): void {
+    this.deviceEndpoints.delete(endpoint.id);
+  }
+
+  /** Drop all device references after the endpoints were deleted externally. */
+  clearDevices(): void {
+    this.deviceEndpoints.clear();
   }
 
   /**

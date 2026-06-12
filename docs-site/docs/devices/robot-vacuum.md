@@ -30,12 +30,12 @@ Server Mode exposes a single device as a **standalone Matter device** instead of
 
 1. **Create a new bridge** in the Matter Hub web interface
 2. **Enable "Server Mode"** checkbox in the bridge creation wizard
-3. Add **only your vacuum** to this bridge (Server Mode supports exactly 1 device)
+3. Add **your vacuum** to this bridge (best kept alone on its node)
 4. **Pair the new bridge** with Apple Home or Alexa
 5. Your other devices stay on your regular bridge(s)
 
 :::note
-Server Mode bridges can only contain **one device**. This is a Matter protocol requirement for standalone devices.
+Server Mode nodes carry up to **10 devices**; the first entity is the primary and drives the node name and type. Running more than one device per node is experimental, see [Standalone Devices](../getting-started/standalone-devices.md). For a vacuum it is still best to keep it alone on its node.
 :::
 
 ### After Enabling Server Mode

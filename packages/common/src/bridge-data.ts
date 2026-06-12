@@ -9,8 +9,8 @@ interface AllBridgeFeatureFlags {
   /**
    * Server Mode: Expose devices directly as standalone Matter devices instead of bridged devices.
    * This is required for Apple Home to properly support Siri voice commands for Robot Vacuums (RVC).
-   * When enabled, only ONE device should be in this bridge - it will be exposed as the root device.
-   * Multiple devices in server mode will cause errors.
+   * One node carries up to 10 device endpoints (#301); the first entity is the
+   * primary and drives the node identity. More than one device is experimental.
    */
   readonly serverMode: boolean;
   /**

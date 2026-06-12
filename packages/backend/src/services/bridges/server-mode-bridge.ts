@@ -70,7 +70,7 @@ export class ServerModeBridge {
   private maxSessionAgeMs = 0;
 
   // Tracks the last synced state JSON per entity to avoid pushing unchanged states.
-  private lastSyncedState: string | undefined;
+  private readonly lastSyncedStates = new Map<string, string>();
 
   // Session lifecycle diagnostic handlers (non-destructive, logging only).
   // biome-ignore lint/suspicious/noExplicitAny: matter.js internal types
@@ -88,7 +88,7 @@ export class ServerModeBridge {
     return this.dataProvider.withMetadata(
       this.status,
       this.server,
-      this.endpointManager.device ? 1 : 0,
+      this.endpointManager.devices.length,
       this.endpointManager.failedEntities,
     );
   }
@@ -177,7 +177,7 @@ export class ServerModeBridge {
     if (this.status.code === BridgeStatus.Running) {
       return;
     }
-    this.lastSyncedState = undefined;
+    this.lastSyncedStates.clear();
     try {
       this.setStatus({
         code: BridgeStatus.Starting,
@@ -635,30 +635,36 @@ export class ServerModeBridge {
     if (this.status.code !== BridgeStatus.Running) {
       return;
     }
-    const device = this.endpointManager.device;
-    if (!device) {
+    const devices = this.endpointManager.devices;
+    if (devices.length === 0) {
       return;
     }
-    try {
-      const { HomeAssistantEntityBehavior } = await import(
-        "../../matter/behaviors/home-assistant-entity-behavior.js"
-      );
-      if (!device.behaviors.has(HomeAssistantEntityBehavior)) {
-        return;
+    const { HomeAssistantEntityBehavior } = await import(
+      "../../matter/behaviors/home-assistant-entity-behavior.js"
+    );
+    let pushed = 0;
+    for (const device of devices) {
+      try {
+        if (!device.behaviors.has(HomeAssistantEntityBehavior)) {
+          continue;
+        }
+        const behavior = device.stateOf(HomeAssistantEntityBehavior);
+        const currentEntity = behavior.entity;
+        if (currentEntity?.state) {
+          await device.setStateOf(HomeAssistantEntityBehavior, {
+            entity: {
+              ...currentEntity,
+              state: makeWarmStartState(currentEntity.state),
+            },
+          });
+          pushed++;
+        }
+      } catch (e) {
+        this.log.debug("Warm-start: Failed to push state:", e);
       }
-      const behavior = device.stateOf(HomeAssistantEntityBehavior);
-      const currentEntity = behavior.entity;
-      if (currentEntity?.state) {
-        await device.setStateOf(HomeAssistantEntityBehavior, {
-          entity: {
-            ...currentEntity,
-            state: makeWarmStartState(currentEntity.state),
-          },
-        });
-        this.log.info("Warm-start: Pushed initial device state");
-      }
-    } catch (e) {
-      this.log.debug("Warm-start: Failed to push state:", e);
+    }
+    if (pushed > 0) {
+      this.log.info(`Warm-start: Pushed initial state for ${pushed} devices`);
     }
   }
 
@@ -680,49 +686,54 @@ export class ServerModeBridge {
       return 0;
     }
 
-    const device = this.endpointManager.device;
-    if (!device) {
+    const devices = this.endpointManager.devices;
+    if (devices.length === 0) {
       return 0;
     }
 
-    try {
-      // Import dynamically to avoid circular dependencies
-      const { HomeAssistantEntityBehavior } = await import(
-        "../../matter/behaviors/home-assistant-entity-behavior.js"
-      );
+    // Import dynamically to avoid circular dependencies
+    const { HomeAssistantEntityBehavior } = await import(
+      "../../matter/behaviors/home-assistant-entity-behavior.js"
+    );
 
-      if (!device.behaviors.has(HomeAssistantEntityBehavior)) {
-        return 0;
-      }
-
-      const behavior = device.stateOf(HomeAssistantEntityBehavior);
-      const currentEntity = behavior.entity;
-
-      if (currentEntity?.state) {
-        // Compare only meaningful fields, ignore volatile HA metadata
-        // (last_changed, last_updated, context) to avoid unnecessary MRP traffic.
-        const stateJson = JSON.stringify({
-          s: currentEntity.state.state,
-          a: currentEntity.state.attributes,
-        });
-
-        if (stateJson !== this.lastSyncedState) {
-          // State has changed since last sync, push update
-          await device.setStateOf(HomeAssistantEntityBehavior, {
-            entity: {
-              ...currentEntity,
-              state: { ...currentEntity.state },
-            },
-          });
-          this.lastSyncedState = stateJson;
-          this.log.info("Force sync: Pushed 1 changed device");
-          return 1;
+    let synced = 0;
+    for (const device of devices) {
+      try {
+        if (!device.behaviors.has(HomeAssistantEntityBehavior)) {
+          continue;
         }
+
+        const behavior = device.stateOf(HomeAssistantEntityBehavior);
+        const currentEntity = behavior.entity;
+
+        if (currentEntity?.state) {
+          // Compare only meaningful fields, ignore volatile HA metadata
+          // (last_changed, last_updated, context) to avoid unnecessary MRP traffic.
+          const stateJson = JSON.stringify({
+            s: currentEntity.state.state,
+            a: currentEntity.state.attributes,
+          });
+
+          if (stateJson !== this.lastSyncedStates.get(device.entityId)) {
+            // State has changed since last sync, push update
+            await device.setStateOf(HomeAssistantEntityBehavior, {
+              entity: {
+                ...currentEntity,
+                state: { ...currentEntity.state },
+              },
+            });
+            this.lastSyncedStates.set(device.entityId, stateJson);
+            synced++;
+          }
+        }
+      } catch (e) {
+        this.log.debug("Force sync: Failed due to error:", e);
       }
-    } catch (e) {
-      this.log.debug("Force sync: Failed due to error:", e);
     }
 
-    return 0;
+    if (synced > 0) {
+      this.log.info(`Force sync: Pushed ${synced} changed devices`);
+    }
+    return synced;
   }
 }

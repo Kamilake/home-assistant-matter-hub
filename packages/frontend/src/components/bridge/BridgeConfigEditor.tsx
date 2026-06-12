@@ -107,8 +107,9 @@ export const BridgeConfigEditor = (props: BridgeConfigEditorProps) => {
       result.push({
         severity: "warning",
         message:
-          "Server Mode is enabled. Only ONE device should be in this bridge. " +
-          "Multiple devices will cause errors.",
+          "Server Mode is enabled. The node carries up to 10 devices; the " +
+          "first entity is the primary and drives the node name and type. " +
+          "More than one device is experimental.",
       });
     }
 

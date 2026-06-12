@@ -4,6 +4,7 @@ import type {
   HomeAssistantEntityRegistry,
   HomeAssistantEntityState,
   HomeAssistantFilter,
+  HomeAssistantMatcher,
   SensorDeviceAttributes,
   VacuumRoom,
 } from "@home-assistant-matter-hub/common";
@@ -913,6 +914,23 @@ export class BridgeRegistry {
         }
       }
     }
+  }
+
+  /**
+   * The first already-matched entity the given matcher tests true for.
+   * Server mode pins the primary entity to the first include matcher with
+   * this, independent of HA registry order (#301).
+   */
+  firstEntityMatching(matcher: HomeAssistantMatcher): string | undefined {
+    const labels = this.registry.labels;
+    for (const entity of values(this._entities)) {
+      const device = this.registry.devices[entity.device_id];
+      const state = this.registry.states[entity.entity_id];
+      if (testMatchers([matcher], device, entity, "any", state, labels)) {
+        return entity.entity_id;
+      }
+    }
+    return undefined;
   }
 
   private matchesFilter(

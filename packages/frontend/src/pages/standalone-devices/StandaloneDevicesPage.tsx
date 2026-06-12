@@ -22,7 +22,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { BridgeStatusIcon } from "../../components/bridge/BridgeStatusIcon.tsx";
@@ -38,19 +38,31 @@ import { navigation } from "../../routes.tsx";
 import { loadBridges } from "../../state/bridges/bridge-actions.ts";
 import { useAppDispatch } from "../../state/hooks.ts";
 
-// A standalone device is a server-mode bridge holding exactly one entity.
-function deviceEntityId(bridge: BridgeDataWithMetadata): string | undefined {
-  const matcher = bridge.filter?.include?.[0];
-  if (!matcher) return undefined;
-  // bridges flipped to server mode elsewhere may carry domain/label matchers
-  if (matcher.type !== HomeAssistantMatcherType.Pattern) {
-    return `${matcher.type}: ${matcher.value}`;
-  }
-  return matcher.value;
+// A standalone device is a server-mode bridge; every include matcher becomes
+// one device endpoint on the node and the first one is the primary (#301).
+function deviceEntityLabel(bridge: BridgeDataWithMetadata): string | undefined {
+  const matchers = bridge.filter?.include ?? [];
+  if (matchers.length === 0) return undefined;
+  return matchers
+    .map((matcher) =>
+      // bridges flipped to server mode elsewhere may carry domain/label matchers
+      matcher.type === HomeAssistantMatcherType.Pattern
+        ? matcher.value
+        : `${matcher.type}: ${matcher.value}`,
+    )
+    .join(", ");
 }
 
-// exactly one entity, so no wildcards and a strict entity-id shape
+// exact entity ids only, so no wildcards and a strict shape per row
 const ENTITY_ID_SHAPE = /^[a-z0-9_]+\.[a-z0-9_]+$/;
+
+// keep in sync with MAX_SERVER_MODE_DEVICES in server-mode-endpoint-manager
+const MAX_DEVICES_PER_NODE = 10;
+
+interface EntityRow {
+  key: number;
+  value: string;
+}
 
 function errorMessage(e: unknown): string | undefined {
   // thunk rejections are serialized plain objects, not Error instances
@@ -67,12 +79,25 @@ export const StandaloneDevicesPage = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
-  const [entityId, setEntityId] = useState("");
+  const rowKeyRef = useRef(0);
+  const [entityRows, setEntityRows] = useState<EntityRow[]>([
+    { key: 0, value: "" },
+  ]);
   const [saving, setSaving] = useState(false);
   const [pendingDelete, setPendingDelete] =
     useState<BridgeDataWithMetadata | null>(null);
 
-  const entityIdValid = ENTITY_ID_SHAPE.test(entityId.trim());
+  const trimmedValues = entityRows.map((row) => row.value.trim());
+  const filledValues = trimmedValues.filter((value) => value !== "");
+  const rowInvalid = (index: number): boolean => {
+    const value = trimmedValues[index];
+    if (value === "") return false;
+    if (!ENTITY_ID_SHAPE.test(value)) return true;
+    // duplicates count as invalid on every later row
+    return trimmedValues.indexOf(value) !== index;
+  };
+  const entityRowsValid =
+    filledValues.length > 0 && entityRows.every((_, i) => !rowInvalid(i));
 
   const devices = (bridges ?? []).filter(
     (bridge) => bridge.featureFlags?.serverMode === true,
@@ -80,8 +105,15 @@ export const StandaloneDevicesPage = () => {
 
   const handleCreate = useCallback(async () => {
     const trimmedName = name.trim();
-    const trimmedEntity = entityId.trim();
-    if (!trimmedName || !ENTITY_ID_SHAPE.test(trimmedEntity)) {
+    const values = entityRows
+      .map((row) => row.value.trim())
+      .filter((value) => value !== "");
+    if (
+      !trimmedName ||
+      values.length === 0 ||
+      values.some((value) => !ENTITY_ID_SHAPE.test(value)) ||
+      new Set(values).size !== values.length
+    ) {
       return;
     }
     setSaving(true);
@@ -90,9 +122,10 @@ export const StandaloneDevicesPage = () => {
       const request: CreateBridgeRequest = {
         name: trimmedName,
         filter: {
-          include: [
-            { type: HomeAssistantMatcherType.Pattern, value: trimmedEntity },
-          ],
+          include: values.map((value) => ({
+            type: HomeAssistantMatcherType.Pattern,
+            value,
+          })),
           exclude: [],
         },
         featureFlags: { serverMode: true },
@@ -104,7 +137,7 @@ export const StandaloneDevicesPage = () => {
       });
       setDialogOpen(false);
       setName("");
-      setEntityId("");
+      setEntityRows([{ key: 0, value: "" }]);
       dispatch(loadBridges());
     } catch (e) {
       notifications.show({
@@ -116,7 +149,7 @@ export const StandaloneDevicesPage = () => {
     } finally {
       setSaving(false);
     }
-  }, [name, entityId, createBridge, notifications, t, dispatch]);
+  }, [name, entityRows, createBridge, notifications, t, dispatch]);
 
   const handleDelete = useCallback(
     async (bridge: BridgeDataWithMetadata) => {
@@ -194,7 +227,7 @@ export const StandaloneDevicesPage = () => {
                     {device.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" noWrap>
-                    {deviceEntityId(device) ??
+                    {deviceEntityLabel(device) ??
                       t("standaloneDevices.noEntity", "no entity")}
                   </Typography>
                 </Box>
@@ -268,22 +301,83 @@ export const StandaloneDevicesPage = () => {
             margin="normal"
             slotProps={{ htmlInput: { maxLength: 32 } }}
           />
-          <EntityAutocomplete
-            value={entityId}
-            onChange={setEntityId}
-            label={t("standaloneDevices.entity", "Entity")}
-            helperText={
-              entityId.trim() && !entityIdValid
-                ? t(
-                    "standaloneDevices.entityInvalid",
-                    "Enter a single entity id like vacuum.living_room, wildcards are not allowed.",
-                  )
-                : t(
-                    "standaloneDevices.entityHelp",
-                    "Exactly one entity is exposed as this device.",
-                  )
-            }
-          />
+          {entityRows.map((row, index) => (
+            <Box
+              key={row.key}
+              sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}
+            >
+              <Box sx={{ flexGrow: 1 }}>
+                <EntityAutocomplete
+                  value={row.value}
+                  onChange={(value) => {
+                    setEntityRows((rows) =>
+                      rows.map((r) =>
+                        r.key === row.key ? { ...r, value } : r,
+                      ),
+                    );
+                  }}
+                  label={
+                    index === 0
+                      ? t("standaloneDevices.entity", "Entity")
+                      : t(
+                          "standaloneDevices.additionalEntity",
+                          "Additional entity",
+                        )
+                  }
+                  helperText={
+                    rowInvalid(index)
+                      ? t(
+                          "standaloneDevices.entityInvalid",
+                          "Enter a single entity id like vacuum.living_room, wildcards are not allowed.",
+                        )
+                      : index === 0
+                        ? t(
+                            "standaloneDevices.entityHelp",
+                            "Pick the Home Assistant entity to expose.",
+                          )
+                        : undefined
+                  }
+                />
+              </Box>
+              {entityRows.length > 1 && (
+                <IconButton
+                  size="small"
+                  sx={{ mt: 3 }}
+                  onClick={() =>
+                    setEntityRows((rows) =>
+                      rows.filter((r) => r.key !== row.key),
+                    )
+                  }
+                >
+                  <DeleteOutline fontSize="small" />
+                </IconButton>
+              )}
+            </Box>
+          ))}
+          <Button
+            size="small"
+            startIcon={<Add />}
+            disabled={entityRows.length >= MAX_DEVICES_PER_NODE}
+            onClick={() => {
+              rowKeyRef.current += 1;
+              setEntityRows((rows) => [
+                ...rows,
+                { key: rowKeyRef.current, value: "" },
+              ]);
+            }}
+          >
+            {t("standaloneDevices.addEntity", "Add another entity")}
+          </Button>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: "block", mt: 1 }}
+          >
+            {t(
+              "standaloneDevices.multiHint",
+              "The first entity is the primary and names the device. More than one entity per device is experimental.",
+            )}
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)} disabled={saving}>
@@ -292,7 +386,7 @@ export const StandaloneDevicesPage = () => {
           <Button
             onClick={handleCreate}
             variant="contained"
-            disabled={saving || !name.trim() || !entityIdValid}
+            disabled={saving || !name.trim() || !entityRowsValid}
           >
             {saving
               ? t("standaloneDevices.creating", "Creating")

@@ -341,10 +341,24 @@ export class LegacyEndpoint extends EntityEndpoint {
       }
     }
 
+    // Composed shapes build a BridgedNodeEndpoint parent, which must not sit
+    // directly under a server-mode root. In standalone mode they are skipped
+    // and the entity falls through to a flat endpoint (#301).
+    if (
+      standalone &&
+      ((effectiveMapping?.composedEntities?.length ?? 0) > 0 ||
+        effectiveMapping?.climateExposeFan === true)
+    ) {
+      logger.warn(
+        `Composed mappings are not supported in server mode, exposing ${entityId} as a flat standalone endpoint`,
+      );
+    }
+
     // User-defined composed device: when composedEntities is configured,
     // group the primary entity with additional entities into a single
     // Matter composed device under a BridgedNodeEndpoint parent.
     if (
+      !standalone &&
       registry.isAutoComposedDevicesEnabled() &&
       effectiveMapping?.composedEntities &&
       effectiveMapping.composedEntities.length > 0
@@ -371,7 +385,7 @@ export class LegacyEndpoint extends EntityEndpoint {
     // with auto-mapped humidity/pressure, build a real Matter Composed Device
     // instead of a flat endpoint with extra clusters, Apple Home, Google
     // Home, and Alexa then render each sub-endpoint with its own device type.
-    if (registry.isAutoComposedDevicesEnabled()) {
+    if (!standalone && registry.isAutoComposedDevicesEnabled()) {
       const attrs = state.attributes as SensorDeviceAttributes;
       if (
         entityId.startsWith("sensor.") &&
@@ -440,6 +454,7 @@ export class LegacyEndpoint extends EntityEndpoint {
     // climate entity supports fan modes, expose a second Matter Fan device
     // bound to the same entity so Apple Home gets a usable fan_only tile.
     if (
+      !standalone &&
       entityId.startsWith("climate.") &&
       effectiveMapping?.climateExposeFan === true
     ) {

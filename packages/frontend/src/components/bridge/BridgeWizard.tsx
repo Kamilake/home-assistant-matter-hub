@@ -478,7 +478,7 @@ export function BridgeWizard({ open, onClose, onComplete }: BridgeWizardProps) {
           </Alert>
         )}
       <Tooltip
-        title="Exposes the entity as a standalone Matter device, e.g. so robot vacuums work with Apple Home (Siri) and Alexa. Server Mode bridges support only ONE device."
+        title="Exposes the entity as a standalone Matter device, e.g. so robot vacuums work with Apple Home (Siri) and Alexa. The first entity is the primary; more than one device per node is experimental."
         placement="right"
       >
         <FormControlLabel
@@ -501,10 +501,10 @@ export function BridgeWizard({ open, onClose, onComplete }: BridgeWizardProps) {
       </Tooltip>
       {currentBridge.serverMode && (
         <Alert severity="info" sx={{ mt: 1 }}>
-          <strong>Server Mode enabled:</strong> This bridge will expose a single
-          device as a standalone Matter device. Add only ONE device (e.g., your
-          vacuum) to this bridge. This is required for Apple Home Siri commands
-          and Alexa discovery.
+          <strong>Server Mode enabled:</strong> This bridge exposes devices
+          standalone instead of bridged, required for Apple Home Siri commands
+          and Alexa discovery. The first entity is the primary and names the
+          node; more than one device per node is experimental.
         </Alert>
       )}
       {bridges.length > 0 && (
@@ -578,7 +578,7 @@ export function BridgeWizard({ open, onClose, onComplete }: BridgeWizardProps) {
         }
         helperText={
           currentBridge.serverMode
-            ? "Server Mode supports only ONE device. Enter the exact entity ID (e.g., vacuum.my_vacuum)."
+            ? "Enter exact entity IDs (e.g., vacuum.my_vacuum). The first one is the primary device of the node."
             : selectedTemplate
               ? "Pre-configured by template. Edit in the full editor after creation."
               : useWildcard

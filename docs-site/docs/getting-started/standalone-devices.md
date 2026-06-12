@@ -1,8 +1,8 @@
 # Standalone Devices
 
-A standalone device is a single Home Assistant entity exposed as its own Matter device, with its own pairing code, instead of living inside a bridge. Some controllers (for example Apple Home with robot vacuums) handle a device better when it is not presented as a bridged child, so this gives each device a clean, independent identity.
+A standalone device exposes one or more Home Assistant entities as a single Matter device with its own pairing code, instead of living inside a bridge. Some controllers (for example Apple Home with robot vacuums) handle a device better when it is not presented as a bridged child, so this gives each device a clean, independent identity.
 
-Under the hood a standalone device is a bridge running in Server Mode that holds exactly one entity. The Standalone Devices page turns that into a simple per device workflow, and it works for any supported device type, not only robot vacuums. See [Supported Device Types](../supported-device-types.md) for the full list.
+Under the hood a standalone device is a bridge running in Server Mode; every selected entity becomes one endpoint on the node and the first entity is the primary, it names the device and sets its advertised type. It works for any supported device type, not only robot vacuums. See [Supported Device Types](../supported-device-types.md) for the full list.
 
 ## When to use it
 
@@ -16,7 +16,7 @@ A normal bridge is still the right choice for exposing many entities together be
 
 1. Open the web UI and go to **Standalone Devices** in the navigation.
 2. Click **Add device**.
-3. Enter a name and pick exactly one entity.
+3. Enter a name and pick one or more entities. The first one is the primary and names the device.
 4. Click **Create**. A free Matter port is assigned automatically.
 
 The new device appears in the list with its current status.
@@ -30,7 +30,7 @@ Each standalone device has its own pairing code, so you add it to your controlle
 
 ## Notes and limits
 
-- One entity per device. To expose more entities, create more standalone devices or use a normal bridge.
+- A device carries up to 10 entities; the first one drives the name and type shown during pairing. More than one entity per device is experimental: controllers render multi-endpoint devices differently, Alexa may only show the first endpoint, and an endpoint added to an already-paired device may need a re-pair to show up. Field reports are welcome on [#301](https://github.com/RiDDiX/home-assistant-matter-hub/issues/301).
 - Each device uses its own Matter port, assigned automatically when you create it.
 - Deleting a standalone device removes its bridge, which unpairs it from your controllers.
 

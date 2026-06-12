@@ -149,7 +149,7 @@ export function FilterPreview({ filter }: FilterPreviewProps) {
     const hasVacuum = result.entities.some((e) => e.domain === "vacuum");
     if (hasVacuum) {
       warnings.push(
-        "This filter includes a vacuum. Consider using Server Mode (single device per bridge) for Apple Home/Alexa compatibility.",
+        "This filter includes a vacuum. Consider using Server Mode (standalone device node) for Apple Home/Alexa compatibility.",
       );
     }
     if (result.total > 50) {

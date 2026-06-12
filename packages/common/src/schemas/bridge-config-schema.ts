@@ -182,9 +182,9 @@ const featureFlagSchema: JSONSchema7 = {
     serverMode: {
       title: "Server Mode (standalone device)",
       description:
-        "Expose the entity as a standalone Matter device instead of a bridged device. " +
+        "Expose entities as standalone Matter devices instead of bridged ones. " +
         "Works for any supported device type, e.g. robot vacuums need it for Apple Home Siri voice commands. " +
-        "IMPORTANT: Only ONE device should be in this bridge when server mode is enabled.",
+        "One node carries up to 10 devices; the first entity is the primary and drives the node name and type (experimental beyond one device).",
       type: "boolean",
       default: false,
     },
