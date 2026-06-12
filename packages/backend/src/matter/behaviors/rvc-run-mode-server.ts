@@ -441,6 +441,13 @@ class RvcRunModeServerBase extends Base {
         cleaned,
         ordered,
       );
+      logger.debug(
+        `cleanedArea: raw=${raw} baseline=${s.cleanedAreaBaseline} ` +
+          `cleaned=${cleaned} sizes=[${ordered
+            .map((o) => `${o.areaId}:${o.sizeSqm}`)
+            .join(",")}] -> current=${currentArea} ` +
+          `completed=[${completed.join(",")}]`,
+      );
       for (const id of completed) {
         s.completedAreas.add(id);
       }
