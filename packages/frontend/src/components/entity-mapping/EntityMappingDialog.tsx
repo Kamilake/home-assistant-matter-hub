@@ -118,6 +118,8 @@ export function EntityMappingDialog({
   const [mopIntensityEntity, setMopIntensityEntity] = useState("");
   const [currentRoomEntity, setCurrentRoomEntity] = useState("");
   const [cleanedAreaEntity, setCleanedAreaEntity] = useState("");
+  const [disableCustomAreaRoomModes, setDisableCustomAreaRoomModes] =
+    useState(false);
   const [customServiceAreas, setCustomServiceAreas] = useState<
     CustomServiceArea[]
   >([]);
@@ -185,6 +187,9 @@ export function EntityMappingDialog({
       setMopIntensityEntity(currentMapping?.mopIntensityEntity || "");
       setCurrentRoomEntity(currentMapping?.currentRoomEntity || "");
       setCleanedAreaEntity(currentMapping?.cleanedAreaEntity || "");
+      setDisableCustomAreaRoomModes(
+        currentMapping?.disableCustomAreaRoomModes || false,
+      );
       setCustomServiceAreas(currentMapping?.customServiceAreas || []);
       setAreaDataDrafts(
         (currentMapping?.customServiceAreas || []).map((a) =>
@@ -285,6 +290,7 @@ export function EntityMappingDialog({
       mopIntensityEntity: mopIntensityEntity.trim() || undefined,
       currentRoomEntity: currentRoomEntity.trim() || undefined,
       cleanedAreaEntity: cleanedAreaEntity.trim() || undefined,
+      disableCustomAreaRoomModes: disableCustomAreaRoomModes || undefined,
       customFanSpeedTags:
         Object.keys(customFanSpeedTags).length > 0
           ? customFanSpeedTags
@@ -327,6 +333,7 @@ export function EntityMappingDialog({
     mopIntensityEntity,
     currentRoomEntity,
     cleanedAreaEntity,
+    disableCustomAreaRoomModes,
     customServiceAreas,
     customFanSpeedTagsList,
     valetudoIdentifier,
@@ -545,6 +552,18 @@ export function EntityMappingDialog({
               placeholder="sensor.vacuum_cleaned_area"
               helperText="Sensor reporting cumulative cleaned area in m². With a Size (m²) set on each area, advances room progress for batch vacuums that report area but not the current room."
               domain="sensor"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={disableCustomAreaRoomModes}
+                  onChange={(e) =>
+                    setDisableCustomAreaRoomModes(e.target.checked)
+                  }
+                />
+              }
+              label="Don't expose custom areas as per-room cleaning modes (forces Apple Home to use the multi-room area picker). Keep off for Google Home / Alexa, which rely on the modes."
+              sx={{ mt: 1, display: "block" }}
             />
             {showValetudoIdentifierField && (
               <TextField

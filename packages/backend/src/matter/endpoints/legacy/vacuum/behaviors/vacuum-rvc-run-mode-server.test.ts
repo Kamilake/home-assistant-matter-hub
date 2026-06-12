@@ -1,7 +1,10 @@
 import type { CustomServiceArea } from "@home-assistant-matter-hub/common";
 import { describe, expect, it } from "vitest";
 import type { CleaningSession } from "../../../../behaviors/rvc-run-mode-server.js";
-import { handleCustomServiceAreas } from "./vacuum-rvc-run-mode-server.js";
+import {
+  buildSupportedModes,
+  handleCustomServiceAreas,
+} from "./vacuum-rvc-run-mode-server.js";
 
 function session(): CleaningSession {
   return {
@@ -171,5 +174,31 @@ describe("handleCustomServiceAreas", () => {
       selected_area_ids_csv: "1,2",
       selected_area_names_csv: "Kitchen,Bedroom",
     });
+  });
+});
+
+describe("buildSupportedModes disableCustomAreaRoomModes", () => {
+  // biome-ignore lint/suspicious/noExplicitAny: custom-area branch never reads attributes
+  const attributes = {} as any;
+
+  it("registers one mode per custom area by default", () => {
+    const modes = buildSupportedModes(attributes, false, areas, false);
+    const labels = modes.map((m) => m.label);
+    // Idle + Cleaning + one mode per area (sorted alphabetically)
+    expect(labels).toEqual([
+      "Idle",
+      "Cleaning",
+      "Bedroom",
+      "Kitchen",
+      "Living Room",
+    ]);
+  });
+
+  it("drops the room modes when disableCustomAreaRoomModes is set", () => {
+    const modes = buildSupportedModes(attributes, false, areas, true);
+    expect(modes.map((m) => m.label)).toEqual(["Idle", "Cleaning"]);
+    for (const area of areas) {
+      expect(modes.some((m) => m.label === area.name)).toBe(false);
+    }
   });
 });

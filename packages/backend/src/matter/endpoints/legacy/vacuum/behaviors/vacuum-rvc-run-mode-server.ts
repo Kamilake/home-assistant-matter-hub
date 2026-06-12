@@ -74,10 +74,11 @@ function buildValetudoSegmentAction(
  * @param attributes - Vacuum device attributes
  * @param includeUnnamedRooms - If true, includes rooms with generic names like "Room 7". Default: false
  */
-function buildSupportedModes(
+export function buildSupportedModes(
   attributes: VacuumDeviceAttributes,
   includeUnnamedRooms = false,
   customAreas?: CustomServiceArea[],
+  disableRoomModes = false,
 ): RvcRunMode.ModeOption[] {
   const modes: RvcRunMode.ModeOption[] = [
     {
@@ -106,18 +107,21 @@ function buildSupportedModes(
     // Modes use ROOM_MODE_BASE + (1-based alphabetical index); cleanRoom
     // resolves them back the same way. ServiceArea areaIds instead follow
     // config order (createCustomServiceAreaServer), the two numbering
-    // schemes are independent and resolved per path.
-    const sorted = [...customAreas].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
-    for (let i = 0; i < sorted.length; i++) {
-      const modeValue = ROOM_MODE_BASE + i + 1;
-      if (modeValue > 255) continue;
-      modes.push({
-        label: sorted[i].name,
-        mode: modeValue,
-        modeTags: [{ value: RvcRunMode.ModeTag.Cleaning }],
-      });
+    // schemes are independent and resolved per path. When disableRoomModes is
+    // set, skip them so the controller can only use ServiceArea (#367).
+    if (!disableRoomModes) {
+      const sorted = [...customAreas].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+      for (let i = 0; i < sorted.length; i++) {
+        const modeValue = ROOM_MODE_BASE + i + 1;
+        if (modeValue > 255) continue;
+        modes.push({
+          label: sorted[i].name,
+          mode: modeValue,
+          modeTags: [{ value: RvcRunMode.ModeTag.Cleaning }],
+        });
+      }
     }
   } else {
     // Regular room modes from vacuum attributes (Dreame, Roborock, etc.)
@@ -321,12 +325,13 @@ const vacuumRvcRunModeConfig = {
 
   getSupportedModes: (entity: { attributes: unknown }, agent: Agent) => {
     const attributes = entity.attributes as VacuumDeviceAttributes;
-    const customAreas = agent.get(HomeAssistantEntityBehavior).state.mapping
-      ?.customServiceAreas;
+    const mapping = agent.get(HomeAssistantEntityBehavior).state.mapping;
+    const customAreas = mapping?.customServiceAreas;
     return buildSupportedModes(
       attributes,
       false,
       customAreas && customAreas.length > 0 ? customAreas : undefined,
+      mapping?.disableCustomAreaRoomModes,
     );
   },
 
@@ -683,6 +688,7 @@ export function createVacuumRvcRunModeServer(
   attributes: VacuumDeviceAttributes,
   includeUnnamedRooms = false,
   customAreas?: CustomServiceArea[],
+  disableRoomModes = false,
 ) {
   // Get all rooms first for logging
   const allRooms = parseVacuumRooms(attributes, true);
@@ -695,6 +701,7 @@ export function createVacuumRvcRunModeServer(
     attributes,
     includeUnnamedRooms,
     customAreas,
+    disableRoomModes,
   );
 
   logger.info(

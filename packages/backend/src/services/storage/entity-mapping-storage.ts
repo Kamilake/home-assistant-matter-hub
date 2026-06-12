@@ -135,6 +135,8 @@ export class EntityMappingStorage extends Service {
           : undefined,
       currentRoomEntity: request.currentRoomEntity?.trim() || undefined,
       cleanedAreaEntity: request.cleanedAreaEntity?.trim() || undefined,
+      disableCustomAreaRoomModes:
+        request.disableCustomAreaRoomModes || undefined,
       valetudoIdentifier: request.valetudoIdentifier?.trim() || undefined,
       coverSwapOpenClose: request.coverSwapOpenClose || undefined,
       coverSliderDebounceMs: sanitizeDebounceMs(request.coverSliderDebounceMs),
@@ -173,6 +175,7 @@ export class EntityMappingStorage extends Service {
         Object.keys(config.customFanSpeedTags).length === 0) &&
       !config.currentRoomEntity &&
       !config.cleanedAreaEntity &&
+      !config.disableCustomAreaRoomModes &&
       !config.valetudoIdentifier &&
       !config.coverSwapOpenClose &&
       !config.coverSliderDebounceMs &&

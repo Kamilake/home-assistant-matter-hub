@@ -75,6 +75,7 @@ export function ServerModeVacuumDevice(
           attributes,
           false,
           customAreas && customAreas.length > 0 ? customAreas : undefined,
+          homeAssistantEntity.mapping?.disableCustomAreaRoomModes,
         ),
   ).set({ homeAssistantEntity });
 

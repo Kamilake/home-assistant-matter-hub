@@ -199,6 +199,12 @@ export interface EntityMappingConfig {
    */
   readonly cleanedAreaEntity?: string;
   /**
+   * Optional: Don't expose custom service areas as per-room RvcRunMode modes,
+   * so Apple Home uses the ServiceArea multi-room picker instead of cleaning a
+   * single room. Keep off for Google Home / Alexa, which use the modes (#367).
+   */
+  readonly disableCustomAreaRoomModes?: boolean;
+  /**
    * Optional: Valetudo MQTT identifier for segment cleaning.
    * HA lowercases entity IDs, but the MQTT topic needs the exact identifier
    * shown in Valetudo under Connectivity → MQTT (e.g., "GentleFinishedSpider").
@@ -317,6 +323,7 @@ export interface EntityMappingRequest {
   readonly customFanSpeedTags?: Record<string, number>;
   readonly currentRoomEntity?: string;
   readonly cleanedAreaEntity?: string;
+  readonly disableCustomAreaRoomModes?: boolean;
   readonly valetudoIdentifier?: string;
   readonly coverSwapOpenClose?: boolean;
   readonly coverSliderDebounceMs?: number;
