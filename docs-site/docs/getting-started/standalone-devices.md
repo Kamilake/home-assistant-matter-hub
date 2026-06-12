@@ -2,7 +2,7 @@
 
 A standalone device is a single Home Assistant entity exposed as its own Matter device, with its own pairing code, instead of living inside a bridge. Some controllers (for example Apple Home with robot vacuums) handle a device better when it is not presented as a bridged child, so this gives each device a clean, independent identity.
 
-Under the hood a standalone device is a bridge running in Server Mode that holds exactly one entity. The Standalone Devices page turns that into a simple per device workflow, and it now works for any device type, not only robot vacuums.
+Under the hood a standalone device is a bridge running in Server Mode that holds exactly one entity. The Standalone Devices page turns that into a simple per device workflow, and it works for any supported device type, not only robot vacuums. See [Supported Device Types](../supported-device-types.md) for the full list.
 
 ## When to use it
 
