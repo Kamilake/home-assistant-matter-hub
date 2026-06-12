@@ -282,6 +282,9 @@ class LockServerBase extends Base {
         passage: true,
         privacy: true,
         vacation: true,
+        // AlwaysSet (bits 5-15) is mandatory per the Matter spec; matter.js
+        // requires supportedOperatingModes.alwaysSet to be 2047.
+        alwaysSet: 2047,
       },
     });
   }
@@ -380,6 +383,9 @@ class LockServerWithPinBase extends PinCredentialBase {
         passage: true,
         privacy: true,
         vacation: true,
+        // AlwaysSet (bits 5-15) is mandatory per the Matter spec; matter.js
+        // requires supportedOperatingModes.alwaysSet to be 2047.
+        alwaysSet: 2047,
       },
       numberOfPinUsersSupported: 1,
       numberOfTotalUsersSupported: 1,
@@ -602,6 +608,9 @@ class LockServerWithPinAndUnboltBase extends PinCredentialUnboltBase {
         passage: true,
         privacy: true,
         vacation: true,
+        // AlwaysSet (bits 5-15) is mandatory per the Matter spec; matter.js
+        // requires supportedOperatingModes.alwaysSet to be 2047.
+        alwaysSet: 2047,
       },
       numberOfPinUsersSupported: 1,
       numberOfTotalUsersSupported: 1,
