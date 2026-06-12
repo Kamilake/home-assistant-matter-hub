@@ -478,7 +478,7 @@ export function BridgeWizard({ open, onClose, onComplete }: BridgeWizardProps) {
           </Alert>
         )}
       <Tooltip
-        title="Required for Robot Vacuums to work with Apple Home (Siri) and Alexa. Server Mode bridges support only ONE device."
+        title="Exposes the entity as a standalone Matter device, e.g. so robot vacuums work with Apple Home (Siri) and Alexa. Server Mode bridges support only ONE device."
         placement="right"
       >
         <FormControlLabel

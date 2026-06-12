@@ -15,6 +15,7 @@ import { subscribeEntities } from "../home-assistant/api/subscribe-entities.js";
 import type { HomeAssistantClient } from "../home-assistant/home-assistant-client.js";
 import type { HomeAssistantStates } from "../home-assistant/home-assistant-registry.js";
 import type { EntityMappingStorage } from "../storage/entity-mapping-storage.js";
+import type { BridgeDataProvider } from "./bridge-data-provider.js";
 import type { BridgeRegistry } from "./bridge-registry.js";
 
 /**
@@ -45,14 +46,14 @@ export class ServerModeEndpointManager extends Service {
     private readonly client: HomeAssistantClient,
     private readonly registry: BridgeRegistry,
     private readonly mappingStorage: EntityMappingStorage,
-    private readonly bridgeId: string,
+    private readonly dataProvider: BridgeDataProvider,
     private readonly log: Logger,
   ) {
     super("ServerModeEndpointManager");
   }
 
   private getEntityMapping(entityId: string): EntityMappingConfig | undefined {
-    return this.mappingStorage.getMapping(this.bridgeId, entityId);
+    return this.mappingStorage.getMapping(this.dataProvider.id, entityId);
   }
 
   private computeMappingFingerprint(
@@ -120,6 +121,14 @@ export class ServerModeEndpointManager extends Service {
     // Server mode only supports a single device
     if (this.entityIds.length === 0) {
       this.log.warn("Server mode bridge has no entities configured");
+      // surface the empty node in the UI instead of running silently
+      this._failedEntities.push({
+        entityId:
+          this.dataProvider.filter?.include?.[0]?.value ??
+          "(no entity configured)",
+        reason:
+          "No Home Assistant entity matched this bridge's filter. Check for typos or renamed/removed entities.",
+      });
       return;
     }
 
@@ -147,6 +156,10 @@ export class ServerModeEndpointManager extends Service {
       this.log.warn(
         `The only entity in server mode bridge is disabled: ${entityId}`,
       );
+      this._failedEntities.push({
+        entityId,
+        reason: "The configured entity is disabled for this bridge.",
+      });
       return;
     }
 
@@ -244,10 +257,13 @@ export class ServerModeEndpointManager extends Service {
       const reason = e instanceof Error ? e.message : String(e);
       this.log.error(`Failed to create server mode device ${entityId}:`, e);
       this._failedEntities.push({ entityId, reason });
-    }
-
-    if (this.unsubscribe) {
-      this.startObserving();
+    } finally {
+      // re-subscribe on every path, the vacuum branch returns inside the try
+      // and would otherwise keep a stale entity-id subscription after a
+      // runtime mapping change
+      if (this.unsubscribe) {
+        this.startObserving();
+      }
     }
   }
 

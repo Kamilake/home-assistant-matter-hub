@@ -163,7 +163,10 @@ export interface BridgeConfig {
   readonly sessionMaxAgeHours?: number;
 }
 
-export interface CreateBridgeRequest extends BridgeConfig {}
+export interface CreateBridgeRequest extends Omit<BridgeConfig, "port"> {
+  /** Optional on create, the backend assigns the next free port if omitted. */
+  readonly port?: number;
+}
 
 export interface UpdateBridgeRequest extends BridgeConfig {
   readonly id: string;

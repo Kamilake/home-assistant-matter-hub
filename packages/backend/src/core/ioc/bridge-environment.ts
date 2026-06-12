@@ -182,7 +182,7 @@ export class BridgeEnvironmentFactory extends BridgeFactory {
       await env.load(HomeAssistantClient),
       env.get(BridgeRegistry),
       await env.load(EntityMappingStorage),
-      dataProvider.id,
+      dataProvider,
       loggerService.get("ServerModeEndpointManager"),
     );
 

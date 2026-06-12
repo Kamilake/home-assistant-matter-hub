@@ -89,7 +89,11 @@
     "created": "Eigenständiges Gerät erstellt",
     "createFailed": "Gerät konnte nicht erstellt werden",
     "deleted": "Eigenständiges Gerät gelöscht",
-    "deleteFailed": "Gerät konnte nicht gelöscht werden"
+    "deleteFailed": "Gerät konnte nicht gelöscht werden",
+    "entityInvalid": "Gib eine einzelne Entity-ID wie vacuum.wohnzimmer ein, Wildcards sind nicht erlaubt.",
+    "entityProblem": "Entity-Problem",
+    "confirmDeleteTitle": "Eigenständiges Gerät löschen",
+    "confirmDeleteMessage": "Das löscht den Matter-Node des Geräts und entkoppelt es von deinen Controllern. Das lässt sich nicht rückgängig machen."
   },
   "status": {
     "error": "Fehler",
@@ -607,8 +611,8 @@
     "nameRequired": "Bitte gib einen Bridge-Namen ein",
     "createFailed": "Bridge konnte nicht erstellt werden",
     "bridgeInfoDescription": "Gib deiner Bridge einen Namen und Port.",
-    "serverModeLabel": "Server-Modus (für Saugroboter)",
-    "serverModeTooltip": "Erforderlich, damit Saugroboter mit Apple Home (Siri) und Alexa funktionieren. Server-Modus-Bridges unterstützen nur EIN Gerät.",
+    "serverModeLabel": "Server-Modus (eigenständiges Gerät)",
+    "serverModeTooltip": "Stellt das Entity als eigenständiges Matter-Gerät statt als Bridge-Gerät bereit, z.B. damit Saugroboter mit Apple Home (Siri) und Alexa funktionieren. Server-Modus-Bridges unterstützen nur EIN Gerät.",
     "entityFilterDescription": "Konfiguriere, welche Entities in diese Bridge aufgenommen werden sollen.",
     "includeAll": "Alle Entities einschließen (Platzhalter)",
     "entityId": "Entity-ID",

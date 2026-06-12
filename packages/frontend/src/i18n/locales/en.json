@@ -89,7 +89,11 @@
     "created": "Standalone device created",
     "createFailed": "Could not create device",
     "deleted": "Standalone device deleted",
-    "deleteFailed": "Could not delete device"
+    "deleteFailed": "Could not delete device",
+    "entityInvalid": "Enter a single entity id like vacuum.living_room, wildcards are not allowed.",
+    "entityProblem": "entity problem",
+    "confirmDeleteTitle": "Delete standalone device",
+    "confirmDeleteMessage": "This deletes the device's Matter node and unpairs it from your controllers. This cannot be undone."
   },
   "status": {
     "error": "Error",
@@ -569,8 +573,8 @@
     "nameRequired": "Please enter a bridge name",
     "createFailed": "Failed to create bridge",
     "bridgeInfoDescription": "Give your bridge a name and port.",
-    "serverModeLabel": "Server Mode (for Robot Vacuums)",
-    "serverModeTooltip": "Required for Robot Vacuums to work with Apple Home (Siri) and Alexa. Server Mode bridges support only ONE device.",
+    "serverModeLabel": "Server Mode (standalone device)",
+    "serverModeTooltip": "Exposes the entity as a standalone Matter device instead of a bridged one, e.g. so robot vacuums work with Apple Home (Siri) and Alexa. Server Mode bridges support only ONE device.",
     "entityFilterDescription": "Configure which entities should be included in this bridge.",
     "includeAll": "Include all entities (wildcard)",
     "entityId": "Entity ID",

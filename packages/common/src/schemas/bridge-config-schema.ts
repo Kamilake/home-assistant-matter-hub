@@ -180,10 +180,10 @@ const featureFlagSchema: JSONSchema7 = {
     },
 
     serverMode: {
-      title: "Server Mode (for Robot Vacuums)",
+      title: "Server Mode (standalone device)",
       description:
-        "Expose the device as a standalone Matter device instead of a bridged device. " +
-        "This is required for Apple Home to properly support Siri voice commands for Robot Vacuums. " +
+        "Expose the entity as a standalone Matter device instead of a bridged device. " +
+        "Works for any supported device type, e.g. robot vacuums need it for Apple Home Siri voice commands. " +
         "IMPORTANT: Only ONE device should be in this bridge when server mode is enabled.",
       type: "boolean",
       default: false,

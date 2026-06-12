@@ -197,11 +197,14 @@ export class BridgeService extends Service {
   }
 
   async create(request: CreateBridgeRequest): Promise<Bridge> {
-    if (this.portUsed(request.port)) {
-      throw new Error(`Port already in use: ${request.port}`);
+    // assign the next free port server-side when the request omits it
+    const port = request.port ?? this.getNextAvailablePort();
+    if (this.portUsed(port)) {
+      throw new Error(`Port already in use: ${port}`);
     }
     const bridge = await this.addBridge({
       ...request,
+      port,
       id: crypto.randomUUID().replace(/-/g, ""),
       basicInformation: this.props.basicInformation,
     });

@@ -25,7 +25,9 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { BridgeStatusIcon } from "../../components/bridge/BridgeStatusIcon.tsx";
 import { EntityAutocomplete } from "../../components/entity-mapping/EntityAutocomplete.tsx";
+import { ConfirmDialog } from "../../components/misc/ConfirmDialog.tsx";
 import { useNotifications } from "../../components/notifications/use-notifications.ts";
 import {
   useBridges,
@@ -38,14 +40,21 @@ import { useAppDispatch } from "../../state/hooks.ts";
 
 // A standalone device is a server-mode bridge holding exactly one entity.
 function deviceEntityId(bridge: BridgeDataWithMetadata): string | undefined {
-  return bridge.filter?.include?.[0]?.value;
+  const matcher = bridge.filter?.include?.[0];
+  if (!matcher) return undefined;
+  // bridges flipped to server mode elsewhere may carry domain/label matchers
+  if (matcher.type !== HomeAssistantMatcherType.Pattern) {
+    return `${matcher.type}: ${matcher.value}`;
+  }
+  return matcher.value;
 }
 
-async function fetchNextPort(): Promise<number> {
-  const res = await fetch("api/matter/next-port");
-  if (!res.ok) return 5540;
-  const data = (await res.json()) as { port?: number };
-  return data.port ?? 5540;
+// exactly one entity, so no wildcards and a strict entity-id shape
+const ENTITY_ID_SHAPE = /^[a-z0-9_]+\.[a-z0-9_]+$/;
+
+function errorMessage(e: unknown): string | undefined {
+  // thunk rejections are serialized plain objects, not Error instances
+  return (e as { message?: string } | undefined)?.message;
 }
 
 export const StandaloneDevicesPage = () => {
@@ -60,6 +69,10 @@ export const StandaloneDevicesPage = () => {
   const [name, setName] = useState("");
   const [entityId, setEntityId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [pendingDelete, setPendingDelete] =
+    useState<BridgeDataWithMetadata | null>(null);
+
+  const entityIdValid = ENTITY_ID_SHAPE.test(entityId.trim());
 
   const devices = (bridges ?? []).filter(
     (bridge) => bridge.featureFlags?.serverMode === true,
@@ -68,15 +81,14 @@ export const StandaloneDevicesPage = () => {
   const handleCreate = useCallback(async () => {
     const trimmedName = name.trim();
     const trimmedEntity = entityId.trim();
-    if (!trimmedName || !trimmedEntity) {
+    if (!trimmedName || !ENTITY_ID_SHAPE.test(trimmedEntity)) {
       return;
     }
     setSaving(true);
     try {
-      const port = await fetchNextPort();
+      // no port here, the backend assigns the next free one
       const request: CreateBridgeRequest = {
         name: trimmedName,
-        port,
         filter: {
           include: [
             { type: HomeAssistantMatcherType.Pattern, value: trimmedEntity },
@@ -97,9 +109,8 @@ export const StandaloneDevicesPage = () => {
     } catch (e) {
       notifications.show({
         message:
-          e instanceof Error
-            ? e.message
-            : t("standaloneDevices.createFailed", "Could not create device"),
+          errorMessage(e) ??
+          t("standaloneDevices.createFailed", "Could not create device"),
         severity: "error",
       });
     } finally {
@@ -119,9 +130,8 @@ export const StandaloneDevicesPage = () => {
       } catch (e) {
         notifications.show({
           message:
-            e instanceof Error
-              ? e.message
-              : t("standaloneDevices.deleteFailed", "Could not delete device"),
+            errorMessage(e) ??
+            t("standaloneDevices.deleteFailed", "Could not delete device"),
           severity: "error",
         });
       }
@@ -189,7 +199,27 @@ export const StandaloneDevicesPage = () => {
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Chip size="small" label={device.status} />
+                  {(device.failedEntities?.length ?? 0) > 0 && (
+                    <Tooltip
+                      title={
+                        device.failedEntities?.map((f) => f.reason).join(" ") ??
+                        ""
+                      }
+                    >
+                      <Chip
+                        size="small"
+                        color="warning"
+                        label={t(
+                          "standaloneDevices.entityProblem",
+                          "entity problem",
+                        )}
+                      />
+                    </Tooltip>
+                  )}
+                  <BridgeStatusIcon
+                    status={device.status}
+                    reason={device.statusReason}
+                  />
                   <Tooltip
                     title={t(
                       "standaloneDevices.openBridge",
@@ -206,7 +236,7 @@ export const StandaloneDevicesPage = () => {
                   </Tooltip>
                   <Tooltip title={t("common.delete", "Delete")}>
                     <IconButton
-                      onClick={() => handleDelete(device)}
+                      onClick={() => setPendingDelete(device)}
                       size="small"
                       color="error"
                     >
@@ -222,7 +252,9 @@ export const StandaloneDevicesPage = () => {
 
       <Dialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => {
+          if (!saving) setDialogOpen(false);
+        }}
         fullWidth
         maxWidth="sm"
       >
@@ -234,16 +266,23 @@ export const StandaloneDevicesPage = () => {
             onChange={(e) => setName(e.target.value)}
             fullWidth
             margin="normal"
-            slotProps={{ htmlInput: { maxLength: 64 } }}
+            slotProps={{ htmlInput: { maxLength: 32 } }}
           />
           <EntityAutocomplete
             value={entityId}
             onChange={setEntityId}
             label={t("standaloneDevices.entity", "Entity")}
-            helperText={t(
-              "standaloneDevices.entityHelp",
-              "Exactly one entity is exposed as this device.",
-            )}
+            helperText={
+              entityId.trim() && !entityIdValid
+                ? t(
+                    "standaloneDevices.entityInvalid",
+                    "Enter a single entity id like vacuum.living_room, wildcards are not allowed.",
+                  )
+                : t(
+                    "standaloneDevices.entityHelp",
+                    "Exactly one entity is exposed as this device.",
+                  )
+            }
           />
         </DialogContent>
         <DialogActions>
@@ -253,7 +292,7 @@ export const StandaloneDevicesPage = () => {
           <Button
             onClick={handleCreate}
             variant="contained"
-            disabled={saving || !name.trim() || !entityId.trim()}
+            disabled={saving || !name.trim() || !entityIdValid}
           >
             {saving
               ? t("standaloneDevices.creating", "Creating")
@@ -261,6 +300,27 @@ export const StandaloneDevicesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={t(
+          "standaloneDevices.confirmDeleteTitle",
+          "Delete standalone device",
+        )}
+        message={t(
+          "standaloneDevices.confirmDeleteMessage",
+          "This deletes the device's Matter node and unpairs it from your controllers. This cannot be undone.",
+        )}
+        confirmLabel={t("common.delete", "Delete")}
+        cancelLabel={t("common.cancel", "Cancel")}
+        confirmColor="error"
+        onConfirm={() => {
+          const device = pendingDelete;
+          setPendingDelete(null);
+          if (device) void handleDelete(device);
+        }}
+        onCancel={() => setPendingDelete(null)}
+      />
     </Box>
   );
 };
