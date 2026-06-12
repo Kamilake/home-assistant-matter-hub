@@ -15,6 +15,19 @@ export const ContactSensorType = ContactSensorDevice.with(
   BooleanStateConfigurationServer,
 );
 
+// 1.3-safe ContactSensor (0x15) for leak/freeze/rain detectors. Their dedicated
+// WaterLeak/WaterFreeze/Rain device types are Matter 1.4 and Alexa (1.3) rejects
+// them, which breaks the whole-bridge subscription (#365). Same device type as
+// ContactSensorType but NON-inverted, so a detected alarm (HA "on") still
+// reports stateValue true.
+export const DetectorContactSensorType = ContactSensorDevice.with(
+  BasicInformationServer,
+  IdentifyServer,
+  HomeAssistantEntityBehavior,
+  BooleanStateServer(),
+  BooleanStateConfigurationServer,
+);
+
 export const ContactSensorWithBatteryType = ContactSensorDevice.with(
   BasicInformationServer,
   IdentifyServer,
