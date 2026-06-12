@@ -22,6 +22,11 @@ overrides:
   fast-uri@<3.1.2: ^3.1.2
   qs@<6.15.2: ^6.15.2
 
+patchedDependencies:
+  '@matter/node@0.17.2':
+    hash: 94929b63e18ecd741bdecb931819e9af410b7c9b7b7edc624c120f07e722b5df
+    path: patches/@matter__node@0.17.2.patch
+
 importers:
 
   .:
@@ -5850,7 +5855,7 @@ snapshots:
     dependencies:
       '@matter/general': 0.17.2
       '@matter/model': 0.17.2
-      '@matter/node': 0.17.2
+      '@matter/node': 0.17.2(patch_hash=94929b63e18ecd741bdecb931819e9af410b7c9b7b7edc624c120f07e722b5df)
       '@matter/protocol': 0.17.2
       '@matter/types': 0.17.2
     optionalDependencies:
@@ -5860,7 +5865,7 @@ snapshots:
     dependencies:
       '@matter/general': 0.17.2
 
-  '@matter/node@0.17.2':
+  '@matter/node@0.17.2(patch_hash=94929b63e18ecd741bdecb931819e9af410b7c9b7b7edc624c120f07e722b5df)':
     dependencies:
       '@matter/general': 0.17.2
       '@matter/model': 0.17.2
@@ -5870,7 +5875,7 @@ snapshots:
   '@matter/nodejs@0.17.2':
     dependencies:
       '@matter/general': 0.17.2
-      '@matter/node': 0.17.2
+      '@matter/node': 0.17.2(patch_hash=94929b63e18ecd741bdecb931819e9af410b7c9b7b7edc624c120f07e722b5df)
       '@matter/protocol': 0.17.2
       '@matter/types': 0.17.2
 

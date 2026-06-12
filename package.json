@@ -51,6 +51,9 @@
       "brace-expansion@>=4.0.0 <5.0.6": "^5.0.6",
       "fast-uri@<3.1.2": "^3.1.2",
       "qs@<6.15.2": "^6.15.2"
+    },
+    "patchedDependencies": {
+      "@matter/node@0.17.2": "patches/@matter__node@0.17.2.patch"
     }
   },
   "devDependencies": {
