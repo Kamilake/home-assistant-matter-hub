@@ -32,8 +32,8 @@ Rows flagged with a footnote number link to the vendor source that establishes t
 | `binary_sensor` | ContactSensor | ✅ | ✅ [¹](#sources) | ✅ [²](#sources) | ✅ |
 | `binary_sensor` | OccupancySensor | ✅ | ✅ [¹](#sources) | ✅ [²](#sources) | ✅ |
 | `binary_sensor` | SmokeCoAlarm | ✅ | ✅ | ✅ [²](#sources) | ✅ |
-| `binary_sensor` | WaterLeakDetector | ✅ | ✅ | ✅ [²](#sources) | ✅ |
-| `binary_sensor` | WaterFreezeDetector | ❓ | ❓ | ❓ | ❓ |
+| `binary_sensor` (override) | WaterLeakDetector | ✅ [³](#sources) | ❌ [¹](#sources) | ⚠️ [²](#sources) | ❓ |
+| `binary_sensor` (override) | WaterFreezeDetector | ❌ [³](#sources) | ❌ [¹](#sources) | ❌ [²](#sources) | ❓ |
 | `media_player` | Speaker | ❓ | ✅ [¹](#sources) | ❌ [²](#sources) | ❓ |
 | `media_player` | BasicVideoPlayer | ❓ | ❓ | ❓ | ❓ |
 | `valve` | WaterValve | ✅ | ❌ [¹](#sources) | ❌ [²](#sources) | ❓ |
@@ -45,6 +45,10 @@ Rows flagged with a footnote number link to the vendor source that establishes t
 | `humidifier` | Fan | ✅ | ✅ [¹](#sources) | ✅ [²](#sources) | ❓ |
 | `dishwasher` (override) | Dishwasher | ❌ [³](#sources) | ✅ [¹](#sources) | ✅ [²](#sources) | ✅ |
 | `weather` | TemperatureSensor (+Humidity, +Pressure) | ⚠️**** | ⚠️**** | ⚠️**** | ❓ |
+
+:::note Leak and freeze detectors are opt-in
+By default a `moisture` or `cold` binary sensor is exposed as a plain ContactSensor (Matter 1.3), which every controller handles. The WaterLeakDetector and WaterFreezeDetector rows above are Matter 1.4 types that are only used if you set the entity's Matter device type by hand in the Entity Mapping dialog. Setting WaterLeakDetector gives Apple Home (iOS 18.4+) a real leak/alarm tile, but Google does not list these types, Alexa maps water leak to no capability, and exposing a 1.4 detector type can knock out an Alexa bridge so every device on it goes unresponsive ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365)). Stay on the default unless you are Apple-only.
+:::
 
 ### Legend
 
