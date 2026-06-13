@@ -35,6 +35,7 @@ export type MatterDeviceType =
   | "rain_sensor"
   | "radon_sensor"
   | "robot_vacuum_cleaner"
+  | "robotic_lawn_mower"
   | "smoke_co_alarm"
   | "speaker"
   | "temperature_sensor"
@@ -375,6 +376,7 @@ export const matterDeviceTypeLabels: Record<MatterDeviceType, string> = {
   rain_sensor: "Rain Sensor",
   radon_sensor: "Radon Sensor",
   robot_vacuum_cleaner: "Robot Vacuum Cleaner",
+  robotic_lawn_mower: "Robotic Lawn Mower",
   smoke_co_alarm: "Smoke/CO Alarm",
   speaker: "Speaker",
   temperature_sensor: "Temperature Sensor",
@@ -385,6 +387,171 @@ export const matterDeviceTypeLabels: Record<MatterDeviceType, string> = {
   water_leak_detector: "Water Leak Detector",
   water_valve: "Water Valve",
   window_covering: "Window Covering",
+};
+
+export type ControllerSupport = "yes" | "partial" | "no" | "unknown";
+
+export interface MatterDeviceTypeControllerSupport {
+  apple: ControllerSupport;
+  google: ControllerSupport;
+  alexa: ControllerSupport;
+  note?: string;
+}
+
+/**
+ * Which controllers actually surface each Matter device type, so the override
+ * picker can warn before you pick a type your controller ignores. Verified
+ * 2026-06 against the Apple, Google, and Alexa device-support pages. Controllers
+ * move fast, so treat this as a point-in-time snapshot.
+ */
+export const matterDeviceTypeControllerSupport: Record<
+  MatterDeviceType,
+  MatterDeviceTypeControllerSupport
+> = {
+  on_off_light: { apple: "yes", google: "yes", alexa: "yes" },
+  dimmable_light: { apple: "yes", google: "yes", alexa: "yes" },
+  color_temperature_light: { apple: "yes", google: "yes", alexa: "yes" },
+  extended_color_light: { apple: "yes", google: "yes", alexa: "yes" },
+  on_off_plugin_unit: { apple: "yes", google: "yes", alexa: "yes" },
+  dimmable_plugin_unit: { apple: "yes", google: "no", alexa: "yes" },
+  on_off_switch: { apple: "yes", google: "partial", alexa: "unknown" },
+  door_lock: { apple: "yes", google: "partial", alexa: "yes" },
+  window_covering: { apple: "yes", google: "yes", alexa: "yes" },
+  thermostat: { apple: "yes", google: "yes", alexa: "yes" },
+  fan: {
+    apple: "no",
+    google: "yes",
+    alexa: "yes",
+    note: "Apple Home has no standalone fan, it only shows fans inside an AC.",
+  },
+  air_purifier: {
+    apple: "no",
+    google: "yes",
+    alexa: "yes",
+    note: "Apple Home does not list air purifiers.",
+  },
+  robot_vacuum_cleaner: { apple: "yes", google: "yes", alexa: "yes" },
+  robotic_lawn_mower: {
+    apple: "yes",
+    google: "unknown",
+    alexa: "yes",
+    note: "Shows up as a robot vacuum, there is no Matter mower type yet.",
+  },
+  humidifier_dehumidifier: {
+    apple: "unknown",
+    google: "no",
+    alexa: "yes",
+  },
+  dishwasher: {
+    apple: "no",
+    google: "no",
+    alexa: "unknown",
+    note: "Appliance types have little controller support today.",
+  },
+  speaker: {
+    apple: "no",
+    google: "yes",
+    alexa: "no",
+    note: "Apple and Alexa do not show Matter speakers.",
+  },
+  basic_video_player: {
+    apple: "no",
+    google: "no",
+    alexa: "no",
+    note: "TV/media types are not shown by these controllers.",
+  },
+  temperature_sensor: { apple: "yes", google: "yes", alexa: "yes" },
+  humidity_sensor: { apple: "yes", google: "yes", alexa: "yes" },
+  light_sensor: { apple: "yes", google: "yes", alexa: "yes" },
+  pressure_sensor: {
+    apple: "no",
+    google: "yes",
+    alexa: "no",
+    note: "Only Google Home shows pressure sensors.",
+  },
+  flow_sensor: {
+    apple: "no",
+    google: "yes",
+    alexa: "no",
+    note: "Only Google Home shows flow sensors.",
+  },
+  air_quality_sensor: {
+    apple: "no",
+    google: "yes",
+    alexa: "yes",
+    note: "Apple Home does not show air quality.",
+  },
+  tvoc_sensor: { apple: "no", google: "no", alexa: "partial" },
+  carbon_monoxide_sensor: {
+    apple: "partial",
+    google: "no",
+    alexa: "partial",
+    note: "Apple shows a CO alarm, not a CO level reading.",
+  },
+  nitrogen_dioxide_sensor: { apple: "no", google: "no", alexa: "partial" },
+  ozone_sensor: { apple: "no", google: "no", alexa: "partial" },
+  formaldehyde_sensor: { apple: "no", google: "no", alexa: "partial" },
+  radon_sensor: { apple: "no", google: "no", alexa: "partial" },
+  pm1_sensor: { apple: "no", google: "no", alexa: "partial" },
+  electrical_sensor: {
+    apple: "no",
+    google: "no",
+    alexa: "unknown",
+    note: "Power/energy is rarely shown unless it is on a smart plug.",
+  },
+  battery_storage: {
+    apple: "no",
+    google: "no",
+    alexa: "no",
+    note: "Battery is usually shown inside a device, not on its own.",
+  },
+  contact_sensor: { apple: "yes", google: "yes", alexa: "yes" },
+  motion_sensor: { apple: "yes", google: "yes", alexa: "yes" },
+  occupancy_sensor: { apple: "partial", google: "yes", alexa: "yes" },
+  mode_select: {
+    apple: "no",
+    google: "no",
+    alexa: "no",
+    note: "Google Home does not support Mode Select (issue #356).",
+  },
+  water_valve: { apple: "no", google: "no", alexa: "no" },
+  pump: {
+    apple: "no",
+    google: "yes",
+    alexa: "no",
+    note: "Only Google Home shows pumps.",
+  },
+  rain_sensor: {
+    apple: "no",
+    google: "no",
+    alexa: "no",
+    note: "Newer Matter detector type with thin support, Alexa may reject it (issue #365).",
+  },
+  water_freeze_detector: {
+    apple: "no",
+    google: "no",
+    alexa: "no",
+    note: "Newer Matter detector type with thin support, Alexa may reject it (issue #365).",
+  },
+  water_leak_detector: {
+    apple: "yes",
+    google: "no",
+    alexa: "yes",
+    note: "Apple added leak sensors in iOS 18.4.",
+  },
+  water_heater: { apple: "no", google: "no", alexa: "unknown" },
+  generic_switch: {
+    apple: "partial",
+    google: "no",
+    alexa: "yes",
+    note: "Best for stateless buttons.",
+  },
+  smoke_co_alarm: {
+    apple: "yes",
+    google: "no",
+    alexa: "yes",
+    note: "Apple added smoke/CO alarms in iOS 18.4.",
+  },
 };
 
 /**
@@ -431,6 +598,7 @@ export const domainToDefaultMatterTypes: Partial<
   humidifier: ["humidifier_dehumidifier"],
   input_boolean: ["on_off_plugin_unit", "on_off_switch"],
   input_select: ["mode_select"],
+  lawn_mower: ["robotic_lawn_mower"],
   input_button: ["generic_switch"],
   light: [
     "color_temperature_light",

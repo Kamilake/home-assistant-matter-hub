@@ -4,6 +4,7 @@ export * from "./cover.js";
 export * from "./event.js";
 export * from "./fan.js";
 export * from "./humidifer.js";
+export * from "./lawn-mower.js";
 export * from "./light.js";
 export * from "./lock.js";
 export * from "./media-player.js";

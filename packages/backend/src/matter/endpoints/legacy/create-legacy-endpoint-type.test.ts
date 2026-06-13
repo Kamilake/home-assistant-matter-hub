@@ -12,6 +12,7 @@ import {
   type HomeAssistantEntityRegistry,
   type HomeAssistantEntityState,
   type HumidiferDeviceAttributes,
+  type LawnMowerDeviceAttributes,
   type LightDeviceAttributes,
   LightDeviceColorMode,
   MediaPlayerDeviceFeature,
@@ -208,6 +209,12 @@ const testEntities: Record<
       device_class: "doorbell",
       event_types: ["press", "double_press"],
       event_type: "press",
+    }),
+  ],
+  [HomeAssistantDomain.lawn_mower]: [
+    createEntity<LawnMowerDeviceAttributes>("lawn_mower.lm1", "docked", {
+      supported_features: 7, // START_MOWING + PAUSE + DOCK
+      battery_level: 80,
     }),
   ],
   [HomeAssistantDomain.valve]: [createEntity("valve.v1", "open")],

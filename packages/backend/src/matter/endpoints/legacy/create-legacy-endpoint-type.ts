@@ -31,6 +31,7 @@ import { EventDevice } from "./event/index.js";
 import { FanDevice } from "./fan/index.js";
 import { HumidifierDevice } from "./humidifier/index.js";
 import { InputButtonDevice } from "./input-button/index.js";
+import { LawnMowerDevice } from "./lawn-mower/index.js";
 import { ColorTemperatureLightType } from "./light/devices/color-temperature-light.js";
 import { DimmableLightType } from "./light/devices/dimmable-light.js";
 import { ExtendedColorLightType } from "./light/devices/extended-color-light.js";
@@ -202,6 +203,7 @@ const deviceCtrs: Partial<
   siren: SirenDevice,
   media_player: MediaPlayerDevice,
   humidifier: HumidifierDevice,
+  lawn_mower: LawnMowerDevice,
   vacuum: VacuumDevice,
   valve: ValveDevice,
   alarm_control_panel: AlarmControlPanelDevice,
@@ -242,6 +244,7 @@ const matterDeviceTypeFactories: Partial<
   fan: FanDevice,
   air_purifier: AirPurifierEndpoint,
   robot_vacuum_cleaner: (ha) => VacuumDevice(ha),
+  robotic_lawn_mower: (ha) => LawnMowerDevice(ha),
   humidifier_dehumidifier: HumidifierDevice,
   speaker: SpeakerMediaPlayerDevice,
   basic_video_player: VideoPlayerDevice,
