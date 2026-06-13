@@ -75,8 +75,6 @@ const deviceClasses: Partial<Record<BinarySensorDeviceClass, CombinedType>> = {
   [BinarySensorDeviceClass.Smoke]: SmokeAlarmType,
 
   [BinarySensorDeviceClass.Moisture]: DetectorContactSensorType,
-
-  [BinarySensorDeviceClass.Rain]: DetectorContactSensorType,
 };
 
 // Mapping from normal type to battery type

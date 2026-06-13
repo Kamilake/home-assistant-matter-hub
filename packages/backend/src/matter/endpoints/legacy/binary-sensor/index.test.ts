@@ -27,14 +27,13 @@ function deviceTypeFor(deviceClass: BinarySensorDeviceClass): number {
 }
 
 describe("binary sensor detector types are 1.3-safe (#365)", () => {
-  it("maps moisture/cold/rain to the 1.3 ContactSensor, not a Matter 1.4 detector", () => {
-    // The dedicated WaterLeak/WaterFreeze/Rain device types are Matter 1.4, and
+  it("maps moisture/cold to the 1.3 ContactSensor, not a Matter 1.4 detector", () => {
+    // The dedicated WaterLeak/WaterFreeze device types are Matter 1.4, and
     // Alexa (1.3) rejects them, which breaks the whole-bridge subscription.
     expect(deviceTypeFor(BinarySensorDeviceClass.Moisture)).toBe(
       CONTACT_SENSOR,
     );
     expect(deviceTypeFor(BinarySensorDeviceClass.Cold)).toBe(CONTACT_SENSOR);
-    expect(deviceTypeFor(BinarySensorDeviceClass.Rain)).toBe(CONTACT_SENSOR);
   });
 
   it("keeps a door sensor as a ContactSensor (control)", () => {
