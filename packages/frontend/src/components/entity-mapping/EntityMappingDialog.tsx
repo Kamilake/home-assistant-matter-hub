@@ -10,6 +10,7 @@ import {
 } from "@home-assistant-matter-hub/common";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Alert from "@mui/material/Alert";
 import Autocomplete from "@mui/material/Autocomplete";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -30,6 +31,10 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  ControllerSupportChips,
+  controllerSupportWarning,
+} from "./ControllerSupportChips.tsx";
 import { EntityAutocomplete } from "./EntityAutocomplete.tsx";
 
 interface RelatedButton {
@@ -428,6 +433,13 @@ export function EntityMappingDialog({
             onChange={(e) =>
               setMatterDeviceType(e.target.value as MatterDeviceType | "")
             }
+            renderValue={(value) =>
+              value ? (
+                matterDeviceTypeLabels[value as MatterDeviceType]
+              ) : (
+                <em>{t("mapping.autoDetect")}</em>
+              )
+            }
           >
             <MenuItem value="">
               <em>{t("mapping.autoDetect")}</em>
@@ -438,6 +450,7 @@ export function EntityMappingDialog({
             {suggestedTypes.map((type: MatterDeviceType) => (
               <MenuItem key={type} value={type}>
                 {matterDeviceTypeLabels[type]}
+                <ControllerSupportChips type={type} />
               </MenuItem>
             ))}
             {suggestedTypes.length > 0 && (
@@ -448,10 +461,17 @@ export function EntityMappingDialog({
               .map(([key, label]) => (
                 <MenuItem key={key} value={key}>
                   {label}
+                  <ControllerSupportChips type={key} />
                 </MenuItem>
               ))}
           </Select>
         </FormControl>
+        {matterDeviceType !== "" &&
+          controllerSupportWarning(matterDeviceType) && (
+            <Alert severity="info" sx={{ mt: 1 }}>
+              {controllerSupportWarning(matterDeviceType)}
+            </Alert>
+          )}
 
         <TextField
           fullWidth
