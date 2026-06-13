@@ -1,5 +1,6 @@
 import {
   BridgeStatus,
+  type ExposedDeviceType,
   type UpdateBridgeRequest,
 } from "@home-assistant-matter-hub/common";
 import type { Environment } from "@matter/general";
@@ -177,6 +178,30 @@ export class Bridge {
 
   get aggregator() {
     return this.endpointManager.root;
+  }
+
+  /**
+   * The entity id and numeric Matter device type of every exposed endpoint,
+   * walking composed sub-endpoints. Used to warn when a device type is not
+   * supported by a commissioned controller (#365 class).
+   */
+  getExposedDeviceTypes(): ExposedDeviceType[] {
+    const out: ExposedDeviceType[] = [];
+    const collect = (ep: Endpoint, inheritedEntityId?: string) => {
+      const entityId =
+        (ep as { entityId?: string }).entityId ?? inheritedEntityId;
+      const deviceTypeId = ep.type?.deviceType;
+      if (typeof deviceTypeId === "number" && entityId) {
+        out.push({ entityId, deviceTypeId });
+      }
+      for (const child of ep.parts) {
+        collect(child, entityId);
+      }
+    };
+    for (const ep of this.aggregator.parts) {
+      collect(ep);
+    }
+    return out;
   }
 
   get pluginInfo() {

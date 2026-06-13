@@ -1,3 +1,8 @@
+import {
+  type ControllerWarning,
+  classifyController,
+  computeControllerWarnings,
+} from "@home-assistant-matter-hub/common";
 import express from "express";
 import type { BridgeService } from "../services/bridges/bridge-service.js";
 import type { HomeAssistantClient } from "../services/home-assistant/home-assistant-client.js";
@@ -40,6 +45,8 @@ export interface BridgeHealthInfo {
     rootVendorId: number;
   }>;
   failedEntityCount: number;
+  // Advisory: exposed device types a commissioned controller does not support.
+  controllerWarnings: ControllerWarning[];
   connectivity: {
     totalSessions: number;
     totalSubscriptions: number;
@@ -130,6 +137,17 @@ export function healthApi(
       const data = b.data;
       const fabrics = data.commissioning?.fabrics ?? [];
       const sessionInfo = b.getSessionInfo();
+      const controllers = [
+        ...new Set(
+          fabrics
+            .map((f) => classifyController(f.rootVendorId))
+            .filter((c) => c !== undefined),
+        ),
+      ];
+      const controllerWarnings =
+        controllers.length > 0
+          ? computeControllerWarnings(controllers, b.getExposedDeviceTypes())
+          : [];
       return {
         id: data.id,
         name: data.name,
@@ -148,6 +166,7 @@ export function healthApi(
           rootVendorId: f.rootVendorId,
         })),
         failedEntityCount: data.failedEntities?.length ?? 0,
+        controllerWarnings,
         connectivity: {
           totalSessions: sessionInfo.totalSessions,
           totalSubscriptions: sessionInfo.totalSubscriptions,

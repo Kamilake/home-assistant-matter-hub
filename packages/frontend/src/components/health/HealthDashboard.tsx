@@ -53,6 +53,13 @@ interface BridgeHealthInfo {
     rootVendorId: number;
   }>;
   failedEntityCount: number;
+  controllerWarnings?: Array<{
+    entityId: string;
+    deviceTypeId: number;
+    controller: string;
+    controllerLabel: string;
+    note?: string;
+  }>;
   connectivity?: {
     totalSessions: number;
     totalSubscriptions: number;
@@ -537,6 +544,32 @@ export function HealthDashboard(props: HealthDashboardProps = {}) {
                       </Box>
                     </Box>
                   )}
+
+                  {bridge.controllerWarnings &&
+                    bridge.controllerWarnings.length > 0 && (
+                      <Alert
+                        severity="warning"
+                        sx={{ mt: 1, flexShrink: 0, py: 0 }}
+                      >
+                        <Typography variant="caption" component="div">
+                          {t(
+                            "health.controllerWarningsTitle",
+                            "Some devices may not show up in a connected controller:",
+                          )}
+                        </Typography>
+                        {bridge.controllerWarnings.map((w) => (
+                          <Typography
+                            key={`${w.entityId}:${w.deviceTypeId}:${w.controller}`}
+                            variant="caption"
+                            component="div"
+                            color="text.secondary"
+                          >
+                            {w.entityId} on {w.controllerLabel}
+                            {w.note ? ` (${w.note})` : ""}
+                          </Typography>
+                        ))}
+                      </Alert>
+                    )}
                 </CardContent>
               </Card>
             </Grid>

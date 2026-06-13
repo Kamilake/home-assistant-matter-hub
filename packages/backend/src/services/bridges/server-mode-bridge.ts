@@ -1,5 +1,6 @@
 import {
   BridgeStatus,
+  type ExposedDeviceType,
   type UpdateBridgeRequest,
 } from "@home-assistant-matter-hub/common";
 import type { Logger } from "@matter/general";
@@ -91,6 +92,36 @@ export class ServerModeBridge {
       this.endpointManager.devices.length,
       this.endpointManager.failedEntities,
     );
+  }
+
+  /**
+   * The entity id and numeric Matter device type of every exposed device, so a
+   * controller-support warning can be raised per bridge (#365 class). Server
+   * mode is flat, but walk parts anyway to stay correct.
+   */
+  getExposedDeviceTypes(): ExposedDeviceType[] {
+    const out: ExposedDeviceType[] = [];
+    const collect = (
+      ep: {
+        type?: { deviceType?: number };
+        entityId?: string;
+        parts: Iterable<unknown>;
+      },
+      inheritedEntityId?: string,
+    ) => {
+      const entityId = ep.entityId ?? inheritedEntityId;
+      const deviceTypeId = ep.type?.deviceType;
+      if (typeof deviceTypeId === "number" && entityId) {
+        out.push({ entityId, deviceTypeId });
+      }
+      for (const child of ep.parts) {
+        collect(child as typeof ep, entityId);
+      }
+    };
+    for (const device of this.endpointManager.devices) {
+      collect(device as unknown as Parameters<typeof collect>[0]);
+    }
+    return out;
   }
 
   getSessionInfo(): {

@@ -311,6 +311,7 @@
     "ascending": "Ascending",
     "descending": "Descending",
     "connectedTo": "Connected to",
+    "controllerWarningsTitle": "Some devices may not show up in a connected controller:",
     "autoRecovery": "Auto Recovery",
     "recoveryAttempts": "Recovery attempts",
     "fabrics": "fabrics",

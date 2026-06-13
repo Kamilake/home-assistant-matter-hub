@@ -311,6 +311,7 @@
     "ascending": "Aufsteigend",
     "descending": "Absteigend",
     "connectedTo": "Verbunden mit",
+    "controllerWarningsTitle": "Manche Geräte erscheinen evtl. nicht im verbundenen Controller:",
     "autoRecovery": "Auto-Wiederherstellung",
     "recoveryAttempts": "Wiederherstellungsversuche",
     "fabrics": "Fabrics",
