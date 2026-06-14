@@ -217,6 +217,15 @@ export function ClimateDevice(
         }
       : undefined;
 
+  // Matter requires min <= max (and absMin <= min <= max <= absMax). HA can
+  // report min_temp > max_temp (or mixed units), so order the pair before Matter
+  // sees it, otherwise the Thermostat fails to initialize (code 135), the whole
+  // endpoint crashes, and Google Home spawns a duplicate device (#375).
+  const rawMinLimit = toMatterTemp(attributes.min_temp) ?? 0;
+  const rawMaxLimit = toMatterTemp(attributes.max_temp) ?? 5000;
+  const minLimit = Math.min(rawMinLimit, rawMaxLimit);
+  const maxLimit = Math.max(rawMinLimit, rawMaxLimit);
+
   // Extract initial thermostat state from HA entity attributes.
   // These values are passed to Matter.js during registration to prevent
   // NaN validation errors (Matter.js validates BEFORE our initialize() runs).
@@ -233,11 +242,12 @@ export function ClimateDevice(
       toMatterTemp(attributes.target_temp_high) ??
       toMatterTemp(attributes.temperature) ??
       2400,
-    // Use HA's actual min/max limits, fall back to wide range (0-50°C) if not provided
-    minHeatSetpointLimit: toMatterTemp(attributes.min_temp) ?? 0,
-    maxHeatSetpointLimit: toMatterTemp(attributes.max_temp) ?? 5000,
-    minCoolSetpointLimit: toMatterTemp(attributes.min_temp) ?? 0,
-    maxCoolSetpointLimit: toMatterTemp(attributes.max_temp) ?? 5000,
+    // Use HA's actual min/max limits, fall back to wide range (0-50°C) if not
+    // provided. Ordered above so min <= max always holds.
+    minHeatSetpointLimit: minLimit,
+    maxHeatSetpointLimit: maxLimit,
+    minCoolSetpointLimit: minLimit,
+    maxCoolSetpointLimit: maxLimit,
   };
 
   // AutoMode is only safe when the device truly supports dual-setpoint

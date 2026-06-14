@@ -348,10 +348,17 @@ export class ThermostatServerBase extends FullFeaturedBase {
     if (this.features.heating) {
       minHeatLimit = minSetpointLimit ?? WIDE_MIN;
       maxHeatLimit = maxSetpointLimit ?? WIDE_MAX;
+      // Matter requires min <= max; HA can report them inverted (#375).
+      if (minHeatLimit > maxHeatLimit) {
+        [minHeatLimit, maxHeatLimit] = [maxHeatLimit, minHeatLimit];
+      }
     }
     if (this.features.cooling) {
       minCoolLimit = minSetpointLimit ?? WIDE_MIN;
       maxCoolLimit = maxSetpointLimit ?? WIDE_MAX;
+      if (minCoolLimit > maxCoolLimit) {
+        [minCoolLimit, maxCoolLimit] = [maxCoolLimit, minCoolLimit];
+      }
     }
 
     // Clamp setpoints to be within the calculated limits to prevent Matter.js validation errors
