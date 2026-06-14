@@ -109,6 +109,9 @@ importers:
       '@matter/nodejs':
         specifier: 0.17.2
         version: 0.17.2
+      '@matter/types':
+        specifier: 0.17.2
+        version: 0.17.2
       ajv:
         specifier: 8.18.0
         version: 8.18.0
@@ -145,6 +148,9 @@ importers:
       unzipper:
         specifier: 0.12.3
         version: 0.12.3
+      werift:
+        specifier: 0.22.4
+        version: 0.22.4
       ws:
         specifier: 8.21.0
         version: 8.21.0

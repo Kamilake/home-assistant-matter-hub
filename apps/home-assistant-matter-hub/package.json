@@ -47,6 +47,7 @@
     "@matter/main": "0.17.2",
     "@matter/nodejs": "0.17.2",
     "@matter/general": "0.17.2",
+    "@matter/types": "0.17.2",
     "ajv": "8.18.0",
     "archiver": "7.0.1",
     "color": "5.0.3",
@@ -59,6 +60,7 @@
     "multer": "2.1.1",
     "nocache": "4.0.0",
     "unzipper": "0.12.3",
+    "werift": "0.22.4",
     "ws": "8.21.0",
     "yargs": "18.0.0"
   },
