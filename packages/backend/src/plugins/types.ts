@@ -1,4 +1,5 @@
 import type { Logger } from "@matter/general";
+import type { EndpointType } from "@matter/main";
 
 /**
  * Configuration schema for plugin settings UI.
@@ -38,8 +39,22 @@ export interface PluginDevice {
   id: string;
   /** Display name */
   name: string;
-  /** Matter device type (e.g., "on_off_light", "thermostat", "temperature_sensor") */
-  deviceType: string;
+  /**
+   * Matter device type from the built-in supported list (e.g. "on_off_light",
+   * "thermostat"). Provide this OR `endpointType`, not both.
+   */
+  deviceType?: string;
+  /**
+   * A matter.js EndpointType the plugin built itself, e.g.
+   * `OnOffLightDevice.with(MyCustomBehavior)`. Use this to expose device types
+   * or clusters HAMH does not ship, including ones with custom command
+   * handlers (your own Behavior subclass). When set, `deviceType` is ignored.
+   *
+   * The plugin MUST depend on the same @matter/* version HAMH is pinned to
+   * (declare them as peerDependencies), otherwise the EndpointType belongs to a
+   * different matter.js instance and will be rejected.
+   */
+  endpointType?: EndpointType;
   /** Initial cluster configuration */
   clusters: PluginClusterConfig[];
 

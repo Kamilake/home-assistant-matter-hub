@@ -68,7 +68,8 @@ export function pluginApi(
           .map((d) => ({
             id: d.device.id,
             name: d.device.name,
-            deviceType: d.device.deviceType,
+            // custom endpointType devices have no built-in deviceType key
+            deviceType: d.device.deviceType ?? "custom",
           })),
       }));
 

@@ -133,6 +133,27 @@ The `context` object passed to `onStart` provides:
 | `generic_switch` | Generic Switch (0x000F) |
 | `water_leak_detector` | Water Leak Detector (0x0043) |
 
+### Custom endpoints (advanced)
+
+If the device type or cluster you need is not in the table above, a plugin can supply its own matter.js `EndpointType` via `endpointType` instead of `deviceType`. This lets you expose any Matter device type, including ones with custom clusters and your own command handlers (a `Behavior` subclass), without changes to HAMH core.
+
+```typescript
+import { OnOffLightDevice } from "@matter/main/devices";
+
+const MyDeviceType = OnOffLightDevice.with(MyCustomBehavior); // your Behavior with command handlers
+
+await context.registerDevice({
+  id: "my-device-1",
+  name: "My Device",
+  endpointType: MyDeviceType, // provide this OR deviceType, not both
+  clusters: [], // optional initial attribute state
+});
+```
+
+:::warning Match the matter.js version
+A plugin using `endpointType` builds against matter.js directly, so it MUST declare the same `@matter/*` versions HAMH is pinned to as `peerDependencies`. A version mismatch creates a second matter.js instance and the endpoint is rejected. Your custom `Behavior` runs in the bridge process, so handle errors in your command handlers.
+:::
+
 ### Cluster IDs
 
 Use Matter.js behavior key names as cluster IDs. Common ones:

@@ -3,11 +3,12 @@ import type {
   FailedEntity,
 } from "@home-assistant-matter-hub/common";
 import type { Logger } from "@matter/general";
-import { Endpoint } from "@matter/main";
+import { Endpoint, type MutableEndpoint } from "@matter/main";
 import { Service } from "../../core/ioc/service.js";
 import { AggregatorEndpoint } from "../../matter/endpoints/aggregator-endpoint.js";
 import type { EntityEndpoint } from "../../matter/endpoints/entity-endpoint.js";
 import { LegacyEndpoint } from "../../matter/endpoints/legacy/legacy-endpoint.js";
+import { validateEndpointType } from "../../matter/endpoints/validate-endpoint-type.js";
 import { createPluginEndpointType } from "../../plugins/plugin-device-factory.js";
 import type { PluginInstaller } from "../../plugins/plugin-installer.js";
 import type { PluginManager } from "../../plugins/plugin-manager.js";
@@ -86,24 +87,51 @@ export class BridgeEndpointManager extends Service {
       pluginName: string,
       device: PluginDevice,
     ) => {
-      const type = createPluginEndpointType(device.deviceType);
-      if (!type) {
-        this.log.warn(
-          `Plugin "${pluginName}": unsupported device type "${device.deviceType}" for device "${device.id}"`,
+      // Two paths: a plugin-supplied custom EndpointType (own clusters/command
+      // handlers), or a built-in device type from the fixed factory map.
+      let endpoint: Endpoint;
+      if (device.endpointType) {
+        try {
+          validateEndpointType(
+            device.endpointType,
+            `plugin:${pluginName}:${device.id}`,
+          );
+        } catch (e) {
+          this.log.warn(
+            `Plugin "${pluginName}": invalid endpointType for device "${device.id}":`,
+            e,
+          );
+          return;
+        }
+        const initialState: Record<string, object> = {};
+        for (const cluster of device.clusters) {
+          initialState[cluster.clusterId] = cluster.attributes;
+        }
+        // The plugin owns its behaviors, so no PluginDeviceBehavior here.
+        const base = device.endpointType as MutableEndpoint;
+        endpoint = new Endpoint(
+          Object.keys(initialState).length > 0 ? base.set(initialState) : base,
+          { id: `plugin_${device.id}` },
         );
-        return;
+      } else {
+        const type = createPluginEndpointType(device.deviceType ?? "");
+        if (!type) {
+          this.log.warn(
+            `Plugin "${pluginName}": unsupported device type "${device.deviceType}" for device "${device.id}"`,
+          );
+          return;
+        }
+        // Set PluginDeviceBehavior state and apply initial cluster config
+        const initialState: Record<string, object> = {
+          pluginDevice: { device, pluginName },
+        };
+        for (const cluster of device.clusters) {
+          initialState[cluster.clusterId] = cluster.attributes;
+        }
+        endpoint = new Endpoint(type.set(initialState), {
+          id: `plugin_${device.id}`,
+        });
       }
-      // Set PluginDeviceBehavior state and apply initial cluster config
-      const initialState: Record<string, object> = {
-        pluginDevice: { device, pluginName },
-      };
-      for (const cluster of device.clusters) {
-        initialState[cluster.clusterId] = cluster.attributes;
-      }
-      const configuredType = type.set(initialState);
-      const endpoint = new Endpoint(configuredType, {
-        id: `plugin_${device.id}`,
-      });
       try {
         await this.root.add(endpoint);
         this.pluginEndpoints.set(device.id, endpoint);

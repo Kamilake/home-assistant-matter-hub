@@ -33,11 +33,17 @@ function validatePluginDevice(device: unknown): string | undefined {
     return `device.id too long (${(d.id as string).length} chars, max ${MAX_PLUGIN_DEVICE_ID_LENGTH})`;
   if (!d.name || typeof d.name !== "string")
     return "device.name must be a non-empty string";
-  if (!d.deviceType || typeof d.deviceType !== "string")
-    return "device.deviceType must be a non-empty string";
-  const supported = getSupportedPluginDeviceTypes();
-  if (!supported.includes(d.deviceType as string))
-    return `unsupported deviceType "${d.deviceType}". Supported: ${supported.join(", ")}`;
+  // A device is built either from a built-in deviceType string or from a
+  // plugin-supplied matter.js endpointType (custom clusters/commands).
+  const hasEndpointType =
+    d.endpointType != null && typeof d.endpointType === "object";
+  if (!hasEndpointType) {
+    if (!d.deviceType || typeof d.deviceType !== "string")
+      return "device.deviceType must be a non-empty string (or provide endpointType)";
+    const supported = getSupportedPluginDeviceTypes();
+    if (!supported.includes(d.deviceType as string))
+      return `unsupported deviceType "${d.deviceType}". Supported: ${supported.join(", ")}`;
+  }
   if (!Array.isArray(d.clusters)) return "device.clusters must be an array";
   for (let i = 0; i < (d.clusters as unknown[]).length; i++) {
     const c = (d.clusters as unknown[])[i];

@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { OnOffLightDevice } from "@matter/main/devices";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PLUGIN_API_VERSION, PluginManager } from "./plugin-manager.js";
 import type { MatterHubPlugin, PluginContext, PluginDevice } from "./types.js";
@@ -99,6 +100,56 @@ describe("PluginManager", () => {
       expect(registeredDevices).toHaveLength(1);
       expect(registeredDevices[0].name).toBe("test-plugin");
       expect(registeredDevices[0].device.id).toBe("dev-1");
+    });
+
+    it("should register a device built from a custom endpointType", async () => {
+      const pm = new PluginManager("bridge-1", storageDir);
+      const registered: PluginDevice[] = [];
+      pm.onDeviceRegistered = async (_name, device) => {
+        registered.push(device);
+      };
+
+      await pm.registerBuiltIn(
+        createMockPlugin({
+          onStart: async (ctx: PluginContext) => {
+            await ctx.registerDevice({
+              id: "custom-1",
+              name: "Custom Device",
+              // No deviceType: the plugin supplies its own matter.js type.
+              endpointType: OnOffLightDevice,
+              clusters: [],
+            });
+          },
+        }),
+      );
+
+      await pm.startAll();
+      expect(registered).toHaveLength(1);
+      expect(registered[0].id).toBe("custom-1");
+      expect(registered[0].endpointType).toBeDefined();
+    });
+
+    it("should reject a device with neither deviceType nor endpointType", async () => {
+      const pm = new PluginManager("bridge-1", storageDir);
+      const registered: PluginDevice[] = [];
+      pm.onDeviceRegistered = async (_name, device) => {
+        registered.push(device);
+      };
+
+      await pm.registerBuiltIn(
+        createMockPlugin({
+          onStart: async (ctx: PluginContext) => {
+            await ctx.registerDevice({
+              id: "bad-1",
+              name: "No Type",
+              clusters: [],
+            } as unknown as PluginDevice);
+          },
+        }),
+      );
+
+      await pm.startAll();
+      expect(registered).toHaveLength(0);
     });
 
     it("should reject device with invalid deviceType", async () => {
