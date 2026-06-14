@@ -5,9 +5,9 @@ import {
 } from "home-assistant-js-websocket";
 import { RTCPeerConnection, type RTCRtpTransceiver } from "werift";
 
-// Bridges an HA camera's WebRTC to a Matter controller. HA and the controller
-// both want to be the offerer, so we run two werift peers per session and
-// forward the tracks. Experimental, untested end to end (see README).
+// Bridges an HA camera to a Matter controller. Both sides want to be the
+// offerer, so we run two werift peers per session and forward the tracks.
+// Experimental, not verified end to end.
 
 export interface WebRtcBridgeConfig {
   /** HA base URL, e.g. http://homeassistant.local:8123 */
@@ -46,11 +46,7 @@ export class WebRtcBridge {
     return this.connection;
   }
 
-  /**
-   * Start a session for an HA camera and produce the SDP offer the Matter
-   * controller should answer. Forwards the HA video track onto the controller
-   * peer. Returns the controller-facing offer.
-   */
+  // We offer to the controller; it answers. Pulls HA media first, then forwards.
   async startSession(
     matterSessionId: number,
     entityId: string,
@@ -177,10 +173,7 @@ export class WebRtcBridge {
     }
   }
 
-  /**
-   * Fetch a still image for CaptureSnapshot via HA's camera proxy.
-   * Returns raw JPEG bytes.
-   */
+  // Grab a still JPEG via HA's camera proxy (for CaptureSnapshot).
   async snapshot(entityId: string): Promise<Uint8Array> {
     const url = `${this.config.haUrl}/api/camera_proxy/${entityId}`;
     const res = await fetch(url, {
@@ -200,10 +193,7 @@ export class WebRtcBridge {
     this.connection = undefined;
   }
 
-  // Send the SDP offer to HA's native WebRTC and return the answer SDP.
-  // HA replies asynchronously over the same WS subscription with answer +
-  // candidate events; we resolve on the first answer. Trickle ICE from HA is
-  // applied to the HA peer.
+  // Offer to HA's WebRTC, resolve on the first answer event off the same sub.
   private async requestHaWebRtc(
     entityId: string,
     offerSdp: string,

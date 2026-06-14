@@ -150,9 +150,23 @@ await context.registerDevice({
 });
 ```
 
-:::warning Match the matter.js version
-A plugin using `endpointType` builds against matter.js directly, so it MUST declare the same `@matter/*` versions HAMH is pinned to as `peerDependencies`. A version mismatch creates a second matter.js instance and the endpoint is rejected. Your custom `Behavior` runs in the bridge process, so handle errors in your command handlers.
+:::warning matter.js instance matters
+A live `EndpointType` only works if it comes from the exact same matter.js instance the backend runs. The backend bundles `@matter/*`, while externally installed plugins live in a separate folder and resolve their own copy, so a live `endpointType` from an external package will not attach. Plugins that pass live matter.js objects therefore ship as built-ins (see below). External plugins are best for the `deviceType` + cluster-data flow, which crosses the boundary as plain data.
 :::
+
+### Built-in plugins
+
+Some device types need a live matter.js `EndpointType` (custom clusters and command handlers), which only works from inside the backend bundle. These ship as built-in plugins. They show up in the Plugins page like any other plugin and are configured there; nothing to install.
+
+**Camera** exposes a Home Assistant camera as a Matter Camera (0x0142). It implements the Matter `WebRtcTransportProvider` flow and bridges HA's WebRTC. Configure it on the Plugins page:
+
+| Setting | Description |
+|---------|-------------|
+| `haUrl` | Home Assistant URL, e.g. `http://homeassistant.local:8123` |
+| `haToken` | Long-lived access token |
+| `cameras` | Camera entity ids, comma-separated |
+
+Experimental: the WebRTC media path is not verified end to end, and as of 2026 only SmartThings renders Matter cameras.
 
 ### Cluster IDs
 

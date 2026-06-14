@@ -39,10 +39,8 @@ export class CameraWebRtcProviderServer extends WebRtcTransportProviderServer {
       this.state.entityId,
       request.sdp,
     );
-    // The answer SDP is returned to the controller out of band via the
-    // WebRtcTransportRequestor Answer command in the spec flow. matter.js 0.17.2
-    // only models the ProvideOfferResponse id here; the answer delivery path is
-    // the unverified piece. We hold the answer so the bridge can complete.
+    // Spec returns the answer via the Requestor side, which 0.17.2 does not
+    // model here. The bridge holds it; this delivery path is unverified.
     void answerSdp;
     return { webRtcSessionId: id };
   }
@@ -82,8 +80,8 @@ export class CameraWebRtcProviderServer extends WebRtcTransportProviderServer {
     streamUsage: StreamUsage,
     peerEndpointId: EndpointNumber,
   ): void {
-    // Command handlers run online, so a session is present; read it structurally
-    // since the public ActionContext union also covers the offline case.
+    // Commands run online, so a session exists; read it structurally because
+    // the public context type also covers the offline case.
     const session = (
       this.context as unknown as {
         session?: {
