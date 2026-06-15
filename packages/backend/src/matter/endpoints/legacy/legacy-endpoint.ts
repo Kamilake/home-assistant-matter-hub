@@ -174,10 +174,12 @@ export class LegacyEndpoint extends EntityEndpoint {
         }
       }
 
-      // 4. Auto-assign power entity to switch/plug entities
+      // 4. Auto-assign power entity to switch/plug entities.
+      // Not lights: an outlet's indicator light would grab the outlet's power
+      // sensor, and electrical clusters on a light endpoint break Aqara (#374).
       if (!mapping?.powerEntity) {
         const domain = entityId.split(".")[0];
-        if (domain === "switch" || domain === "light") {
+        if (domain === "switch") {
           const powerEntityId = registry.findPowerEntityForDevice(
             entity.device_id,
           );
@@ -193,10 +195,11 @@ export class LegacyEndpoint extends EntityEndpoint {
         }
       }
 
-      // 5. Auto-assign energy entity to switch/plug entities
+      // 5. Auto-assign energy entity to switch/plug entities.
+      // Lights excluded for the same reason as power above (#374).
       if (!mapping?.energyEntity) {
         const domain = entityId.split(".")[0];
-        if (domain === "switch" || domain === "light") {
+        if (domain === "switch") {
           const energyEntityId = registry.findEnergyEntityForDevice(
             entity.device_id,
           );
