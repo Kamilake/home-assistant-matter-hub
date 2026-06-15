@@ -139,6 +139,8 @@ export class EntityMappingStorage extends Service {
         request.disableCustomAreaRoomModes || undefined,
       valetudoIdentifier: request.valetudoIdentifier?.trim() || undefined,
       coverSwapOpenClose: request.coverSwapOpenClose || undefined,
+      coverExposeAsDimmableLight:
+        request.coverExposeAsDimmableLight || undefined,
       coverSliderDebounceMs: sanitizeDebounceMs(request.coverSliderDebounceMs),
       disableClimateOnOff: request.disableClimateOnOff || undefined,
       disableClimateFanControl: request.disableClimateFanControl || undefined,
@@ -178,6 +180,7 @@ export class EntityMappingStorage extends Service {
       !config.disableCustomAreaRoomModes &&
       !config.valetudoIdentifier &&
       !config.coverSwapOpenClose &&
+      !config.coverExposeAsDimmableLight &&
       !config.coverSliderDebounceMs &&
       !config.disableClimateOnOff &&
       !config.disableClimateFanControl &&

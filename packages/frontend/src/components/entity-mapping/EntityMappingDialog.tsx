@@ -131,6 +131,8 @@ export function EntityMappingDialog({
   const [areaDataDrafts, setAreaDataDrafts] = useState<string[]>([]);
   const [valetudoIdentifier, setValetudoIdentifier] = useState("");
   const [coverSwapOpenClose, setCoverSwapOpenClose] = useState(false);
+  const [coverExposeAsDimmableLight, setCoverExposeAsDimmableLight] =
+    useState(false);
   const [coverSliderDebounceMs, setCoverSliderDebounceMs] = useState("");
   const [disableClimateOnOff, setDisableClimateOnOff] = useState(false);
   const [disableClimateFanControl, setDisableClimateFanControl] =
@@ -203,6 +205,9 @@ export function EntityMappingDialog({
       );
       setValetudoIdentifier(currentMapping?.valetudoIdentifier || "");
       setCoverSwapOpenClose(currentMapping?.coverSwapOpenClose || false);
+      setCoverExposeAsDimmableLight(
+        currentMapping?.coverExposeAsDimmableLight || false,
+      );
       setCoverSliderDebounceMs(
         currentMapping?.coverSliderDebounceMs != null
           ? String(currentMapping.coverSliderDebounceMs)
@@ -302,6 +307,7 @@ export function EntityMappingDialog({
           : undefined,
       valetudoIdentifier: valetudoIdentifier.trim() || undefined,
       coverSwapOpenClose: coverSwapOpenClose || undefined,
+      coverExposeAsDimmableLight: coverExposeAsDimmableLight || undefined,
       coverSliderDebounceMs: parseDebounceMs(coverSliderDebounceMs),
       disableClimateOnOff: disableClimateOnOff || undefined,
       disableClimateFanControl: disableClimateFanControl || undefined,
@@ -343,6 +349,7 @@ export function EntityMappingDialog({
     customFanSpeedTagsList,
     valetudoIdentifier,
     coverSwapOpenClose,
+    coverExposeAsDimmableLight,
     coverSliderDebounceMs,
     disableClimateOnOff,
     disableClimateFanControl,
@@ -993,6 +1000,18 @@ export function EntityMappingDialog({
                 />
               }
               label="Swap open/close commands (for awnings and similar covers)"
+              sx={{ mt: 1, display: "block" }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={coverExposeAsDimmableLight}
+                  onChange={(e) =>
+                    setCoverExposeAsDimmableLight(e.target.checked)
+                  }
+                />
+              }
+              label="Expose as a dimmable light (Alexa workaround: level = open %, on/off = open/close). Keep off for Apple / Google."
               sx={{ mt: 1, display: "block" }}
             />
             <TextField

@@ -15,6 +15,10 @@ import { BasicInformationServer } from "../../../behaviors/basic-information-ser
 import { HomeAssistantEntityBehavior } from "../../../behaviors/home-assistant-entity-behavior.js";
 import { IdentifyServer } from "../../../behaviors/identify-server.js";
 import { DefaultPowerSourceServer } from "../../../behaviors/power-source-server.js";
+import {
+  CoverAsDimmableLightType,
+  CoverAsDimmableLightWithBatteryType,
+} from "./behaviors/cover-as-light.js";
 import { CoverWindowCoveringServer } from "./behaviors/cover-window-covering-server.js";
 
 const CoverDeviceType = (
@@ -97,6 +101,16 @@ export function CoverDevice(
     logger.debug(
       `[${entityId}] Creating cover without battery (batteryAttr=${hasBatteryAttr}, batteryEntity=${homeAssistantEntity.mapping?.batteryEntity ?? "none"})`,
     );
+  }
+
+  // Alexa stopped sending WindowCovering position commands; expose the cover
+  // as a Dimmable Light so its slider still works (#372).
+  if (homeAssistantEntity.mapping?.coverExposeAsDimmableLight) {
+    logger.info(`[${entityId}] Exposing cover as a Dimmable Light (#372)`);
+    const type = hasBattery
+      ? CoverAsDimmableLightWithBatteryType
+      : CoverAsDimmableLightType;
+    return type.set({ homeAssistantEntity });
   }
 
   return CoverDeviceType(

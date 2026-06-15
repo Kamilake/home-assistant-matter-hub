@@ -220,6 +220,13 @@ export interface EntityMappingConfig {
    */
   readonly coverSwapOpenClose?: boolean;
   /**
+   * Optional: expose this cover as a Dimmable Light instead of a WindowCovering.
+   * Level maps to position (100% open), on/off to open/close. Alexa workaround,
+   * it stopped sending cover position commands but still drives lights (#372).
+   * Keep off for Apple/Google.
+   */
+  readonly coverExposeAsDimmableLight?: boolean;
+  /**
    * Optional: per-entity cover slider debounce (ms). Overrides the bridge
    * coverSliderDebounceMs flag. 0 / unset = fall back to bridge / default.
    */
@@ -327,6 +334,7 @@ export interface EntityMappingRequest {
   readonly disableCustomAreaRoomModes?: boolean;
   readonly valetudoIdentifier?: string;
   readonly coverSwapOpenClose?: boolean;
+  readonly coverExposeAsDimmableLight?: boolean;
   readonly coverSliderDebounceMs?: number;
   readonly disableClimateOnOff?: boolean;
   readonly disableClimateFanControl?: boolean;

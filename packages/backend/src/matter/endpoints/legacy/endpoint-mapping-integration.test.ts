@@ -614,6 +614,23 @@ describe("endpoint mapping integration", () => {
       expect(type.behaviors).toHaveProperty("windowCovering");
     });
 
+    it("cover exposes as a dimmable light when the #372 flag is set", () => {
+      const entity = createEntity<CoverDeviceAttributes>(
+        "cover.alexa",
+        "open",
+        {
+          supported_features: 15,
+        },
+      );
+      const type = createLegacyEndpointType(entity, {
+        entityId: entity.entity_id,
+        coverExposeAsDimmableLight: true,
+      });
+      expect(type?.behaviors).toHaveProperty("onOff");
+      expect(type?.behaviors).toHaveProperty("levelControl");
+      expect(type?.behaviors).not.toHaveProperty("windowCovering");
+    });
+
     it("garage cover has windowCovering behavior (discrete mode)", () => {
       const entity = createEntity<
         CoverDeviceAttributes & { device_class: string }
