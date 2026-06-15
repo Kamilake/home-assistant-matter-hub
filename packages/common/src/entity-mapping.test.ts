@@ -17,7 +17,12 @@ describe("matterDeviceTypeControllerSupport", () => {
     for (const [key, value] of Object.entries(
       matterDeviceTypeControllerSupport,
     )) {
-      for (const support of [value.apple, value.google, value.alexa]) {
+      for (const support of [
+        value.apple,
+        value.google,
+        value.alexa,
+        value.aqara,
+      ]) {
         expect(allowed, `${key}: ${support}`).toContain(support);
       }
     }
@@ -39,5 +44,10 @@ describe("matterDeviceTypeControllerSupport", () => {
       "yes",
     );
     expect(matterDeviceTypeControllerSupport.smoke_co_alarm.apple).toBe("yes");
+    // Aqara surfaces leak detectors and speakers that the others reject
+    expect(matterDeviceTypeControllerSupport.water_leak_detector.aqara).toBe(
+      "yes",
+    );
+    expect(matterDeviceTypeControllerSupport.speaker.aqara).toBe("yes");
   });
 });

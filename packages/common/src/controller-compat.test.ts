@@ -9,6 +9,7 @@ describe("classifyController", () => {
     expect(classifyController(4937)).toBe("apple"); // 0x1349
     expect(classifyController(24582)).toBe("google"); // 0x6006
     expect(classifyController(4631)).toBe("alexa"); // 0x1217
+    expect(classifyController(4447)).toBe("aqara"); // 0x115F
   });
 
   it("returns undefined for non-controller vendors (HA hub, SmartThings, unknown)", () => {
@@ -38,6 +39,21 @@ describe("computeControllerWarnings", () => {
       computeControllerWarnings(
         ["google", "alexa"],
         [{ entityId: "fan.office", deviceTypeId: 0x2b }],
+      ),
+    ).toEqual([]);
+  });
+
+  it("does not warn for Aqara on types it supports that others reject", () => {
+    // Aqara Home surfaces fans (0x002b), speakers (0x0022) and the newer
+    // leak/rain detectors (0x0044) that Apple/Google/Alexa reject.
+    expect(
+      computeControllerWarnings(
+        ["aqara"],
+        [
+          { entityId: "fan.office", deviceTypeId: 0x2b },
+          { entityId: "media_player.kitchen", deviceTypeId: 0x22 },
+          { entityId: "binary_sensor.leak", deviceTypeId: 0x44 },
+        ],
       ),
     ).toEqual([]);
   });

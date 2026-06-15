@@ -1,18 +1,19 @@
 import type { ControllerSupport } from "./entity-mapping.js";
 
-export type ControllerKey = "apple" | "google" | "alexa";
+export type ControllerKey = "apple" | "google" | "alexa" | "aqara";
 
 // Fabric root vendor ids of the controllers we have support data for.
-// Apple 0x1349/0x1384, Google 0x6006, Amazon Alexa 0x1217/0x1160. Other ids
-// (incl. Home Assistant 0x134B and SmartThings 0x110A) classify as undefined,
-// so they never raise a warning. Best-effort: a fabric root vendor can be the
-// hub vendor rather than the end controller, so warnings stay advisory.
+// Apple 0x1349/0x1384, Google 0x6006, Amazon Alexa 0x1217/0x1160, Aqara 0x115F.
+// Other ids (incl. Home Assistant 0x134B and SmartThings 0x110A) classify as
+// undefined, so they never raise a warning. Best-effort: a fabric root vendor
+// can be the hub vendor rather than the end controller, so warnings stay advisory.
 const controllerByVendorId: Record<number, ControllerKey> = {
   4937: "apple", // 0x1349 Apple Home
   4996: "apple", // 0x1384 Apple (iCloud Keychain)
   24582: "google", // 0x6006 Google Home
   4631: "alexa", // 0x1217 Amazon Alexa
   4448: "alexa", // 0x1160 Amazon (some Alexa ecosystems)
+  4447: "aqara", // 0x115F Aqara Home
 };
 
 export function classifyController(
@@ -25,6 +26,7 @@ interface DeviceTypeSupport {
   apple: ControllerSupport;
   google: ControllerSupport;
   alexa: ControllerSupport;
+  aqara: ControllerSupport;
   note?: string;
 }
 
@@ -33,107 +35,125 @@ interface DeviceTypeSupport {
 // quality concentration sensors are 0x002c, motion and occupancy are both
 // 0x0107, so collapsing to the id is correct here. Only ids that are
 // unsupported ("no") somewhere need an entry; anything absent never warns.
-// Verified 2026-06 against the Apple/Google/Alexa device pages. Snapshot.
+// Apple/Google/Alexa verified 2026-06 against their device pages. Aqara from its
+// own Matter device list (aqara.com/en/explore/everything-matter, 2026-06), which
+// covers most types; "unknown" where Aqara does not name the type. Snapshot.
 const deviceTypeIdSupport: Record<number, DeviceTypeSupport> = {
   43: {
     apple: "no",
     google: "yes",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple Home has no standalone fan.",
   },
   45: {
     apple: "no",
     google: "yes",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple Home does not list air purifiers.",
   },
   34: {
     apple: "no",
     google: "yes",
     alexa: "no",
-    note: "Only Google Home shows Matter speakers.",
+    aqara: "yes",
+    note: "Google Home and Aqara show Matter speakers.",
   },
   40: {
     apple: "no",
     google: "no",
     alexa: "no",
-    note: "TV/media types are not shown by these controllers.",
+    aqara: "yes",
+    note: "TV/media types only show in Aqara Home here.",
   },
   773: {
     apple: "no",
     google: "yes",
     alexa: "no",
-    note: "Only Google Home shows pressure sensors.",
+    aqara: "yes",
+    note: "Google Home and Aqara show pressure sensors.",
   },
   774: {
     apple: "no",
     google: "yes",
     alexa: "no",
+    aqara: "unknown",
     note: "Only Google Home shows flow sensors.",
   },
   44: {
     apple: "no",
     google: "yes",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple Home does not show air quality.",
   },
   23: {
     apple: "no",
     google: "no",
     alexa: "unknown",
+    aqara: "unknown",
     note: "Power/energy is rarely shown unless it is on a smart plug.",
   },
   24: {
     apple: "no",
     google: "no",
     alexa: "no",
-    note: "Battery is usually shown inside a device, not on its own.",
+    aqara: "yes",
+    note: "Aqara lists battery storage; others show battery inside a device.",
   },
   39: {
     apple: "no",
     google: "no",
     alexa: "no",
+    aqara: "unknown",
     note: "Mode Select is not supported here (Google #356).",
   },
-  66: { apple: "no", google: "no", alexa: "no" },
+  66: { apple: "no", google: "no", alexa: "no", aqara: "yes" },
   771: {
     apple: "no",
     google: "yes",
     alexa: "no",
-    note: "Only Google Home shows pumps.",
+    aqara: "yes",
+    note: "Google Home and Aqara show pumps.",
   },
   68: {
     apple: "no",
     google: "no",
     alexa: "no",
+    aqara: "yes",
     note: "Newer Matter detector, thin support; Alexa may reject it (#365).",
   },
   65: {
     apple: "no",
     google: "no",
     alexa: "no",
+    aqara: "yes",
     note: "Newer Matter detector, thin support; Alexa may reject it (#365).",
   },
   67: {
     apple: "yes",
     google: "no",
     alexa: "yes",
+    aqara: "yes",
     note: "Newer Matter detector, can be risky on Alexa bridges (#365).",
   },
-  118: { apple: "yes", google: "no", alexa: "yes" },
+  118: { apple: "yes", google: "no", alexa: "yes", aqara: "yes" },
   117: {
     apple: "no",
     google: "no",
     alexa: "unknown",
+    aqara: "unknown",
     note: "Appliance types have little controller support.",
   },
-  15: { apple: "partial", google: "no", alexa: "yes" },
+  15: { apple: "partial", google: "no", alexa: "yes", aqara: "unknown" },
 };
 
 const controllerLabels: Record<ControllerKey, string> = {
   apple: "Apple Home",
   google: "Google Home",
   alexa: "Alexa",
+  aqara: "Aqara Home",
 };
 
 export interface ControllerWarning {

@@ -395,161 +395,234 @@ export interface MatterDeviceTypeControllerSupport {
   apple: ControllerSupport;
   google: ControllerSupport;
   alexa: ControllerSupport;
+  aqara: ControllerSupport;
   note?: string;
 }
 
 /**
  * Which controllers actually surface each Matter device type, so the override
- * picker can warn before you pick a type your controller ignores. Verified
- * 2026-06 against the Apple, Google, and Alexa device-support pages. Controllers
- * move fast, so treat this as a point-in-time snapshot.
+ * picker can warn before you pick a type your controller ignores. Apple, Google
+ * and Alexa verified 2026-06 against their device-support pages; Aqara from its
+ * own Matter device list (aqara.com/en/explore/everything-matter, 2026-06), with
+ * "unknown" where Aqara does not name the type. Controllers move fast, so treat
+ * this as a point-in-time snapshot.
  */
 export const matterDeviceTypeControllerSupport: Record<
   MatterDeviceType,
   MatterDeviceTypeControllerSupport
 > = {
-  on_off_light: { apple: "yes", google: "yes", alexa: "yes" },
-  dimmable_light: { apple: "yes", google: "yes", alexa: "yes" },
-  color_temperature_light: { apple: "yes", google: "yes", alexa: "yes" },
-  extended_color_light: { apple: "yes", google: "yes", alexa: "yes" },
-  on_off_plugin_unit: { apple: "yes", google: "yes", alexa: "yes" },
-  dimmable_plugin_unit: { apple: "yes", google: "no", alexa: "yes" },
-  on_off_switch: { apple: "yes", google: "partial", alexa: "unknown" },
-  door_lock: { apple: "yes", google: "partial", alexa: "yes" },
-  window_covering: { apple: "yes", google: "yes", alexa: "yes" },
-  thermostat: { apple: "yes", google: "yes", alexa: "yes" },
+  on_off_light: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
+  dimmable_light: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
+  color_temperature_light: {
+    apple: "yes",
+    google: "yes",
+    alexa: "yes",
+    aqara: "yes",
+  },
+  extended_color_light: {
+    apple: "yes",
+    google: "yes",
+    alexa: "yes",
+    aqara: "yes",
+  },
+  on_off_plugin_unit: {
+    apple: "yes",
+    google: "yes",
+    alexa: "yes",
+    aqara: "yes",
+  },
+  dimmable_plugin_unit: {
+    apple: "yes",
+    google: "no",
+    alexa: "yes",
+    aqara: "yes",
+  },
+  on_off_switch: {
+    apple: "yes",
+    google: "partial",
+    alexa: "unknown",
+    aqara: "yes",
+  },
+  door_lock: { apple: "yes", google: "partial", alexa: "yes", aqara: "yes" },
+  window_covering: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
+  thermostat: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
   fan: {
     apple: "no",
     google: "yes",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple Home has no standalone fan, it only shows fans inside an AC.",
   },
   air_purifier: {
     apple: "no",
     google: "yes",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple Home does not list air purifiers.",
   },
-  robot_vacuum_cleaner: { apple: "yes", google: "yes", alexa: "yes" },
+  robot_vacuum_cleaner: {
+    apple: "yes",
+    google: "yes",
+    alexa: "yes",
+    aqara: "yes",
+  },
   robotic_lawn_mower: {
     apple: "yes",
     google: "unknown",
     alexa: "yes",
+    aqara: "unknown",
     note: "Shows up as a robot vacuum, there is no Matter mower type yet.",
   },
   humidifier_dehumidifier: {
     apple: "unknown",
     google: "no",
     alexa: "yes",
+    aqara: "unknown",
   },
   dishwasher: {
     apple: "no",
     google: "no",
     alexa: "unknown",
+    aqara: "unknown",
     note: "Appliance types have little controller support today.",
   },
   speaker: {
     apple: "no",
     google: "yes",
     alexa: "no",
+    aqara: "yes",
     note: "Apple and Alexa do not show Matter speakers.",
   },
   basic_video_player: {
     apple: "no",
     google: "no",
     alexa: "no",
-    note: "TV/media types are not shown by these controllers.",
+    aqara: "yes",
+    note: "TV/media types only show in Aqara Home here.",
   },
-  temperature_sensor: { apple: "yes", google: "yes", alexa: "yes" },
-  humidity_sensor: { apple: "yes", google: "yes", alexa: "yes" },
-  light_sensor: { apple: "yes", google: "yes", alexa: "yes" },
+  temperature_sensor: {
+    apple: "yes",
+    google: "yes",
+    alexa: "yes",
+    aqara: "yes",
+  },
+  humidity_sensor: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
+  light_sensor: { apple: "yes", google: "yes", alexa: "yes", aqara: "unknown" },
   pressure_sensor: {
     apple: "no",
     google: "yes",
     alexa: "no",
-    note: "Only Google Home shows pressure sensors.",
+    aqara: "yes",
+    note: "Google Home and Aqara show pressure sensors.",
   },
   flow_sensor: {
     apple: "no",
     google: "yes",
     alexa: "no",
+    aqara: "unknown",
     note: "Only Google Home shows flow sensors.",
   },
   air_quality_sensor: {
     apple: "no",
     google: "yes",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple Home does not show air quality.",
   },
-  tvoc_sensor: { apple: "no", google: "no", alexa: "partial" },
+  tvoc_sensor: { apple: "no", google: "no", alexa: "partial", aqara: "yes" },
   carbon_monoxide_sensor: {
     apple: "partial",
     google: "no",
     alexa: "partial",
+    aqara: "yes",
     note: "Apple shows a CO alarm, not a CO level reading.",
   },
-  nitrogen_dioxide_sensor: { apple: "no", google: "no", alexa: "partial" },
-  ozone_sensor: { apple: "no", google: "no", alexa: "partial" },
-  formaldehyde_sensor: { apple: "no", google: "no", alexa: "partial" },
-  radon_sensor: { apple: "no", google: "no", alexa: "partial" },
-  pm1_sensor: { apple: "no", google: "no", alexa: "partial" },
+  nitrogen_dioxide_sensor: {
+    apple: "no",
+    google: "no",
+    alexa: "partial",
+    aqara: "yes",
+  },
+  ozone_sensor: { apple: "no", google: "no", alexa: "partial", aqara: "yes" },
+  formaldehyde_sensor: {
+    apple: "no",
+    google: "no",
+    alexa: "partial",
+    aqara: "yes",
+  },
+  radon_sensor: { apple: "no", google: "no", alexa: "partial", aqara: "yes" },
+  pm1_sensor: { apple: "no", google: "no", alexa: "partial", aqara: "yes" },
   electrical_sensor: {
     apple: "no",
     google: "no",
     alexa: "unknown",
+    aqara: "unknown",
     note: "Power/energy is rarely shown unless it is on a smart plug.",
   },
   battery_storage: {
     apple: "no",
     google: "no",
     alexa: "no",
-    note: "Battery is usually shown inside a device, not on its own.",
+    aqara: "yes",
+    note: "Aqara lists battery storage; others show battery inside a device.",
   },
-  contact_sensor: { apple: "yes", google: "yes", alexa: "yes" },
-  motion_sensor: { apple: "yes", google: "yes", alexa: "yes" },
-  occupancy_sensor: { apple: "partial", google: "yes", alexa: "yes" },
+  contact_sensor: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
+  motion_sensor: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
+  occupancy_sensor: {
+    apple: "partial",
+    google: "yes",
+    alexa: "yes",
+    aqara: "yes",
+  },
   mode_select: {
     apple: "no",
     google: "no",
     alexa: "no",
+    aqara: "unknown",
     note: "Google Home does not support Mode Select (issue #356).",
   },
-  water_valve: { apple: "no", google: "no", alexa: "no" },
+  water_valve: { apple: "no", google: "no", alexa: "no", aqara: "yes" },
   pump: {
     apple: "no",
     google: "yes",
     alexa: "no",
-    note: "Only Google Home shows pumps.",
+    aqara: "yes",
+    note: "Google Home and Aqara show pumps.",
   },
   rain_sensor: {
     apple: "no",
     google: "no",
     alexa: "no",
+    aqara: "yes",
     note: "Newer Matter detector type with thin support, Alexa may reject it (issue #365).",
   },
   water_freeze_detector: {
     apple: "no",
     google: "no",
     alexa: "no",
+    aqara: "yes",
     note: "Newer Matter detector type with thin support, Alexa may reject it (issue #365).",
   },
   water_leak_detector: {
     apple: "yes",
     google: "no",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple added leak sensors in iOS 18.4.",
   },
-  water_heater: { apple: "no", google: "no", alexa: "unknown" },
+  water_heater: { apple: "no", google: "no", alexa: "unknown", aqara: "yes" },
   generic_switch: {
     apple: "partial",
     google: "no",
     alexa: "yes",
+    aqara: "unknown",
     note: "Best for stateless buttons.",
   },
   smoke_co_alarm: {
     apple: "yes",
     google: "no",
     alexa: "yes",
+    aqara: "yes",
     note: "Apple added smoke/CO alarms in iOS 18.4.",
   },
 };

@@ -6,13 +6,14 @@ import {
 import Box from "@mui/material/Box";
 
 const controllers: {
-  key: "apple" | "google" | "alexa";
+  key: "apple" | "google" | "alexa" | "aqara";
   label: string;
   short: string;
 }[] = [
   { key: "apple", label: "Apple Home", short: "A" },
   { key: "google", label: "Google Home", short: "G" },
   { key: "alexa", label: "Alexa", short: "X" },
+  { key: "aqara", label: "Aqara Home", short: "Q" },
 ];
 
 const tint: Record<ControllerSupport, string> = {
