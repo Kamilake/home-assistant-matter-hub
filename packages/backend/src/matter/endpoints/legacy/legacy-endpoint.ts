@@ -18,6 +18,7 @@ import debounce from "debounce";
 import { isEqual } from "lodash-es";
 import type { BridgeRegistry } from "../../../services/bridges/bridge-registry.js";
 import type { HomeAssistantStates } from "../../../services/home-assistant/home-assistant-registry.js";
+import { throttleLatest } from "../../../utils/throttle-latest.js";
 import { HomeAssistantEntityBehavior } from "../../behaviors/home-assistant-entity-behavior.js";
 import {
   EntityEndpoint,
@@ -532,7 +533,13 @@ export class LegacyEndpoint extends EntityEndpoint {
     }
     const customName = effectiveMapping?.customName;
     const mappedIds = getMappedEntityIds(effectiveMapping);
-    return new LegacyEndpoint(type, entityId, customName, mappedIds);
+    return new LegacyEndpoint(
+      type,
+      entityId,
+      customName,
+      mappedIds,
+      effectiveMapping?.updateThrottleMs,
+    );
   }
 
   private constructor(
@@ -540,20 +547,26 @@ export class LegacyEndpoint extends EntityEndpoint {
     entityId: string,
     customName?: string,
     mappedEntityIds?: string[],
+    throttleMs?: number,
   ) {
     super(type, entityId, customName, mappedEntityIds);
-    // Debounce state updates to batch rapid changes into a single transaction.
-    // Home Assistant often sends multiple attribute updates in quick succession
-    // (e.g., media player: volume + source + play state). Without debouncing,
-    // each update triggers separate Matter.js transactions, causing overhead
-    // and verbose transaction queueing logs. A 50ms window batches these updates
-    // while remaining imperceptible to users.
-    this.flushUpdate = debounce(this.flushPendingUpdate.bind(this), 50);
+    // Batch rapid HA updates into a single Matter transaction. Home Assistant
+    // often sends several attribute updates back to back (e.g. media player:
+    // volume + source + play state); a 50ms debounce coalesces them and stays
+    // imperceptible. When updateThrottleMs is set, a chatty sensor is throttled
+    // to one report per that interval instead, keeping the latest value (#351).
+    this.flushUpdate =
+      throttleMs && throttleMs > 50
+        ? throttleLatest(this.flushPendingUpdate.bind(this), throttleMs)
+        : debounce(this.flushPendingUpdate.bind(this), 50);
   }
 
   private lastState?: HomeAssistantEntityState;
   private pendingMappedChange = false;
-  private readonly flushUpdate: ReturnType<typeof debounce>;
+  private readonly flushUpdate: {
+    (state: HomeAssistantEntityState): void;
+    clear(): void;
+  };
   private eventUpdateChain: Promise<void> = Promise.resolve();
 
   override async delete() {

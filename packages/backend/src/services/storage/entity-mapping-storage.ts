@@ -142,6 +142,7 @@ export class EntityMappingStorage extends Service {
       coverExposeAsDimmableLight:
         request.coverExposeAsDimmableLight || undefined,
       coverSliderDebounceMs: sanitizeDebounceMs(request.coverSliderDebounceMs),
+      updateThrottleMs: sanitizeThrottleMs(request.updateThrottleMs),
       disableClimateOnOff: request.disableClimateOnOff || undefined,
       disableClimateFanControl: request.disableClimateFanControl || undefined,
       climateKeepModeOnIdle: request.climateKeepModeOnIdle || undefined,
@@ -182,6 +183,7 @@ export class EntityMappingStorage extends Service {
       !config.coverSwapOpenClose &&
       !config.coverExposeAsDimmableLight &&
       !config.coverSliderDebounceMs &&
+      !config.updateThrottleMs &&
       !config.disableClimateOnOff &&
       !config.disableClimateFanControl &&
       !config.climateKeepModeOnIdle &&
@@ -232,4 +234,17 @@ function sanitizeDebounceMs(value: unknown): number | undefined {
     return undefined;
   }
   return Math.min(5000, Math.round(n));
+}
+
+// Like the slider debounce but allows a longer window: a chatty sensor may want
+// one report every several seconds. Capped at 60s.
+function sanitizeThrottleMs(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+  const n = typeof value === "string" ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isFinite(n) || n <= 0) {
+    return undefined;
+  }
+  return Math.min(60000, Math.round(n));
 }

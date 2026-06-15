@@ -58,6 +58,7 @@ export function entityMappingApi(
       coverSwapOpenClose: body.coverSwapOpenClose,
       coverExposeAsDimmableLight: body.coverExposeAsDimmableLight,
       coverSliderDebounceMs: body.coverSliderDebounceMs,
+      updateThrottleMs: body.updateThrottleMs,
       disableClimateOnOff: body.disableClimateOnOff,
       disableClimateFanControl: body.disableClimateFanControl,
       climateKeepModeOnIdle: body.climateKeepModeOnIdle,

@@ -81,6 +81,14 @@ function parseDebounceMs(value: string): number | undefined {
   return Math.min(5000, Math.round(n));
 }
 
+function parseThrottleMs(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const n = Number(trimmed);
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return Math.min(60000, Math.round(n));
+}
+
 interface EntityMappingDialogProps {
   open: boolean;
   entityId: string;
@@ -134,6 +142,7 @@ export function EntityMappingDialog({
   const [coverExposeAsDimmableLight, setCoverExposeAsDimmableLight] =
     useState(false);
   const [coverSliderDebounceMs, setCoverSliderDebounceMs] = useState("");
+  const [updateThrottleMs, setUpdateThrottleMs] = useState("");
   const [disableClimateOnOff, setDisableClimateOnOff] = useState(false);
   const [disableClimateFanControl, setDisableClimateFanControl] =
     useState(false);
@@ -211,6 +220,11 @@ export function EntityMappingDialog({
       setCoverSliderDebounceMs(
         currentMapping?.coverSliderDebounceMs != null
           ? String(currentMapping.coverSliderDebounceMs)
+          : "",
+      );
+      setUpdateThrottleMs(
+        currentMapping?.updateThrottleMs != null
+          ? String(currentMapping.updateThrottleMs)
           : "",
       );
       setDisableClimateOnOff(currentMapping?.disableClimateOnOff || false);
@@ -309,6 +323,7 @@ export function EntityMappingDialog({
       coverSwapOpenClose: coverSwapOpenClose || undefined,
       coverExposeAsDimmableLight: coverExposeAsDimmableLight || undefined,
       coverSliderDebounceMs: parseDebounceMs(coverSliderDebounceMs),
+      updateThrottleMs: parseThrottleMs(updateThrottleMs),
       disableClimateOnOff: disableClimateOnOff || undefined,
       disableClimateFanControl: disableClimateFanControl || undefined,
       climateKeepModeOnIdle: climateKeepModeOnIdle || undefined,
@@ -351,6 +366,7 @@ export function EntityMappingDialog({
     coverSwapOpenClose,
     coverExposeAsDimmableLight,
     coverSliderDebounceMs,
+    updateThrottleMs,
     disableClimateOnOff,
     disableClimateFanControl,
     climateKeepModeOnIdle,
@@ -1207,6 +1223,17 @@ export function EntityMappingDialog({
             />
           }
           label="Disable this entity (exclude from bridge)"
+        />
+
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Update throttle (ms, optional)"
+          type="number"
+          value={updateThrottleMs}
+          onChange={(e) => setUpdateThrottleMs(e.target.value)}
+          helperText="Limit Matter updates for chatty sensors (power, energy) to one per N ms. Empty / 0 keeps the default. Max 60000."
+          slotProps={{ htmlInput: { min: 0, max: 60000, step: 100 } }}
         />
       </DialogContent>
       <DialogActions>

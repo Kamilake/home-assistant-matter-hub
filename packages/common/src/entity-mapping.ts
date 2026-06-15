@@ -232,6 +232,12 @@ export interface EntityMappingConfig {
    */
   readonly coverSliderDebounceMs?: number;
   /**
+   * Optional: throttle Matter updates for this entity to at most one per N ms.
+   * Use for chatty sensors (power, energy) that change constantly and otherwise
+   * push a Matter report on every tick. 0 / unset keeps the default behaviour.
+   */
+  readonly updateThrottleMs?: number;
+  /**
    * Optional: Skip the Matter OnOff cluster for this climate entity.
    * Stops voice commands like "turn off <room>" from calling
    * climate.turn_off on the thermostat. No effect on non-climate entities.
@@ -336,6 +342,7 @@ export interface EntityMappingRequest {
   readonly coverSwapOpenClose?: boolean;
   readonly coverExposeAsDimmableLight?: boolean;
   readonly coverSliderDebounceMs?: number;
+  readonly updateThrottleMs?: number;
   readonly disableClimateOnOff?: boolean;
   readonly disableClimateFanControl?: boolean;
   readonly climateKeepModeOnIdle?: boolean;
