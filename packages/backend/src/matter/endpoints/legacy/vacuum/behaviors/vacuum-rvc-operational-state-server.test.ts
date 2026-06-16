@@ -52,12 +52,33 @@ describe("mapVacuumOperationalState", () => {
     ).toBe(OperationalState.Charging);
   });
 
-  it("returns Docked when docked with no charging signals", () => {
+  it("returns Charging when docked below full, matching batChargeState (#377)", () => {
     expect(
       mapVacuumOperationalState({
         state: "docked",
         attributes: { battery_level: 80 },
       }),
+    ).toBe(OperationalState.Charging);
+  });
+
+  it("uses the mapped battery percent passed in: <100 Charging (#377)", () => {
+    expect(
+      mapVacuumOperationalState({ state: "docked", attributes: {} }, 80),
+    ).toBe(OperationalState.Charging);
+  });
+
+  it("uses the mapped battery percent passed in: 100 Docked (#377)", () => {
+    expect(
+      mapVacuumOperationalState({ state: "docked", attributes: {} }, 100),
+    ).toBe(OperationalState.Docked);
+  });
+
+  it("respects explicit charging=false even below full (#377)", () => {
+    expect(
+      mapVacuumOperationalState(
+        { state: "docked", attributes: { charging: false } },
+        80,
+      ),
     ).toBe(OperationalState.Docked);
   });
 

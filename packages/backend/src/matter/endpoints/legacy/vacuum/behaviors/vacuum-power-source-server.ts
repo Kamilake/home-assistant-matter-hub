@@ -1,39 +1,9 @@
-import {
-  type VacuumDeviceAttributes,
-  VacuumState,
-} from "@home-assistant-matter-hub/common";
-import { EntityStateProvider } from "../../../../../services/bridges/entity-state-provider.js";
-import { HomeAssistantEntityBehavior } from "../../../../behaviors/home-assistant-entity-behavior.js";
+import { VacuumState } from "@home-assistant-matter-hub/common";
 import { PowerSourceServer } from "../../../../behaviors/power-source-server.js";
+import { getVacuumBatteryPercent } from "./vacuum-battery.js";
 
 export const VacuumPowerSourceServer = PowerSourceServer({
-  getBatteryPercent(entity, agent) {
-    // First check for battery entity from mapping (for Roomba, Deebot, etc.)
-    const homeAssistant = agent.get(HomeAssistantEntityBehavior);
-    const batteryEntity = homeAssistant.state.mapping?.batteryEntity;
-    if (batteryEntity) {
-      const stateProvider = agent.env.get(EntityStateProvider);
-      const battery = stateProvider.getBatteryPercent(batteryEntity);
-      if (battery != null) {
-        return Math.max(0, Math.min(100, battery));
-      }
-    }
-
-    // Fallback to vacuum entity attributes (Dreame, Xiaomi, etc.)
-    const attributes = entity.attributes as VacuumDeviceAttributes;
-    // Some vacuums use 'battery_level', others use 'battery' (e.g. Dreame)
-    const batteryLevel = attributes.battery_level ?? attributes.battery;
-    if (batteryLevel == null) {
-      return null;
-    }
-    if (typeof batteryLevel === "number") {
-      return batteryLevel;
-    }
-    // Some integrations (e.g. Rest980/Roomba) store battery as a string
-    // like "100%", parse the numeric part.
-    const parsed = Number.parseFloat(String(batteryLevel));
-    return Number.isNaN(parsed) ? null : parsed;
-  },
+  getBatteryPercent: getVacuumBatteryPercent,
   isCharging(entity) {
     const state = entity.state as VacuumState | "unavailable";
     // Vacuum is typically charging when docked

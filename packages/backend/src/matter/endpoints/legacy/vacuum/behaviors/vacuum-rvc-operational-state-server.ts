@@ -7,6 +7,7 @@ import { RvcOperationalState } from "@matter/main/clusters";
 import { testBit } from "../../../../../utils/test-bit.js";
 import { HomeAssistantEntityBehavior } from "../../../../behaviors/home-assistant-entity-behavior.js";
 import { RvcOperationalStateServer } from "../../../../behaviors/rvc-operational-state-server.js";
+import { getVacuumBatteryPercent } from "./vacuum-battery.js";
 
 const logger = Logger.get("VacuumRvcOperationalStateServer");
 
@@ -19,14 +20,23 @@ interface ChargingAttributes {
   battery?: number | string | null;
 }
 
+function batteryFromAttributes(attrs: Record<string, unknown>): number | null {
+  const raw =
+    (attrs as ChargingAttributes).battery_level ??
+    (attrs as ChargingAttributes).battery;
+  if (raw == null) return null;
+  const n = typeof raw === "number" ? raw : Number.parseFloat(String(raw));
+  return Number.isFinite(n) ? n : null;
+}
+
+// Conservative charging check for idle: needs an explicit signal, never just a
+// low battery (an idle vacuum on the floor at 90% is not charging).
 function isCharging(entity: { attributes: Record<string, unknown> }): boolean {
   const attrs = entity.attributes as ChargingAttributes;
   if (attrs.is_charging === true || attrs.charging === true) return true;
   if (attrs.is_charging === false || attrs.charging === false) return false;
-  const raw = attrs.battery_level ?? attrs.battery;
-  const level =
-    typeof raw === "number" ? raw : Number.parseFloat(String(raw ?? ""));
-  if (Number.isFinite(level) && level >= 100) return false;
+  const level = batteryFromAttributes(entity.attributes);
+  if (level != null && level >= 100) return false;
   if (attrs.battery_icon?.includes("charging")) return true;
   if (
     typeof attrs.status === "string" &&
@@ -36,10 +46,26 @@ function isCharging(entity: { attributes: Record<string, unknown> }): boolean {
   return false;
 }
 
-export function mapVacuumOperationalState(entity: {
-  state: string;
-  attributes: Record<string, unknown>;
-}): RvcOperationalState.OperationalState {
+// On the dock: an explicit signal wins, otherwise below full means charging,
+// which mirrors PowerSource.batChargeState (#377).
+function isDockedCharging(
+  entity: { attributes: Record<string, unknown> },
+  batteryPercent: number | null,
+): boolean {
+  const attrs = entity.attributes as ChargingAttributes;
+  if (attrs.is_charging === true || attrs.charging === true) return true;
+  if (attrs.is_charging === false || attrs.charging === false) return false;
+  if (batteryPercent != null) return batteryPercent < 100;
+  return isCharging(entity);
+}
+
+export function mapVacuumOperationalState(
+  entity: {
+    state: string;
+    attributes: Record<string, unknown>;
+  },
+  batteryPercent: number | null = batteryFromAttributes(entity.attributes),
+): RvcOperationalState.OperationalState {
   const state = entity.state as VacuumState | "unavailable";
 
   const cleaningStates: string[] = [
@@ -53,7 +79,7 @@ export function mapVacuumOperationalState(entity: {
   let operationalState: RvcOperationalState.OperationalState;
 
   if (state === VacuumState.docked) {
-    if (isCharging(entity)) {
+    if (isDockedCharging(entity, batteryPercent)) {
       operationalState = RvcOperationalState.OperationalState.Charging;
     } else {
       operationalState = RvcOperationalState.OperationalState.Docked;
@@ -93,8 +119,11 @@ export function mapVacuumOperationalState(entity: {
 }
 
 export const VacuumRvcOperationalStateServer = RvcOperationalStateServer({
-  getOperationalState(entity): RvcOperationalState.OperationalState {
-    return mapVacuumOperationalState(entity);
+  getOperationalState(entity, agent): RvcOperationalState.OperationalState {
+    return mapVacuumOperationalState(
+      entity,
+      getVacuumBatteryPercent(entity, agent),
+    );
   },
   pause: (_, agent) => {
     const supportedFeatures =
