@@ -125,6 +125,15 @@ describe("climate thermostat setpoint limits stay ordered (#375)", () => {
     expect(t.absMinCool).toBeLessThanOrEqual(t.minCool);
     expect(t.minCool).toBeLessThanOrEqual(t.maxCool);
     expect(t.maxCool).toBeLessThanOrEqual(t.absMaxCool);
+    // The limits must be the converted Celsius values (61F=1611, 86F=3000),
+    // not the raw 6100/8600 a failed update() would leave behind. Without this
+    // the ordering checks above pass even when the conversion never ran.
+    expect(t.minHeat).toBe(1611);
+    expect(t.maxHeat).toBe(3000);
+    expect(t.absMinHeat).toBe(1611);
+    expect(t.absMaxHeat).toBe(3000);
+    expect(t.minCool).toBe(1611);
+    expect(t.maxCool).toBe(3000);
   });
 
   it("orders inverted HA limits (min_temp > max_temp) instead of crashing", async () => {
