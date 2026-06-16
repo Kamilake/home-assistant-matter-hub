@@ -61,6 +61,32 @@ describe("mapVacuumOperationalState", () => {
     ).toBe(OperationalState.Charging);
   });
 
+  it("charging-state signal overrides the battery inference (#377)", () => {
+    // docked at 80% would infer Charging, but the dedicated sensor says it is
+    // done, so it stays Docked.
+    expect(
+      mapVacuumOperationalState(
+        { state: "docked", attributes: { battery_level: 80 } },
+        80,
+        "not_charging",
+      ),
+    ).toBe(OperationalState.Docked);
+    expect(
+      mapVacuumOperationalState(
+        { state: "docked", attributes: {} },
+        100,
+        "charging",
+      ),
+    ).toBe(OperationalState.Charging);
+    expect(
+      mapVacuumOperationalState(
+        { state: "idle", attributes: {} },
+        50,
+        "charging",
+      ),
+    ).toBe(OperationalState.Charging);
+  });
+
   it("uses the mapped battery percent passed in: <100 Charging (#377)", () => {
     expect(
       mapVacuumOperationalState({ state: "docked", attributes: {} }, 80),

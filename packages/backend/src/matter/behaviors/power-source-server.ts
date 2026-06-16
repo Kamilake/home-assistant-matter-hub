@@ -21,6 +21,11 @@ export interface PowerSourceConfig {
    * Get charging state from entity state
    */
   isCharging?: ValueGetter<boolean>;
+  /**
+   * Optional: drive batChargeState directly from a dedicated sensor, bypassing
+   * the isCharging + battery-percent inference. Return null to keep inferring.
+   */
+  getChargeState?: ValueGetter<PowerSource.BatChargeState | null>;
 }
 
 const FeaturedBase = Base.with("Battery", "Rechargeable");
@@ -95,6 +100,15 @@ class PowerSourceServerBase extends FeaturedBase {
           : PowerSource.BatChargeState.IsCharging;
     } else if (isCharging === false) {
       batChargeState = PowerSource.BatChargeState.IsNotCharging;
+    }
+
+    // A dedicated charging sensor wins over the inference when configured (#377).
+    const explicitChargeState = config.getChargeState?.(
+      entity.state,
+      this.agent,
+    );
+    if (explicitChargeState != null) {
+      batChargeState = explicitChargeState;
     }
 
     applyPatchState(this.state, {

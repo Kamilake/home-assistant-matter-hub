@@ -130,6 +130,7 @@ export function EntityMappingDialog({
   const [suctionLevelEntity, setSuctionLevelEntity] = useState("");
   const [mopIntensityEntity, setMopIntensityEntity] = useState("");
   const [currentRoomEntity, setCurrentRoomEntity] = useState("");
+  const [chargingStateEntity, setChargingStateEntity] = useState("");
   const [cleanedAreaEntity, setCleanedAreaEntity] = useState("");
   const [disableCustomAreaRoomModes, setDisableCustomAreaRoomModes] =
     useState(false);
@@ -202,6 +203,7 @@ export function EntityMappingDialog({
       setSuctionLevelEntity(currentMapping?.suctionLevelEntity || "");
       setMopIntensityEntity(currentMapping?.mopIntensityEntity || "");
       setCurrentRoomEntity(currentMapping?.currentRoomEntity || "");
+      setChargingStateEntity(currentMapping?.chargingStateEntity || "");
       setCleanedAreaEntity(currentMapping?.cleanedAreaEntity || "");
       setDisableCustomAreaRoomModes(
         currentMapping?.disableCustomAreaRoomModes || false,
@@ -313,6 +315,7 @@ export function EntityMappingDialog({
       suctionLevelEntity: suctionLevelEntity.trim() || undefined,
       mopIntensityEntity: mopIntensityEntity.trim() || undefined,
       currentRoomEntity: currentRoomEntity.trim() || undefined,
+      chargingStateEntity: chargingStateEntity.trim() || undefined,
       cleanedAreaEntity: cleanedAreaEntity.trim() || undefined,
       disableCustomAreaRoomModes: disableCustomAreaRoomModes || undefined,
       customFanSpeedTags:
@@ -358,6 +361,7 @@ export function EntityMappingDialog({
     suctionLevelEntity,
     mopIntensityEntity,
     currentRoomEntity,
+    chargingStateEntity,
     cleanedAreaEntity,
     disableCustomAreaRoomModes,
     customServiceAreas,
@@ -586,6 +590,14 @@ export function EntityMappingDialog({
               label="Current Room Entity (optional)"
               placeholder="sensor.vacuum_current_room"
               helperText="Sensor that reports which room the vacuum is currently in (e.g. Dreame current_room sensor). Enables dynamic room progress tracking during multi-room cleaning."
+              domain="sensor"
+            />
+            <EntityAutocomplete
+              value={chargingStateEntity}
+              onChange={setChargingStateEntity}
+              label="Charging State Entity (optional)"
+              placeholder="sensor.vacuum_charging_state"
+              helperText="Sensor reporting the charging state (e.g. Xiaomi charging_state: charging / not_charging / full). Drives the Matter charge state directly instead of inferring it from docked + battery level."
               domain="sensor"
             />
             <EntityAutocomplete

@@ -129,6 +129,13 @@ export interface EntityMappingConfig {
    */
   readonly batteryEntity?: string;
   /**
+   * Optional: Entity ID of a charging-state sensor for a vacuum, so the Matter
+   * batChargeState comes from a dedicated sensor (e.g. Xiaomi charging_state)
+   * instead of being inferred from docked + battery level (#377).
+   * Example: "sensor.vacuum_charging_state"
+   */
+  readonly chargingStateEntity?: string;
+  /**
    * Optional: Array of button entity IDs for room-based cleaning (Roborock, etc.).
    * Each button entity represents a room/scene in the vacuum app.
    * When a room is selected via Matter, the corresponding button will be pressed.
@@ -327,6 +334,7 @@ export interface EntityMappingRequest {
   readonly humidityEntity?: string;
   readonly pressureEntity?: string;
   readonly batteryEntity?: string;
+  readonly chargingStateEntity?: string;
   readonly roomEntities?: string[];
   readonly disableLockPin?: boolean;
   readonly powerEntity?: string;

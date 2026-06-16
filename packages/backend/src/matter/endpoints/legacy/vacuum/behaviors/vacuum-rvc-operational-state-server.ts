@@ -7,7 +7,11 @@ import { RvcOperationalState } from "@matter/main/clusters";
 import { testBit } from "../../../../../utils/test-bit.js";
 import { HomeAssistantEntityBehavior } from "../../../../behaviors/home-assistant-entity-behavior.js";
 import { RvcOperationalStateServer } from "../../../../behaviors/rvc-operational-state-server.js";
-import { getVacuumBatteryPercent } from "./vacuum-battery.js";
+import {
+  getVacuumBatteryPercent,
+  getVacuumChargingState,
+  type VacuumChargingState,
+} from "./vacuum-battery.js";
 
 const logger = Logger.get("VacuumRvcOperationalStateServer");
 
@@ -65,6 +69,7 @@ export function mapVacuumOperationalState(
     attributes: Record<string, unknown>;
   },
   batteryPercent: number | null = batteryFromAttributes(entity.attributes),
+  chargingState: VacuumChargingState | null = null,
 ): RvcOperationalState.OperationalState {
   const state = entity.state as VacuumState | "unavailable";
 
@@ -79,11 +84,13 @@ export function mapVacuumOperationalState(
   let operationalState: RvcOperationalState.OperationalState;
 
   if (state === VacuumState.docked) {
-    if (isDockedCharging(entity, batteryPercent)) {
-      operationalState = RvcOperationalState.OperationalState.Charging;
-    } else {
-      operationalState = RvcOperationalState.OperationalState.Docked;
-    }
+    const charging =
+      chargingState != null
+        ? chargingState === "charging"
+        : isDockedCharging(entity, batteryPercent);
+    operationalState = charging
+      ? RvcOperationalState.OperationalState.Charging
+      : RvcOperationalState.OperationalState.Docked;
   } else if (state === VacuumState.returning) {
     operationalState = RvcOperationalState.OperationalState.SeekingCharger;
   } else if (cleaningStates.includes(state)) {
@@ -92,11 +99,11 @@ export function mapVacuumOperationalState(
     operationalState = RvcOperationalState.OperationalState.Paused;
   } else if (state === VacuumState.idle) {
     // Idle could mean docked/charging or just idle
-    if (isCharging(entity)) {
-      operationalState = RvcOperationalState.OperationalState.Charging;
-    } else {
-      operationalState = RvcOperationalState.OperationalState.Stopped;
-    }
+    const charging =
+      chargingState != null ? chargingState === "charging" : isCharging(entity);
+    operationalState = charging
+      ? RvcOperationalState.OperationalState.Charging
+      : RvcOperationalState.OperationalState.Stopped;
   } else if (state === VacuumState.error || state === "unavailable") {
     operationalState = RvcOperationalState.OperationalState.Error;
   } else {
@@ -123,6 +130,7 @@ export const VacuumRvcOperationalStateServer = RvcOperationalStateServer({
     return mapVacuumOperationalState(
       entity,
       getVacuumBatteryPercent(entity, agent),
+      getVacuumChargingState(agent),
     );
   },
   pause: (_, agent) => {
