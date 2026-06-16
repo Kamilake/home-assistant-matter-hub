@@ -142,6 +142,28 @@ export interface ThermostatServerConfig {
   }>;
 }
 
+export interface SetpointLimits {
+  absMin: number;
+  min: number;
+  max: number;
+  absMax: number;
+}
+
+// Make a setpoint-limit set satisfy absMin <= min <= max <= absMax. An old
+// build could persist limits in the wrong unit (e.g. 61F stored as 6100 instead
+// of 1611), and matter.js keeps the stored value over our defaults, so a stuck
+// device fails init every restart until the loaded state is repaired (#375).
+export function repairSetpointLimits(limits: SetpointLimits): SetpointLimits {
+  let { min, max } = limits;
+  if (min > max) [min, max] = [max, min];
+  return {
+    min,
+    max,
+    absMin: Math.min(limits.absMin, min),
+    absMax: Math.max(limits.absMax, max),
+  };
+}
+
 /**
  * Pre-super initialization: force-set feature-appropriate attribute values.
  * Must run BEFORE super.initialize() because Matter.js validates setpoints during super.
@@ -149,7 +171,7 @@ export interface ThermostatServerConfig {
  * from its own initialize() with correct super binding.
  */
 // biome-ignore lint/suspicious/noExplicitAny: Internal helper working across feature variants
-function thermostatPreInitialize(self: any): void {
+export function thermostatPreInitialize(self: any): void {
   const currentLocal = self.state.localTemperature;
 
   logger.debug(
@@ -177,6 +199,17 @@ function thermostatPreInitialize(self: any): void {
     self.state.minHeatSetpointLimit = self.state.minHeatSetpointLimit ?? 0;
     self.state.maxHeatSetpointLimit = self.state.maxHeatSetpointLimit ?? 5000;
 
+    const heat = repairSetpointLimits({
+      absMin: self.state.absMinHeatSetpointLimit,
+      min: self.state.minHeatSetpointLimit,
+      max: self.state.maxHeatSetpointLimit,
+      absMax: self.state.absMaxHeatSetpointLimit,
+    });
+    self.state.absMinHeatSetpointLimit = heat.absMin;
+    self.state.minHeatSetpointLimit = heat.min;
+    self.state.maxHeatSetpointLimit = heat.max;
+    self.state.absMaxHeatSetpointLimit = heat.absMax;
+
     const currentHeating = self.state.occupiedHeatingSetpoint;
     const heatingValue =
       typeof currentHeating === "number" && !Number.isNaN(currentHeating)
@@ -194,6 +227,17 @@ function thermostatPreInitialize(self: any): void {
       self.state.absMaxCoolSetpointLimit ?? 5000;
     self.state.minCoolSetpointLimit = self.state.minCoolSetpointLimit ?? 0;
     self.state.maxCoolSetpointLimit = self.state.maxCoolSetpointLimit ?? 5000;
+
+    const cool = repairSetpointLimits({
+      absMin: self.state.absMinCoolSetpointLimit,
+      min: self.state.minCoolSetpointLimit,
+      max: self.state.maxCoolSetpointLimit,
+      absMax: self.state.absMaxCoolSetpointLimit,
+    });
+    self.state.absMinCoolSetpointLimit = cool.absMin;
+    self.state.minCoolSetpointLimit = cool.min;
+    self.state.maxCoolSetpointLimit = cool.max;
+    self.state.absMaxCoolSetpointLimit = cool.absMax;
 
     const currentCooling = self.state.occupiedCoolingSetpoint;
     const coolingValue =
