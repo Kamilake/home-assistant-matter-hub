@@ -7,6 +7,7 @@ export * from "./controller-profiles.js";
 export * from "./diagnostic-event.js";
 export * from "./domains/index.js";
 export * from "./endpoint-data.js";
+export * from "./entity-diagnostics.js";
 export * from "./entity-mapping.js";
 export * from "./home-assistant-area-registry.js";
 export * from "./home-assistant-device-registry.js";

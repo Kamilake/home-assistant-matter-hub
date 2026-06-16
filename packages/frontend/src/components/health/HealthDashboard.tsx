@@ -60,6 +60,17 @@ interface BridgeHealthInfo {
     controllerLabel: string;
     note?: string;
   }>;
+  entityDiagnostics?: Array<{
+    entityId: string;
+    deviceTypeId?: number;
+    status: "ok" | "failed" | "limited";
+    reason?: string;
+    unsupportedBy?: Array<{
+      controller: string;
+      controllerLabel: string;
+      note?: string;
+    }>;
+  }>;
   connectivity?: {
     totalSessions: number;
     totalSubscriptions: number;
@@ -545,6 +556,35 @@ export function HealthDashboard(props: HealthDashboardProps = {}) {
                     </Box>
                   )}
 
+                  {(() => {
+                    const failed = (bridge.entityDiagnostics ?? []).filter(
+                      (d) => d.status === "failed",
+                    );
+                    return failed.length > 0 ? (
+                      <Alert
+                        severity="error"
+                        sx={{ mt: 1, flexShrink: 0, py: 0 }}
+                      >
+                        <Typography variant="caption" component="div">
+                          {t(
+                            "health.failedDevicesTitle",
+                            "Devices that failed to start:",
+                          )}
+                        </Typography>
+                        {failed.map((d) => (
+                          <Typography
+                            key={d.entityId}
+                            variant="caption"
+                            component="div"
+                            color="text.secondary"
+                          >
+                            {d.entityId}
+                            {d.reason ? `: ${d.reason}` : ""}
+                          </Typography>
+                        ))}
+                      </Alert>
+                    ) : null;
+                  })()}
                   {bridge.controllerWarnings &&
                     bridge.controllerWarnings.length > 0 && (
                       <Alert
