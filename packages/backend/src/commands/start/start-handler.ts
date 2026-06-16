@@ -164,6 +164,17 @@ export async function startHandler(
     shuttingDown = true;
     console.log(`Received ${signal}, shutting down gracefully...`);
     try {
+      // Stop bridges first so each one closes its Matter sessions cleanly and
+      // persists fabric/subscription state before the backup runs and the
+      // container is torn down. Capped so a slow bridge can't block shutdown.
+      await Promise.race([
+        bridgeService.stopAll(),
+        new Promise((resolve) => setTimeout(resolve, 10_000)),
+      ]);
+    } catch (e) {
+      console.warn("Stopping bridges during shutdown failed:", e);
+    }
+    try {
       await Promise.race([
         backupService.createAutoBackup(),
         new Promise((resolve) => setTimeout(resolve, 5_000)),

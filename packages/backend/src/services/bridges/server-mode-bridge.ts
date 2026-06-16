@@ -36,6 +36,12 @@ const AUTO_FORCE_SYNC_INTERVAL_MS = 90_000;
 // because it doesn't know the server canceled its subscriptions (#266).
 const DEAD_SESSION_TIMEOUT_MS = 60_000;
 
+// On shutdown, wait at most this long for active sessions to close cleanly.
+// A clean close tells the controller to drop its CASE session right away
+// instead of holding a stale one until its own timeout, which is what leaves
+// a controller showing the bridge as unresponsive after a restart.
+const SHUTDOWN_SESSION_CLOSE_TIMEOUT_MS = 2_500;
+
 export function makeWarmStartState<T extends { last_updated?: string }>(
   state: T,
   now = new Date().toISOString(),
@@ -250,6 +256,7 @@ export class ServerModeBridge {
     this.unwireSessionDiagnostics();
     this.cancelWarmStart();
     this.stopAutoForceSync();
+    await this.closeActiveSessions();
     this.endpointManager.stopObserving();
     try {
       await this.server.cancel();
@@ -333,6 +340,10 @@ export class ServerModeBridge {
   }
 
   private wireSessionDiagnostics() {
+    // Drop any existing listener first. Factory reset restarts the bridge
+    // without going through stop(), so without this the old handler leaks and
+    // every session close is logged twice.
+    this.unwireSessionDiagnostics();
     try {
       const sessionManager = this.server.env.get(SessionManager);
       this.sessionDiagHandler = (session: {
@@ -488,6 +499,47 @@ export class ServerModeBridge {
       }
       if (closes.length > 0) {
         Promise.allSettled(closes).then(() => this.triggerMdnsReAnnounce());
+      }
+    } catch {
+      // SessionManager may be disposed
+    }
+  }
+
+  // Close every active session on shutdown so each controller is told to drop
+  // its CASE session instead of being left with a stale one. Mirrors the
+  // dead-session close, but covers all sessions and waits (capped) so the
+  // close actually reaches the peer before the server is canceled.
+  private async closeActiveSessions() {
+    try {
+      const sessionManager = this.server.env.get(SessionManager);
+      const closes: Promise<void>[] = [];
+      for (const s of [...sessionManager.sessions]) {
+        if (s.isClosing) {
+          continue;
+        }
+        closes.push(
+          s.initiateClose().catch(() => {
+            // Graceful close failed (peer unreachable), force-close locally
+            return s.initiateForceClose({
+              cause: new Error("graceful close failed, forcing"),
+            });
+          }),
+        );
+      }
+      if (closes.length === 0) {
+        return;
+      }
+      this.log.info(`Closing ${closes.length} active session(s) on shutdown`);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const timeout = new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, SHUTDOWN_SESSION_CLOSE_TIMEOUT_MS);
+      });
+      try {
+        await Promise.race([Promise.allSettled(closes), timeout]);
+      } finally {
+        // Clear the timer so it can't keep the event loop alive once the
+        // closes settle first.
+        clearTimeout(timer);
       }
     } catch {
       // SessionManager may be disposed
