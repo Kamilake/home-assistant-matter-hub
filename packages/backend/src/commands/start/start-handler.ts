@@ -9,7 +9,9 @@ import { patchLevelControlTlv } from "../../matter/patches/patch-level-control-t
 import { BackupService } from "../../services/backup/backup-service.js";
 import { BridgeService } from "../../services/bridges/bridge-service.js";
 import { EntityIsolationService } from "../../services/bridges/entity-isolation-service.js";
+import { HomeAssistantClient } from "../../services/home-assistant/home-assistant-client.js";
 import { HomeAssistantRegistry } from "../../services/home-assistant/home-assistant-registry.js";
+import { AppSettingsStorage } from "../../services/storage/app-settings-storage.js";
 import { logStartupMemoryGuard } from "../../utils/log-memory.js";
 import type { StartOptions } from "./start-options.js";
 
@@ -154,6 +156,18 @@ export async function startHandler(
   bridgeService.onBridgeChanged = (bridgeId) => {
     webApi.websocket.broadcastBridgeUpdate(bridgeId);
   };
+
+  const [haClient, settingsStorage] = await Promise.all([
+    appEnvironment.load(HomeAssistantClient),
+    appEnvironment.load(AppSettingsStorage),
+  ]);
+  // Use the persisted recovery settings instead of the built-in defaults.
+  bridgeService.applyRecoverySettings(settingsStorage.recoverySettings);
+  // When Home Assistant reconnects, try to recover failed bridges right away
+  // instead of waiting for the next interval. Only failed bridges are touched.
+  haClient.connection.addEventListener("ready", () => {
+    bridgeService.recoverFailedBridgesNow();
+  });
 
   // Register graceful shutdown handlers.
   // When the process receives SIGTERM (Docker stop) or SIGINT (Ctrl+C),

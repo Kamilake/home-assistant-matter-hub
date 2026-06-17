@@ -26,6 +26,22 @@ describe("buildEntityDiagnostics", () => {
     ]);
   });
 
+  it("carries failedAt through to the failed diagnostic", () => {
+    const failed: FailedEntity[] = [
+      {
+        entityId: "climate.ac",
+        reason: "Behaviors have errors",
+        failedAt: "2026-06-17T10:00:00Z",
+      },
+    ];
+    const d = buildEntityDiagnostics([], failed, []);
+    expect(d[0]).toMatchObject({
+      entityId: "climate.ac",
+      status: "failed",
+      failedAt: "2026-06-17T10:00:00Z",
+    });
+  });
+
   it("marks an exposed entity with a controller warning as limited", () => {
     const warnings: ControllerWarning[] = [
       {

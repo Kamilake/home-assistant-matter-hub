@@ -113,7 +113,10 @@ export class WebApi extends Service {
       .use("/entity-mappings", entityMappingApi(this.mappingStorage))
       .use("/mapping-profiles", mappingProfileApi(this.mappingStorage))
       .use("/lock-credentials", lockCredentialApi(this.lockCredentialStorage))
-      .use("/settings", settingsApi(this.settingsStorage, this.props.auth))
+      .use(
+        "/settings",
+        settingsApi(this.settingsStorage, this.bridgeService, this.props.auth),
+      )
       .use(
         "/backup",
         backupApi(

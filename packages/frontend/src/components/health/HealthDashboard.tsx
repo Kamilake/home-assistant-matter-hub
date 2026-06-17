@@ -29,6 +29,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { timeAgo } from "../../time.ts";
 import { BackupRestore } from "../backup/BackupRestore.tsx";
 import { FabricIcon } from "../fabric/FabricIcon.tsx";
 import { getVendorName } from "../fabric/vendor-names.ts";
@@ -65,6 +66,7 @@ interface BridgeHealthInfo {
     deviceTypeId?: number;
     status: "ok" | "failed" | "limited";
     reason?: string;
+    failedAt?: string;
     unsupportedBy?: Array<{
       controller: string;
       controllerLabel: string;
@@ -107,6 +109,12 @@ interface DetailedHealthStatus {
     enabled: boolean;
     lastRecoveryAttempt?: string;
     recoveryCount: number;
+    history?: Array<{
+      timestamp: string;
+      bridgeId: string;
+      bridgeName: string;
+      outcome: "success" | "failed";
+    }>;
   };
 }
 
@@ -580,6 +588,7 @@ export function HealthDashboard(props: HealthDashboardProps = {}) {
                           >
                             {d.entityId}
                             {d.reason ? `: ${d.reason}` : ""}
+                            {d.failedAt ? ` (${timeAgo(d.failedAt)})` : ""}
                           </Typography>
                         ))}
                       </Alert>
@@ -629,6 +638,20 @@ export function HealthDashboard(props: HealthDashboardProps = {}) {
             {health.recovery.lastRecoveryAttempt &&
               ` | Last attempt: ${new Date(health.recovery.lastRecoveryAttempt).toLocaleString()}`}
           </Typography>
+          {health.recovery.history && health.recovery.history.length > 0 && (
+            <Box sx={{ mt: 1 }}>
+              {[...health.recovery.history].reverse().map((h, i) => (
+                <Typography
+                  key={`${h.timestamp}:${h.bridgeId}:${i}`}
+                  variant="caption"
+                  component="div"
+                  color="text.secondary"
+                >
+                  {timeAgo(h.timestamp)}: {h.bridgeName} ({h.outcome})
+                </Typography>
+              ))}
+            </Box>
+          )}
         </>
       )}
 

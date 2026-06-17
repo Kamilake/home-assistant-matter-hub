@@ -57,6 +57,14 @@ export class BridgeEndpointManager extends Service {
     return [...this._failedEntities, ...isolated];
   }
 
+  private addFailedEntity(entityId: string, reason: string) {
+    this._failedEntities.push({
+      entityId,
+      reason,
+      failedAt: new Date().toISOString(),
+    });
+  }
+
   constructor(
     private readonly client: HomeAssistantClient,
     private readonly registry: BridgeRegistry,
@@ -617,11 +625,10 @@ export class BridgeEndpointManager extends Service {
       if (memoryLimitReached) {
         // Skip existing endpoints that are already loaded
         if (!existingEndpoints.some((e) => e.entityId === entityId)) {
-          this._failedEntities.push({
+          this.addFailedEntity(
             entityId,
-            reason:
-              "Skipped due to memory pressure, reduce entities or increase heap size",
-          });
+            "Skipped due to memory pressure, reduce entities or increase heap size",
+          );
         }
         continue;
       }
@@ -646,7 +653,7 @@ export class BridgeEndpointManager extends Service {
       if (entityId.length > MAX_ENTITY_ID_LENGTH) {
         const reason = `Entity ID too long (${entityId.length} chars, max ${MAX_ENTITY_ID_LENGTH}). This would cause filesystem errors.`;
         this.log.warn(`Skipping entity: ${entityId}. Reason: ${reason}`);
-        this._failedEntities.push({ entityId, reason });
+        this.addFailedEntity(entityId, reason);
         continue;
       }
 
@@ -664,7 +671,7 @@ export class BridgeEndpointManager extends Service {
           // Handle all endpoint creation errors gracefully to prevent boot crashes
           const reason = this.extractErrorReason(e);
           this.log.warn(`Failed to create device ${entityId}: ${reason}`);
-          this._failedEntities.push({ entityId, reason });
+          this.addFailedEntity(entityId, reason);
           continue;
         }
 
@@ -683,10 +690,7 @@ export class BridgeEndpointManager extends Service {
             );
             // Extract detailed behavior error info for debugging
             this.logDetailedError(entityId, e);
-            this._failedEntities.push({
-              entityId,
-              reason: this.extractErrorReason(e),
-            });
+            this.addFailedEntity(entityId, this.extractErrorReason(e));
           }
         }
       }

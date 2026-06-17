@@ -43,9 +43,23 @@ const DEFAULT_BACKUP_SETTINGS: BackupSettings = {
   backupRetentionCount: 5,
 };
 
+export interface RecoverySettings {
+  autoRecoveryEnabled: boolean;
+  recoveryIntervalMs: number;
+}
+
+export const MIN_RECOVERY_INTERVAL_MS = 10_000;
+export const MAX_RECOVERY_INTERVAL_MS = 3_600_000;
+
+const DEFAULT_RECOVERY_SETTINGS: RecoverySettings = {
+  autoRecoveryEnabled: true,
+  recoveryIntervalMs: 60000,
+};
+
 interface StoredSettings {
   auth?: StoredAuth;
   backup?: Partial<BackupSettings>;
+  recovery?: Partial<RecoverySettings>;
 }
 
 function hashPassword(plain: string): {
@@ -214,6 +228,17 @@ export class AppSettingsStorage extends Service {
 
   async setBackupSettings(settings: Partial<BackupSettings>): Promise<void> {
     this.settings.backup = { ...this.settings.backup, ...settings };
+    await this.persist();
+  }
+
+  get recoverySettings(): RecoverySettings {
+    return { ...DEFAULT_RECOVERY_SETTINGS, ...this.settings.recovery };
+  }
+
+  async setRecoverySettings(
+    settings: Partial<RecoverySettings>,
+  ): Promise<void> {
+    this.settings.recovery = { ...this.settings.recovery, ...settings };
     await this.persist();
   }
 

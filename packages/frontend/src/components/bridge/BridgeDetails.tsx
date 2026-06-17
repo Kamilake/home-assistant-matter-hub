@@ -37,6 +37,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { forceSyncBridge, openCommissioningWindow } from "../../api/bridges.ts";
 import { navigation } from "../../routes.tsx";
+import { timeAgo } from "../../time.ts";
 import { FabricList } from "../fabric/FabricList.tsx";
 import { useNotifications } from "../notifications/use-notifications.ts";
 
@@ -641,6 +642,7 @@ const FailedEntities = ({ bridge }: { bridge: BridgeDataWithMetadata }) => {
                 >
                   {", "}
                   {entity.reason}
+                  {entity.failedAt ? ` (${timeAgo(entity.failedAt)})` : ""}
                 </Typography>
               </Box>
             ))}

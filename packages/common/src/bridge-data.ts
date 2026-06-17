@@ -193,6 +193,8 @@ export interface BridgeData extends BridgeConfig {
 export interface FailedEntity {
   readonly entityId: string;
   readonly reason: string;
+  // ISO time the entity failed, so the UI can tell fresh from old failures.
+  readonly failedAt?: string;
 }
 
 export interface BridgeDataWithMetadata extends BridgeData {

@@ -4,7 +4,10 @@ import {
   type EntityDiagnostic,
 } from "@home-assistant-matter-hub/common";
 import express from "express";
-import type { BridgeService } from "../services/bridges/bridge-service.js";
+import type {
+  BridgeService,
+  RecoveryAttempt,
+} from "../services/bridges/bridge-service.js";
 import type { HomeAssistantClient } from "../services/home-assistant/home-assistant-client.js";
 
 export interface SessionInfo {
@@ -81,6 +84,7 @@ export interface DetailedHealthStatus extends HealthStatus {
     enabled: boolean;
     lastRecoveryAttempt?: string;
     recoveryCount: number;
+    history: RecoveryAttempt[];
   };
 }
 
@@ -182,6 +186,7 @@ export function healthApi(
         enabled: bridgeService.autoRecoveryEnabled,
         lastRecoveryAttempt: bridgeService.lastRecoveryAttempt?.toISOString(),
         recoveryCount: bridgeService.recoveryCount,
+        history: bridgeService.recoveryHistory,
       },
     };
     res.json(detailed);

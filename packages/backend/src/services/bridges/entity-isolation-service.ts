@@ -110,7 +110,11 @@ class EntityIsolationServiceImpl {
     }
 
     const reason = `${classification}. Entity isolated to protect bridge stability.`;
-    this.isolatedEntities.set(key, { entityId: entityName, reason });
+    this.isolatedEntities.set(key, {
+      entityId: entityName,
+      reason,
+      failedAt: new Date().toISOString(),
+    });
 
     logger.warn(
       `Isolating entity "${entityName}" from bridge ${bridgeId} due to: ${reason}`,

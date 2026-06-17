@@ -22,6 +22,7 @@ import {
 import { BackupRestore } from "../../components/backup/BackupRestore.tsx";
 import { ConfirmDialog } from "../../components/misc/ConfirmDialog.tsx";
 import { UpdateChecker } from "../../components/system/UpdateChecker.tsx";
+import { RecoverySettingsCard } from "./RecoverySettingsCard.tsx";
 
 export const SettingsPage = () => {
   const { t } = useTranslation();
@@ -116,6 +117,10 @@ export const SettingsPage = () => {
       <Divider sx={{ my: 3 }} />
 
       <UpdateChecker />
+
+      <Divider sx={{ my: 3 }} />
+
+      <RecoverySettingsCard />
 
       <Divider sx={{ my: 3 }} />
 

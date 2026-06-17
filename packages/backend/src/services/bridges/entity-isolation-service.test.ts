@@ -48,6 +48,7 @@ describe("EntityIsolationService", () => {
       const isolated = EntityIsolationService.getIsolatedEntities(BRIDGE_ID);
       expect(isolated).toHaveLength(1);
       expect(isolated[0].reason).toContain("Subscription timing error");
+      expect(isolated[0].failedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 
       EntityIsolationService.unregisterIsolationCallback(BRIDGE_ID);
     });

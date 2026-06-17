@@ -112,6 +112,12 @@
   },
   "settings": {
     "title": "Settings",
+    "recovery": {
+      "title": "Auto recovery",
+      "hint": "Periodically restarts bridges that failed to start. Only failed bridges are touched.",
+      "enabled": "Enabled",
+      "interval": "Interval (seconds)"
+    },
     "language": "Language",
     "languageDescription": "Select the interface language.",
     "checkUpdates": "Check for Updates",

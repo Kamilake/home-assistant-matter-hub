@@ -19,6 +19,8 @@ export interface EntityDiagnostic {
   status: EntityDiagnosticStatus;
   /** Why it failed to come up (status "failed"). */
   reason?: string;
+  /** ISO time it failed (status "failed"). */
+  failedAt?: string;
   /** Controllers that will not show this device (status "limited"). */
   unsupportedBy?: EntityControllerIssue[];
 }
@@ -35,6 +37,7 @@ export function buildEntityDiagnostics(
     entityId: f.entityId,
     status: "failed",
     reason: f.reason,
+    failedAt: f.failedAt,
   }));
 
   const failedIds = new Set(failed.map((f) => f.entityId));
