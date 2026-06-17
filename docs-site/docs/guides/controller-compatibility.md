@@ -78,7 +78,7 @@ Apple, Google, Alexa, Aqara, and SmartThings each move at a different cadence. A
 
 ## Aqara Home
 
-Aqara Home is recognized as a controller: when an Aqara fabric is commissioned, the per-device support chips and the health warnings reflect the Aqara column above. Aqara surfaces a wide range of Matter device types, so it rarely warns.
+Aqara Home is recognized as a controller: when an Aqara fabric is commissioned, the per-device support chips and the warnings reflect the Aqara column above. These warnings show on the bridge's own page and in the Health Dashboard. Aqara surfaces a wide range of Matter device types, so it rarely warns.
 
 A few Aqara quirks are handled for you:
 

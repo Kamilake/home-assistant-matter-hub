@@ -54,7 +54,9 @@ Click the heart icon (❤️) in the top navigation bar of the web UI, or naviga
 
 ## My bridge keeps failing and restarting
 
-The automatic recovery feature will restart failed bridges. If a bridge keeps failing:
+Auto recovery restarts bridges that failed to start. It only touches failed bridges, never healthy ones, and runs both on a timer and right after Home Assistant reconnects. Turn it off or change the interval under **Settings → Auto recovery**, and see recent attempts in the Health Dashboard.
+
+If a bridge keeps failing:
 
 1. Check the logs for specific error messages
 2. Reduce the number of devices in the bridge

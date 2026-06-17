@@ -148,3 +148,11 @@ Check names and addresses with `ip addr`. After changing it on an add-on, **rebo
 - **Consult Resources**: Refer to
   the [Troubleshooting Guide](https://github.com/project-chip/matter.js/blob/main/docs/TROUBLESHOOTING.md)
   and [Known Issues](https://github.com/project-chip/matter.js/blob/main/docs/KNOWN_ISSUES.md) of the matter.js project.
+
+### Automatic recovery
+
+HAMH restarts bridges that failed to start on its own. Only failed bridges are touched, running bridges are never interrupted. Recovery runs on a timer and again right after Home Assistant reconnects, so a short HA outage does not leave a bridge stuck. Turn it off or change the interval under **Settings → Auto recovery**; recent attempts are listed in the Health Dashboard.
+
+### Clean shutdown
+
+On stop or restart, HAMH closes its Matter sessions before exiting, so each controller drops the old session right away instead of holding a stale one. This avoids a controller showing the bridge as unresponsive for a while after a restart.

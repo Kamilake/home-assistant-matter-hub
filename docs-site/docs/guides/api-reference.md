@@ -46,7 +46,7 @@ Returns basic health status.
 
 ### GET /api/health/detailed
 
-Returns detailed health including per-bridge info, fabric details, and recovery status.
+Returns detailed health including per-bridge info, fabric details, failed-entity diagnostics, and recovery status with recent attempts.
 
 ### GET /api/health/live
 
@@ -55,6 +55,20 @@ Kubernetes liveness probe. Returns `200 OK`.
 ### GET /api/health/ready
 
 Kubernetes readiness probe. Returns `200` if Home Assistant is connected, `503` otherwise.
+
+---
+
+## Settings API
+
+Base path: `/api/settings`
+
+### GET /api/settings/recovery
+
+Returns the auto-recovery settings: `autoRecoveryEnabled` (boolean) and `recoveryIntervalMs` (number).
+
+### PUT /api/settings/recovery
+
+Updates the auto-recovery settings. Body accepts `autoRecoveryEnabled` and `recoveryIntervalMs` (10000-3600000 ms). Applied live and persisted across restarts.
 
 ---
 
