@@ -199,3 +199,20 @@ export function computeControllerWarnings(
   }
   return warnings;
 }
+
+// Same warnings, but straight from a bridge's commissioned fabrics. Dedupes the
+// controllers first so two fabrics of the same ecosystem only warn once.
+export function controllerWarningsForFabrics(
+  fabrics: { rootVendorId: number }[],
+  exposed: ExposedDeviceType[],
+): ControllerWarning[] {
+  const controllers = [
+    ...new Set(
+      fabrics
+        .map((f) => classifyController(f.rootVendorId))
+        .filter((c): c is ControllerKey => c !== undefined),
+    ),
+  ];
+  if (controllers.length === 0) return [];
+  return computeControllerWarnings(controllers, exposed);
+}

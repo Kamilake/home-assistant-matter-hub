@@ -93,6 +93,7 @@ export class Bridge {
       this.server,
       this.aggregator.parts.size,
       this.endpointManager.failedEntities,
+      this.getExposedDeviceTypes(),
     );
   }
 

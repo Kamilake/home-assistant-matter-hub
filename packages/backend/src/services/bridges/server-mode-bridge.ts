@@ -97,6 +97,7 @@ export class ServerModeBridge {
       this.server,
       this.endpointManager.devices.length,
       this.endpointManager.failedEntities,
+      this.getExposedDeviceTypes(),
     );
   }
 

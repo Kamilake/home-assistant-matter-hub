@@ -84,6 +84,9 @@ export const BridgeDetails = ({ bridge }: BridgeDetailsProps) => {
         <FiltersCard bridge={bridge} />
       </Grid>
       <Grid size={{ xs: 12 }}>
+        <ControllerWarnings bridge={bridge} />
+      </Grid>
+      <Grid size={{ xs: 12 }}>
         <FailedEntities bridge={bridge} />
       </Grid>
     </Grid>
@@ -567,6 +570,47 @@ const PairingDialog = ({
         <Button onClick={onClose}>{t("common.close")}</Button>
       </DialogActions>
     </Dialog>
+  );
+};
+
+const ControllerWarnings = ({ bridge }: { bridge: BridgeDataWithMetadata }) => {
+  const warnings = bridge.controllerWarnings;
+  if (!warnings || warnings.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card>
+      <CardContent>
+        <Alert severity="warning" icon={<ErrorOutlineIcon />}>
+          <AlertTitle>Controller warnings ({warnings.length})</AlertTitle>
+          <Typography variant="body2" component="div">
+            A commissioned controller may not show these devices:
+          </Typography>
+          <Box sx={{ mt: 1, maxHeight: 200, overflow: "auto" }}>
+            {warnings.map((w) => (
+              <Box
+                key={`${w.entityId}:${w.deviceTypeId}:${w.controller}`}
+                sx={{ mb: 0.5 }}
+              >
+                <Typography variant="body2" component="span" fontWeight="bold">
+                  {w.entityId}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  component="span"
+                  color="text.secondary"
+                >
+                  {" on "}
+                  {w.controllerLabel}
+                  {w.note ? ` (${w.note})` : ""}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Alert>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyController,
   computeControllerWarnings,
+  controllerWarningsForFabrics,
 } from "./controller-compat.js";
 
 describe("classifyController", () => {
@@ -96,5 +97,36 @@ describe("computeControllerWarnings", () => {
       "google",
     ]);
     expect(warnings[0].note).toContain("#365");
+  });
+});
+
+describe("controllerWarningsForFabrics", () => {
+  it("derives warnings from a fabric's root vendor id", () => {
+    const warnings = controllerWarningsForFabrics(
+      [{ rootVendorId: 4937 }], // 0x1349 Apple Home
+      [{ entityId: "fan.office", deviceTypeId: 0x2b }], // fan: no on Apple
+    );
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatchObject({
+      entityId: "fan.office",
+      controller: "apple",
+    });
+  });
+
+  it("warns once for two fabrics of the same ecosystem", () => {
+    const warnings = controllerWarningsForFabrics(
+      [{ rootVendorId: 4937 }, { rootVendorId: 4996 }], // both Apple
+      [{ entityId: "fan.office", deviceTypeId: 0x2b }],
+    );
+    expect(warnings).toHaveLength(1);
+  });
+
+  it("stays silent when no fabric maps to a known controller", () => {
+    expect(
+      controllerWarningsForFabrics(
+        [{ rootVendorId: 4939 }], // Home Assistant hub
+        [{ entityId: "fan.office", deviceTypeId: 0x2b }],
+      ),
+    ).toEqual([]);
   });
 });

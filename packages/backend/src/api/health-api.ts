@@ -1,8 +1,6 @@
 import {
   buildEntityDiagnostics,
   type ControllerWarning,
-  classifyController,
-  computeControllerWarnings,
   type EntityDiagnostic,
 } from "@home-assistant-matter-hub/common";
 import express from "express";
@@ -142,17 +140,7 @@ export function healthApi(
       const fabrics = data.commissioning?.fabrics ?? [];
       const sessionInfo = b.getSessionInfo();
       const exposed = b.getExposedDeviceTypes();
-      const controllers = [
-        ...new Set(
-          fabrics
-            .map((f) => classifyController(f.rootVendorId))
-            .filter((c) => c !== undefined),
-        ),
-      ];
-      const controllerWarnings =
-        controllers.length > 0
-          ? computeControllerWarnings(controllers, exposed)
-          : [];
+      const controllerWarnings = data.controllerWarnings ?? [];
       const entityDiagnostics = buildEntityDiagnostics(
         exposed,
         data.failedEntities ?? [],

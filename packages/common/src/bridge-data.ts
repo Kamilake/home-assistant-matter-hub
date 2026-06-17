@@ -1,3 +1,4 @@
+import type { ControllerWarning } from "./controller-compat.js";
 import type { HomeAssistantFilter } from "./home-assistant-filter.js";
 
 interface AllBridgeFeatureFlags {
@@ -200,6 +201,7 @@ export interface BridgeDataWithMetadata extends BridgeData {
   readonly commissioning?: BridgeCommissioning | null;
   readonly deviceCount: number;
   readonly failedEntities?: FailedEntity[];
+  readonly controllerWarnings?: ControllerWarning[];
 }
 
 export enum BridgeStatus {
