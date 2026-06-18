@@ -577,20 +577,23 @@ export function HealthDashboard(props: HealthDashboardProps = {}) {
                           {t(
                             "health.failedDevicesTitle",
                             "Devices that failed to start:",
-                          )}
+                          )}{" "}
+                          ({failed.length})
                         </Typography>
-                        {failed.map((d) => (
-                          <Typography
-                            key={d.entityId}
-                            variant="caption"
-                            component="div"
-                            color="text.secondary"
-                          >
-                            {d.entityId}
-                            {d.reason ? `: ${d.reason}` : ""}
-                            {d.failedAt ? ` (${timeAgo(d.failedAt)})` : ""}
-                          </Typography>
-                        ))}
+                        <Box sx={{ maxHeight: 160, overflowY: "auto" }}>
+                          {failed.map((d) => (
+                            <Typography
+                              key={d.entityId}
+                              variant="caption"
+                              component="div"
+                              color="text.secondary"
+                            >
+                              {d.entityId}
+                              {d.reason ? `: ${d.reason}` : ""}
+                              {d.failedAt ? ` (${timeAgo(d.failedAt)})` : ""}
+                            </Typography>
+                          ))}
+                        </Box>
                       </Alert>
                     ) : null;
                   })()}
@@ -604,19 +607,22 @@ export function HealthDashboard(props: HealthDashboardProps = {}) {
                           {t(
                             "health.controllerWarningsTitle",
                             "Some devices may not show up in a connected controller:",
-                          )}
+                          )}{" "}
+                          ({bridge.controllerWarnings.length})
                         </Typography>
-                        {bridge.controllerWarnings.map((w) => (
-                          <Typography
-                            key={`${w.entityId}:${w.deviceTypeId}:${w.controller}`}
-                            variant="caption"
-                            component="div"
-                            color="text.secondary"
-                          >
-                            {w.entityId} on {w.controllerLabel}
-                            {w.note ? ` (${w.note})` : ""}
-                          </Typography>
-                        ))}
+                        <Box sx={{ maxHeight: 160, overflowY: "auto" }}>
+                          {bridge.controllerWarnings.map((w) => (
+                            <Typography
+                              key={`${w.entityId}:${w.deviceTypeId}:${w.controller}`}
+                              variant="caption"
+                              component="div"
+                              color="text.secondary"
+                            >
+                              {w.entityId} on {w.controllerLabel}
+                              {w.note ? ` (${w.note})` : ""}
+                            </Typography>
+                          ))}
+                        </Box>
                       </Alert>
                     )}
                 </CardContent>
