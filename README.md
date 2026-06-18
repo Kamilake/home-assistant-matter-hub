@@ -524,6 +524,7 @@ Newest first.
 
 | Contributor | Contributions |
 |-------------|---------------|
+| [@qbattersby](https://github.com/qbattersby) | 🤖 **Code Contributor** - LevelControl transitionTime patch for matter.js 0.17, so Google Home can dim already-on lights ([#383](https://github.com/RiDDiX/home-assistant-matter-hub/pull/383)) |
 | [@Yllelder](https://github.com/Yllelder) | 🌐 **Translator** - Spanish translation ([#314](https://github.com/RiDDiX/home-assistant-matter-hub/pull/314)) |
 | [@MStankiewiczOfficial](https://github.com/MStankiewiczOfficial) | 🌐 **Translator** - Polish translation ([#288](https://github.com/RiDDiX/home-assistant-matter-hub/pull/288), [#329](https://github.com/RiDDiX/home-assistant-matter-hub/pull/329)) |
 | [@aetasoul](https://github.com/aetasoul) | 🤖 **Code Contributor** - Immediate force sync on startup to beat stale Alexa queues ([#282](https://github.com/RiDDiX/home-assistant-matter-hub/pull/282)) |
