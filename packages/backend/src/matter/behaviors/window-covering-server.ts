@@ -149,6 +149,17 @@ export class WindowCoveringServerBase extends FeaturedBase {
       if (this.state.targetPositionTiltPercent100ths === undefined) {
         this.state.targetPositionTiltPercent100ths = null;
       }
+    } else if (this.features.tilt) {
+      // Tilt without PositionAwareTilt: the percent attrs aren't allowed here.
+      // Drop them so super.initialize's target = current write can't crash (#381).
+      const tiltState = this.state as {
+        currentPositionTiltPercentage?: number | null;
+        currentPositionTiltPercent100ths?: number | null;
+        targetPositionTiltPercent100ths?: number | null;
+      };
+      tiltState.currentPositionTiltPercentage = undefined;
+      tiltState.currentPositionTiltPercent100ths = undefined;
+      tiltState.targetPositionTiltPercent100ths = undefined;
     }
 
     // Default Rollershade fails conformance for tilt-capable covers (#323).

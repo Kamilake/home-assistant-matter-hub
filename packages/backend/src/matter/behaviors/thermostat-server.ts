@@ -755,13 +755,35 @@ export class ThermostatServerBase extends FullFeaturedBase {
   }
 
   private getSystemMode(entity: HomeAssistantEntityInformation) {
-    // Config callbacks must only return SystemMode values whose Matter
-    // conformance matches this base's feature set. SystemMode.Auto in
-    // particular requires AutoMode (see thermostat cluster element
-    // SystemMode.Auto conformance="AUTO"); on a heating-only / cooling-only
-    // base, returning Auto throws ConformanceError and the endpoint init
-    // rolls back (#319).
-    return this.state.config.getSystemMode(entity.state, this.agent);
+    // Clamp to the active features so a heat/cool flip can't put Heat on a
+    // cooling-only base (or Auto without AutoMode) and crash init (#319, #381).
+    return this.clampSystemMode(
+      this.state.config.getSystemMode(entity.state, this.agent),
+    );
+  }
+
+  private clampSystemMode(value: SystemMode): SystemMode {
+    const { heating, cooling, autoMode } = this.features;
+    if (
+      (value === SystemMode.Heat || value === SystemMode.EmergencyHeat) &&
+      !heating
+    ) {
+      return cooling ? SystemMode.Cool : SystemMode.Off;
+    }
+    if (
+      (value === SystemMode.Cool || value === SystemMode.Precooling) &&
+      !cooling
+    ) {
+      return heating ? SystemMode.Heat : SystemMode.Off;
+    }
+    if (value === SystemMode.Auto && !autoMode) {
+      return cooling
+        ? SystemMode.Cool
+        : heating
+          ? SystemMode.Heat
+          : SystemMode.Off;
+    }
+    return value;
   }
 
   private getRunningState(
