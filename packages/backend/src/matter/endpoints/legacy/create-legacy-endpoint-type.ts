@@ -237,7 +237,10 @@ const matterDeviceTypeFactories: Partial<
   dishwasher: DishwasherEndpoint,
   dimmable_plugin_unit: (ha) =>
     DimmablePlugInUnitType.set({ homeAssistantEntity: ha }),
-  on_off_switch: SwitchDevice,
+  // Expose as On/Off Light (0x0100, an OnOff server) so controllers show a
+  // switch instead of a plug. Plain SwitchDevice is 0x010A (a plug), so the
+  // override had no effect before (#380).
+  on_off_switch: (ha) => OnOffLightType.set({ homeAssistantEntity: ha }),
   door_lock: LockDevice,
   window_covering: CoverDevice,
   thermostat: ClimateDevice,

@@ -462,8 +462,8 @@ export const matterDeviceTypeControllerSupport: Record<
   },
   on_off_switch: {
     apple: "yes",
-    google: "partial",
-    alexa: "unknown",
+    google: "yes",
+    alexa: "yes",
     aqara: "yes",
   },
   door_lock: { apple: "yes", google: "partial", alexa: "yes", aqara: "yes" },

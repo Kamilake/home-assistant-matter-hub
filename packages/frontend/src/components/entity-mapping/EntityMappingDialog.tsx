@@ -417,11 +417,13 @@ export function EntityMappingDialog({
 
   // Show power/energy entity fields for switches, lights, and plugs
   const showEnergyFields =
-    currentDomain === "switch" ||
-    currentDomain === "light" ||
-    matterDeviceType === "on_off_plugin_unit" ||
-    matterDeviceType === "on_off_switch" ||
-    matterDeviceType === "dimmable_plugin_unit";
+    // on_off_switch is exposed as a plain On/Off Light, which carries no
+    // power/energy clusters, so don't offer those fields for it (#380).
+    matterDeviceType !== "on_off_switch" &&
+    (currentDomain === "switch" ||
+      currentDomain === "light" ||
+      matterDeviceType === "on_off_plugin_unit" ||
+      matterDeviceType === "dimmable_plugin_unit");
 
   const availableTypes = Object.entries(matterDeviceTypeLabels) as [
     MatterDeviceType,
