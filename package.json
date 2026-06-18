@@ -53,7 +53,7 @@
       "qs@<6.15.2": "^6.15.2"
     },
     "patchedDependencies": {
-      "@matter/node@0.17.2": "patches/@matter__node@0.17.2.patch"
+      "@matter/node@0.17.3": "patches/@matter__node@0.17.3.patch"
     }
   },
   "devDependencies": {

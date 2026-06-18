@@ -11,7 +11,7 @@ import { AggregatorEndpoint } from "../../aggregator-endpoint.js";
 import { LockDevice } from "./index.js";
 
 // A DoorLock must advertise supportedOperatingModes with the mandatory
-// AlwaysSet bits (5-15) all set; matter.js 0.17.2 rejects any other value.
+// AlwaysSet bits (5-15) all set; matter.js rejects any other value.
 // This brings the real lock endpoint online and checks the wire value (#spec).
 
 let dir: string;

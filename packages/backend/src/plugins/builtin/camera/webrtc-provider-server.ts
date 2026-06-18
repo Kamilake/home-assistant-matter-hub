@@ -39,7 +39,7 @@ export class CameraWebRtcProviderServer extends WebRtcTransportProviderServer {
       this.state.entityId,
       request.sdp,
     );
-    // Spec returns the answer via the Requestor side, which 0.17.2 does not
+    // Spec returns the answer via the Requestor side, which matter.js does not
     // model here. The bridge holds it; this delivery path is unverified.
     void answerSdp;
     return { webRtcSessionId: id };

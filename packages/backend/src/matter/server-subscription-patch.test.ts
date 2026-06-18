@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// #287: the local @matter/node patch (patches/@matter__node@0.17.2.patch)
+// #287: the local @matter/node patch (patches/@matter__node@0.17.3.patch)
 // routes subscription keepalives onto the subscription's own session instead
 // of the most recently active session of the peer. These assertions fail
 // loudly when an install lost the patch (CI cache miss, lockfile drift, or a
