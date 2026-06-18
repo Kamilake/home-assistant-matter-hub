@@ -167,7 +167,7 @@ export const UpdateChecker = () => {
                   p: 1.5,
                   borderRadius: 1,
                   bgcolor: "action.hover",
-                  maxHeight: 120,
+                  maxHeight: 400,
                   overflow: "auto",
                 }}
               >
