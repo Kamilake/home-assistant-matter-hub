@@ -52,6 +52,18 @@ const deviceRegistryWithDefaultModel: HomeAssistantDeviceRegistry = {
   default_model: "Generic LED Bulb",
 };
 
+const deviceRegistryWithManufacturer: HomeAssistantDeviceRegistry = {
+  id: "device4711",
+  area_id: "area_id",
+  manufacturer: "Sonoff",
+};
+
+const deviceRegistryWithDefaultManufacturer: HomeAssistantDeviceRegistry = {
+  id: "device4711",
+  area_id: "area_id",
+  default_manufacturer: "Generic",
+};
+
 describe("matchEntityFilter.testMatcher", () => {
   it("should match the domain", () => {
     expect(
@@ -548,6 +560,18 @@ describe("matchEntityFilter.testMatcher", () => {
       ),
     ).toBeTruthy();
   });
+  it("should match any_field_regex against manufacturer (#382)", () => {
+    expect(
+      testMatcher(
+        {
+          type: HomeAssistantMatcherType.AnyFieldRegex,
+          value: "manufacturer=Sonoff",
+        },
+        deviceRegistryWithManufacturer,
+        registry,
+      ),
+    ).toBeTruthy();
+  });
   it("should match any_field_regex with AND via lookahead", () => {
     expect(
       testMatcher(
@@ -790,6 +814,52 @@ describe("matchEntityFilter.testMatcher", () => {
           type: HomeAssistantMatcherType.ProductName,
           value: "Hue",
         },
+        deviceRegistry,
+        registry,
+      ),
+    ).toBeFalsy();
+  });
+
+  it("should match the manufacturer (#382)", () => {
+    expect(
+      testMatcher(
+        { type: HomeAssistantMatcherType.Manufacturer, value: "sonoff" },
+        deviceRegistryWithManufacturer,
+        registry,
+      ),
+    ).toBeTruthy();
+  });
+  it("should match the manufacturer with a wildcard", () => {
+    expect(
+      testMatcher(
+        { type: HomeAssistantMatcherType.Manufacturer, value: "*onof*" },
+        deviceRegistryWithManufacturer,
+        registry,
+      ),
+    ).toBeTruthy();
+  });
+  it("should match default_manufacturer if manufacturer is not set", () => {
+    expect(
+      testMatcher(
+        { type: HomeAssistantMatcherType.Manufacturer, value: "Generic" },
+        deviceRegistryWithDefaultManufacturer,
+        registry,
+      ),
+    ).toBeTruthy();
+  });
+  it("should not match a different manufacturer", () => {
+    expect(
+      testMatcher(
+        { type: HomeAssistantMatcherType.Manufacturer, value: "Philips" },
+        deviceRegistryWithManufacturer,
+        registry,
+      ),
+    ).toBeFalsy();
+  });
+  it("should not match manufacturer if device has none", () => {
+    expect(
+      testMatcher(
+        { type: HomeAssistantMatcherType.Manufacturer, value: "Sonoff" },
         deviceRegistry,
         registry,
       ),

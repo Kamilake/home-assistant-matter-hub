@@ -14,6 +14,7 @@ export enum HomeAssistantMatcherType {
   EntityCategory = "entity_category",
   DeviceName = "device_name",
   ProductName = "product_name",
+  Manufacturer = "manufacturer",
   DeviceClass = "device_class",
 }
 

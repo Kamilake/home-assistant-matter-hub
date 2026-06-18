@@ -80,6 +80,8 @@ export function testMatcher(
       return testDeviceName(matcher.value, device);
     case "product_name":
       return testProductName(matcher.value, device);
+    case "manufacturer":
+      return testManufacturer(matcher.value, device);
     case "device_class":
       return entityState?.attributes?.device_class === matcher.value;
   }
@@ -189,6 +191,7 @@ function buildEntityHaystack(
     `device_label_names=${deviceLabelNames.join(",")}`,
     `device_name=${deviceName}`,
     `product_name=${productName}`,
+    `manufacturer=${device?.manufacturer ?? device?.default_manufacturer ?? ""}`,
   ].join(" ");
 }
 
@@ -228,6 +231,25 @@ function testProductName(
     return patternToRegex(lowerPattern).test(lowerProductName);
   }
   return lowerProductName.includes(lowerPattern);
+}
+
+function testManufacturer(
+  pattern: string,
+  device: HomeAssistantDeviceRegistry | undefined,
+): boolean {
+  if (!device) {
+    return false;
+  }
+  const manufacturer = device.manufacturer ?? device.default_manufacturer;
+  if (!manufacturer) {
+    return false;
+  }
+  const lowerPattern = pattern.toLowerCase();
+  const lowerManufacturer = manufacturer.toLowerCase();
+  if (lowerPattern.includes("*")) {
+    return patternToRegex(lowerPattern).test(lowerManufacturer);
+  }
+  return lowerManufacturer.includes(lowerPattern);
 }
 
 function resolveLabelValue(
