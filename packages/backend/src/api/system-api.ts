@@ -75,6 +75,30 @@ function detectEnvironment(): string {
   return "Standalone";
 }
 
+export interface GithubLatestRelease {
+  tag_name: string;
+  html_url: string;
+  published_at: string;
+  body?: string;
+}
+
+export function toUpdateCheckResponse(
+  version: string,
+  data: GithubLatestRelease,
+  environment: string,
+) {
+  const latestVersion = data.tag_name.replace(/^v/, "");
+  return {
+    currentVersion: version,
+    latestVersion,
+    updateAvailable: version !== "0.0.0-dev" && latestVersion !== version,
+    releaseUrl: data.html_url,
+    publishedAt: data.published_at,
+    releaseNotes: data.body || undefined,
+    environment,
+  };
+}
+
 export function systemApi(version: string): express.Router {
   const router = express.Router();
 
@@ -91,24 +115,8 @@ export function systemApi(version: string): express.Router {
         res.status(502).json({ error: "Failed to check for updates" });
         return;
       }
-      const data = (await response.json()) as {
-        tag_name: string;
-        html_url: string;
-        published_at: string;
-        body?: string;
-      };
-      const latestVersion = data.tag_name.replace(/^v/, "");
-      const updateAvailable =
-        version !== "0.0.0-dev" && latestVersion !== version;
-      res.json({
-        currentVersion: version,
-        latestVersion,
-        updateAvailable,
-        releaseUrl: data.html_url,
-        publishedAt: data.published_at,
-        releaseNotes: data.body ? data.body.substring(0, 500) : undefined,
-        environment: detectEnvironment(),
-      });
+      const data = (await response.json()) as GithubLatestRelease;
+      res.json(toUpdateCheckResponse(version, data, detectEnvironment()));
     } catch (error) {
       logger.error("Failed to check for updates:", error);
       res.status(500).json({ error: "Failed to check for updates" });
