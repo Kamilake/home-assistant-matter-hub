@@ -20,6 +20,7 @@ All device types Home-Assistant-Matter-Hub supports, with their capabilities, co
 | `media_player` | Speaker |
 | `valve` | Water Valve |
 | `vacuum` | Robotic Vacuum Cleaner |
+| `lawn_mower` | Robotic Vacuum Cleaner |
 | `water_heater` | Thermostat (Heating) |
 | `select`, `input_select` | Mode Select |
 | `alarm_control_panel` | Mode Select |
@@ -60,8 +61,8 @@ Home Assistant lights are mapped to the appropriate Matter light type based on s
 
 **Power & Energy Measurement:**
 - Lights can optionally report electrical power and energy consumption via Matter clusters
-- Auto-mapped from HA power/energy sensor entities on the same device
-- Manual mapping via Entity Mapping: `powerEntity`, `energyEntity`
+- Lights are no longer auto-mapped. You must set `powerEntity` / `energyEntity` explicitly via Entity Mapping
+- A light that used to show an energy readout may drop it after upgrading, add the mapping back to restore it ([#374](https://github.com/RiDDiX/home-assistant-matter-hub/issues/374))
 
 **Controller Notes:**
 - All major controllers support all light types
@@ -313,17 +314,17 @@ Mapped based on `device_class` attribute.
 |--------------|-------------------|--------------------|
 | `running`, `plug`, `power`, `battery_charging`, `light` | OnOffSensor | On/Off |
 | `door`, `window`, `garage_door`, `opening`, `lock` | ContactSensor | Open/Closed |
-| `cold` | **WaterFreezeDetector** | Freeze/Normal |
+| `cold` | Contact Sensor (default) | Open/Closed |
 | `battery`, `heat`, `connectivity`, `problem`, `safety`, `sound`, `tamper`, `update`, `vibration` | ContactSensor | Open/Closed |
 | `motion`, `moving` | OccupancySensor (PIR) | Motion detected/Clear |
 | `occupancy`, `presence` | OccupancySensor (PhysicalContact) | Occupied/Clear |
-| `moisture` | WaterLeakDetector | Leak/Dry |
+| `moisture` | Contact Sensor (default) | Open/Closed |
 | `smoke` | SmokeCoAlarm (Smoke) | Alarm |
 | `carbon_monoxide`, `gas` | SmokeCoAlarm (CO) | Alarm |
 | Other / unset | OnOffSensor | On/Off |
 
 > [!NOTE]
-> **WaterFreezeDetector** (device class `cold`) is supported since v2.0.24. Shows freeze detection status in controllers.
+> Leak (`moisture`) and freeze (`cold`) `binary_sensor`s default to a Matter 1.3 Contact Sensor, which keeps Alexa bridges stable. The Matter 1.4 Water Leak, Water Freeze, and Rain detector types are opt-in per entity via the device-type override ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365)).
 
 ---
 
@@ -460,6 +461,8 @@ Mapped to **RoboticVacuumCleaner**.
 
 See [Robot Vacuum Guide](./devices/robot-vacuum.md) for detailed setup instructions.
 
+> **Note:** `lawn_mower` entities reuse the RVC mapping (start/pause/dock, battery, charging state) via the `robotic_lawn_mower` override ([#301](https://github.com/RiDDiX/home-assistant-matter-hub/issues/301)).
+
 ---
 
 ### Alarm Control Panel (`alarm_control_panel`)
@@ -579,7 +582,7 @@ You can override the default device type mapping per entity using the Entity Map
 - ColorTemperatureLight
 - ExtendedColorLight
 - OnOffPlugInUnit
-- OnOffSwitch
+- OnOffSwitch (now produces a real 0x0100 On/Off Light with an OnOff server that controllers render as a switch, instead of the old no-op plug; opt-in users need a one-time re-pair) ([#380](https://github.com/RiDDiX/home-assistant-matter-hub/issues/380))
 - DoorLock
 - WindowCovering
 - Thermostat

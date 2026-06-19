@@ -37,7 +37,7 @@ of port forwarding etc.
 
 | Channel | Branch | Current Version | Description |
 |---------|--------|-----------------|-------------|
-| **Stable** | `main` | v2.0.46 | Production-ready, recommended for most users |
+| **Stable** | `main` | v2.0.47 | Production-ready, recommended for most users |
 | **Alpha** | `alpha` | v2.1.0-alpha.x (next) | Currently level with Stable; next pre-release lands here first |
 | **Testing** | `testing` | v4.1.0-testing.x | ⚠️ **Highly unstable!** Experimental features, may break |
 
@@ -47,14 +47,36 @@ of port forwarding etc.
 - **Early adopters**: Use **Alpha** (`alpha` branch) - currently level with Stable until the next pre-release lands
 - **Developers/Testers**: Use **Testing** (`testing` branch) - bleeding edge, expect breakage
 
+### Upgrading from 2.0.46
+
+A few entities re-pair once on the first start after the update and lose their room assignment in the controller:
+
+- leak and freeze `binary_sensor`s (now Contact Sensors by default) and any entity using the **On/Off Switch** override
+- a light may drop its auto power/energy readout, re-add it by mapping the sensor by hand
+
+Re-assign the affected devices to their rooms after they reconnect. See the [docs](https://riddix.github.io/home-assistant-matter-hub/supported-device-types) for detail.
+
 ---
 
 ## 🎉 What's New
 
 <details>
-<summary><strong>📦 Stable Features (v2.0.46)</strong> - Click to expand</summary>
+<summary><strong>📦 Stable Features (v2.0.47)</strong> - Click to expand</summary>
 
-**New in v2.0.46:**
+**New in v2.0.47:**
+
+- 💧 Leak and freeze `binary_sensor`s now default to a Matter 1.3 **Contact Sensor** so Alexa stays stable; the Matter 1.4 Water Leak, Water Freeze, and Rain detector types are selectable per entity through the device-type override ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365))
+- 💡 **Lights no longer auto-attach power/energy clusters**; map a light's power or energy sensor explicitly with `powerEntity`/`energyEntity` if you want the readout ([#374](https://github.com/RiDDiX/home-assistant-matter-hub/issues/374))
+- 🔘 The **On/Off Switch** device-type override now exposes a real On/Off Light instead of a no-op plug ([#380](https://github.com/RiDDiX/home-assistant-matter-hub/issues/380))
+- 🔍 New **`manufacturer` entity-filter matcher** ([#382](https://github.com/RiDDiX/home-assistant-matter-hub/issues/382))
+- 🌀 Opt-in: turning the **companion fan** off now turns the AC off too ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309))
+- 🩺 **Reliability & health**: configurable auto-recovery with failure timestamps, controller-compatibility warnings on each bridge page, and per-entity device-health on the dashboard
+- 🖥️ **Standalone (non-vacuum) devices in server mode**, plus `lawn_mower` entities exposed as a robotic mower
+- 🪟 Cover exposed as a **dimmable light** for Alexa routines ([#372](https://github.com/RiDDiX/home-assistant-matter-hub/issues/372)), per-entity **update throttle** ([#351](https://github.com/RiDDiX/home-assistant-matter-hub/issues/351)), **charging-state sensor** mapping ([#377](https://github.com/RiDDiX/home-assistant-matter-hub/issues/377))
+- 📷 Experimental built-in **WebRTC camera plugin** (SmartThings-only, media path not verified yet)
+- 🧵 **matter.js 0.17.3**
+
+**Previously in v2.0.46:**
 
 - ❄️ Opt-in **companion fan** for climate ACs: a per-entity toggle exposes the AC's fan as its own Matter fan endpoint, the setting is persisted, and fan-speed presets are now ordered low→high ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309))
 - 🌦️ **Weather domain support**: `weather.*` entities are exposed as a composed Temperature + Humidity + Pressure sensor read from the entity's attributes (pressure converted to hPa, shown on Google Home)
@@ -296,26 +318,41 @@ Matter Bridge, Multi-Fabric support, Health Monitoring, Bridge Wizard, AirQualit
 
 | Home Assistant Domain | Matter Device Type | Feature Flags |
 |-----------------------|-------------------|---------------|
-| `light` | On/Off, Dimmable, Color Temp, Extended Color | `powerEntity`, `energyEntity` |
+| `light` | On/Off, Dimmable, Color Temp, Extended Color | `powerEntity`, `energyEntity` (no longer auto-mapped, set explicitly if a light's energy readout disappears, [#374](https://github.com/RiDDiX/home-assistant-matter-hub/issues/374)), `coverExposeAsDimmableLight` ([#372](https://github.com/RiDDiX/home-assistant-matter-hub/issues/372)) |
 | `switch`, `input_boolean` | On/Off Plug-in Unit | `powerEntity`, `energyEntity` |
 | `lock` | Door Lock | PIN Credentials, Unlatch/Unbolt |
 | `cover` | Window Covering | `coverSwapOpenClose` |
-| `climate` | Thermostat | Battery via `batteryEntity` |
+| `climate` | Thermostat | Battery via `batteryEntity`, `climateExposeFan` ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)) |
 | `fan` | Fan, Air Purifier | Oscillation, Wind Modes, `filterLifeEntity` |
 | `alarm_control_panel` | Mode Select | Arm/Disarm modes |
-| `binary_sensor` | Contact, OnOff, Occupancy, Smoke/CO, Water Leak, Water Freeze | |
+| `binary_sensor` | Contact, OnOff, Occupancy, Smoke/CO | Leak/freeze default to Contact Sensor (Alexa-safe); the Matter 1.4 Water Leak/Freeze and Rain detector types are per-entity overrides ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365)) |
 | `sensor` | Temperature, Humidity, Pressure, Flow, Light, AirQuality | `batteryEntity`, `humidityEntity`, `pressureEntity` |
 | `event` | Generic Switch (Doorbell, Button Events) | |
 | `button`, `input_button` | Generic Switch | |
 | `media_player` | Speaker, Basic Video Player (TV) | |
 | `valve` | Water Valve, Pump | |
 | `select`, `input_select` | Mode Select | |
-| `vacuum` | Robot Vacuum Cleaner | `serverMode`, `roomEntities`, `batteryEntity`, `cleaningModeEntity`, `suctionLevelEntity`, `mopIntensityEntity`, `customServiceAreas`, `vacuumMinimalClusters` |
+| `vacuum` | Robot Vacuum Cleaner | `serverMode`, `roomEntities`, `batteryEntity`, `cleaningModeEntity`, `suctionLevelEntity`, `mopIntensityEntity`, `customServiceAreas`, `vacuumMinimalClusters`, `chargingStateEntity` ([#377](https://github.com/RiDDiX/home-assistant-matter-hub/issues/377)) |
+| `lawn_mower` | Robotic Lawn Mower (RVC-based) | reuses the robot-vacuum flags ([#301](https://github.com/RiDDiX/home-assistant-matter-hub/issues/301)) |
 | `humidifier` | Humidifier/Dehumidifier | |
 | `water_heater` | Thermostat (Heating) | |
-| `automation`, `script`, `scene` | On/Off Switch | |
+| `automation`, `script`, `scene` | On/Off Switch | The per-entity "On/Off Switch" override now produces a real `0x0100` On/Off Light (controllers render a switch), needs a one-time re-pair, and no longer carries power/energy fields ([#380](https://github.com/RiDDiX/home-assistant-matter-hub/issues/380)) |
 
 > 📖 See [Supported Device Types Documentation](https://riddix.github.io/home-assistant-matter-hub/supported-device-types) for details
+
+**Common per-entity flags:** `updateThrottleMs` rate-limits how often an entity pushes updates to controllers ([#351](https://github.com/RiDDiX/home-assistant-matter-hub/issues/351)), `coverExposeAsDimmableLight` exposes a cover as a dimmable light for Alexa routines ([#372](https://github.com/RiDDiX/home-assistant-matter-hub/issues/372)), `chargingStateEntity` maps a charging-state sensor ([#377](https://github.com/RiDDiX/home-assistant-matter-hub/issues/377)), `climateExposeFan` exposes a climate AC's fan as its own endpoint ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)).
+
+### Entity Filters
+
+Filter rules match on these matcher types: `pattern`, `regex`, `domain`, `platform`, `entity_label`, `device_label`, `entity_label_regex`, `device_label_regex`, `any_field_regex`, `area`, `entity_category`, `device_name`, `product_name`, `device_class`. The new **`manufacturer`** matcher matches the device manufacturer (or `default_manufacturer`) and supports `*` wildcards ([#382](https://github.com/RiDDiX/home-assistant-matter-hub/issues/382)).
+
+### Reliability & Health
+
+Configurable auto-recovery with failure timestamps in Settings, controller-compatibility warnings on each bridge page, per-entity device-health diagnostics on the health dashboard, and a warning when a bridge exposes device types its controller does not support.
+
+### Experimental: Camera Plugin
+
+A built-in plugin exposes Home Assistant cameras as Matter Cameras (`0x0142`). Experimental, SmartThings-only as of 2026, and the WebRTC media path is not verified end to end.
 
 ---
 
@@ -335,7 +372,7 @@ This is because these platforms expect robot vacuums to be **standalone Matter d
 
 ### The Solution: Server Mode
 
-**Server Mode** exposes your vacuum as a standalone Matter device without the bridge wrapper. This makes it fully compatible with Apple Home and Alexa.
+**Server Mode** exposes a device as a standalone (non-bridged) Matter endpoint without the bridge wrapper. It works for any device type, not just vacuums, and a bridge can host standalone devices. For a robot vacuum this makes it fully compatible with Apple Home and Alexa.
 
 ### Setup Instructions
 
@@ -347,9 +384,9 @@ This is because these platforms expect robot vacuums to be **standalone Matter d
 
 ### Important Notes
 
-- Server Mode bridges support **exactly one device**
-- Your vacuum needs its own dedicated Server Mode bridge
-- Other device types (lights, switches, sensors) work fine on regular bridges
+- A Server Mode node exposes each device as a standalone endpoint, up to 10 per node; extra entities are skipped
+- For best results give a robot vacuum its own dedicated Server Mode bridge
+- Other device types (lights, switches, sensors) also work on regular bridges
 - After switching to Server Mode, Siri commands like "Hey Siri, start the vacuum" will work
 
 ### Documentation

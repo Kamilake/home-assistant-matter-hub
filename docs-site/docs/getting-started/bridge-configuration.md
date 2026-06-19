@@ -72,6 +72,7 @@ A include- or exclude-item is an object having a `type` and a `value` property.
 | `entity_category` | Match entities by their category. | `config`, `diagnostic` |
 | `device_name` | Match entities by their device name (case-insensitive, wildcards). | `Living Room*` |
 | `product_name` | Match entities by their product/model name (case-insensitive, wildcards). | `Hue Color Bulb` |
+| `manufacturer` | Match entities by their device manufacturer (case-insensitive, wildcards). Handy for MQTT or other generic integrations. | `*Sonoff*` |
 | `device_class` | Match entities by their device class attribute. | `temperature`, `motion` |
 
 > [!NOTE]
@@ -95,7 +96,7 @@ A include- or exclude-item is an object having a `type` and a `value` property.
 `any_field_regex` runs one regex against a single-line haystack built per entity, with fields joined by spaces:
 
 ```
-entity_id=... domain=... platform=... area=... entity_category=... device_class=... entity_labels=slug1,slug2 entity_label_names=Display 1,Display 2 device_labels=slug1 device_label_names=Display 1 device_name=... product_name=...
+entity_id=... domain=... platform=... area=... entity_category=... device_class=... entity_labels=slug1,slug2 entity_label_names=Display 1,Display 2 device_labels=slug1 device_label_names=Display 1 device_name=... product_name=... manufacturer=...
 ```
 
 To express AND, stack lookaheads. To express OR, use alternation. Example: include lights in the `living_room` area **or** switches carrying the `voice` label:

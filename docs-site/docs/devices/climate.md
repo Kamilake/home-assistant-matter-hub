@@ -39,6 +39,14 @@ The thermostat type is automatically selected based on which HVAC modes your dev
 | `hvac_action` | Thermostat Running State | Shows active heating/cooling |
 | `min_temp` / `max_temp` | Absolute Min/Max limits | Constrains setpoint range |
 
+## Companion fan (opt-in)
+
+Apple Home does not surface a thermostat fan or `fan_only` mode, so an AC's fan never shows up on the thermostat tile. Setting `climateExposeFan` per entity in **Entity Mapping** exposes the AC fan as its own Matter **Fan** tile bound to the same climate entity.
+
+This only takes effect when the climate entity reports the `FAN_MODE` feature. Enabling it re-registers the AC as a composed device, which forces a one-time re-pair of that AC.
+
+Turning the Fan tile off now sends `climate.turn_off` (it no longer flips the AC into cool/heat). Turning it on puts the AC into `fan_only`, and the tile's speed maps to `climate.set_fan_mode`.
+
 ## Temperature Display Unit
 
 The `ThermostatUserInterfaceConfiguration` cluster exposes your HA temperature unit preference (°C or °F) to Matter controllers. Controllers may use this to display temperatures in your preferred unit.

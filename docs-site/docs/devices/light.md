@@ -27,16 +27,17 @@ Home Assistant lights are automatically mapped to the appropriate Matter light t
 
 Lights can optionally report electrical power and energy consumption via Matter clusters:
 
-- **Auto-mapped** from HA power/energy sensor entities on the same device
 - **Manual mapping** via Entity Mapping UI: `powerEntity`, `energyEntity`
+
+Lights no longer pick up power/energy sensors automatically. Electrical clusters on a light endpoint break Aqara, so a light that previously showed an energy readout may drop it after upgrading. Re-add it by setting `powerEntity` / `energyEntity` explicitly on that light in the Entity Mapping dialog (#374).
 
 ## Entity Mapping Options
 
 | Option | Description |
 |--------|-------------|
 | `batteryEntity` | Battery sensor entity ID (auto-detected or manual) |
-| `powerEntity` | Power measurement sensor entity ID |
-| `energyEntity` | Energy measurement sensor entity ID |
+| `powerEntity` | Power measurement sensor entity ID (manual only, not auto-mapped for lights, see #374) |
+| `energyEntity` | Energy measurement sensor entity ID (manual only, not auto-mapped for lights, see #374) |
 
 ## Color Conversion
 
