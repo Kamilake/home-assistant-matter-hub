@@ -164,6 +164,24 @@ export function repairSetpointLimits(limits: SetpointLimits): SetpointLimits {
   };
 }
 
+// matter.js validates both Heat and Cool setpoint limits on init regardless of
+// the featureMap, so leftover limits from a former heat<->cool config crash a
+// now single-feature device when the four values are out of order (code 135,
+// #381). Clear the inactive scope's limits so matter.js uses its own consistent
+// defaults. A concrete write to a disabled attribute is rejected, so undefined
+// is the only safe value.
+// biome-ignore lint/suspicious/noExplicitAny: works across feature variants
+function clearInactiveSetpointLimits(self: any, scope: "Heat" | "Cool"): void {
+  for (const key of [
+    `absMin${scope}SetpointLimit`,
+    `min${scope}SetpointLimit`,
+    `max${scope}SetpointLimit`,
+    `absMax${scope}SetpointLimit`,
+  ]) {
+    if (self.state[key] !== undefined) self.state[key] = undefined;
+  }
+}
+
 /**
  * Pre-super initialization: force-set feature-appropriate attribute values.
  * Must run BEFORE super.initialize() because Matter.js validates setpoints during super.
@@ -216,6 +234,8 @@ export function thermostatPreInitialize(self: any): void {
         ? currentHeating
         : 2000;
     self.state.occupiedHeatingSetpoint = heatingValue;
+  } else {
+    clearInactiveSetpointLimits(self, "Heat");
   }
 
   // Force-set cooling values (only if Cooling feature enabled)
@@ -245,6 +265,8 @@ export function thermostatPreInitialize(self: any): void {
         ? currentCooling
         : 2400;
     self.state.occupiedCoolingSetpoint = coolingValue;
+  } else {
+    clearInactiveSetpointLimits(self, "Cool");
   }
 
   logger.debug(
