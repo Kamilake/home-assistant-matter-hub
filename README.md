@@ -37,7 +37,7 @@ of port forwarding etc.
 
 | Channel | Branch | Current Version | Description |
 |---------|--------|-----------------|-------------|
-| **Stable** | `main` | v2.0.47 | Production-ready, recommended for most users |
+| **Stable** | `main` | v2.0.48 | Production-ready, recommended for most users |
 | **Alpha** | `alpha` | v2.1.0-alpha.x (next) | Currently level with Stable; next pre-release lands here first |
 | **Testing** | `testing` | v4.1.0-testing.x | ⚠️ **Highly unstable!** Experimental features, may break |
 
@@ -61,9 +61,14 @@ Re-assign the affected devices to their rooms after they reconnect. See the [doc
 ## 🎉 What's New
 
 <details>
-<summary><strong>📦 Stable Features (v2.0.47)</strong> - Click to expand</summary>
+<summary><strong>📦 Stable Features (v2.0.48)</strong> - Click to expand</summary>
 
-**New in v2.0.47:**
+**New in v2.0.48:**
+
+- 🌡️ Cooling-only thermostats no longer drop and re-pair after a switch to cool; a leftover Heat setpoint limit was crashing init ([#381](https://github.com/RiDDiX/home-assistant-matter-hub/issues/381))
+- 📝 The Settings update box now shows the full release notes instead of cutting them off
+
+**Previously in v2.0.47:**
 
 - 💧 Leak and freeze `binary_sensor`s now default to a Matter 1.3 **Contact Sensor** so Alexa stays stable; the Matter 1.4 Water Leak, Water Freeze, and Rain detector types are selectable per entity through the device-type override ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365))
 - 💡 **Lights no longer auto-attach power/energy clusters**; map a light's power or energy sensor explicitly with `powerEntity`/`energyEntity` if you want the readout ([#374](https://github.com/RiDDiX/home-assistant-matter-hub/issues/374))
