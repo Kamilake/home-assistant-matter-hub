@@ -75,8 +75,8 @@ export function FanDevice(
     features.add("Step");
   }
 
-  // Enable Auto if fan supports preset modes (including "Auto" preset)
-  if (hasPresetMode) {
+  // Auto only if a preset really is "auto", else HA rejects the "Auto" we send (#387).
+  if (hasPresetMode && presetModes.some((m) => /auto/i.test(m))) {
     features.add("Auto");
   }
   if (testBit(supportedFeatures, FanDeviceFeature.DIRECTION)) {
