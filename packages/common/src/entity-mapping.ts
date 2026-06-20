@@ -54,6 +54,13 @@ export interface ComposedSubEntity {
 
 export type ClimateAutoMode = "heat" | "cool";
 
+export interface FanWindPresets {
+  // HA preset names that mean natural wind (e.g. 自然风)
+  readonly natural?: string[];
+  // HA preset names that mean sleep wind
+  readonly sleep?: string[];
+}
+
 export interface EntityMappingConfig {
   readonly entityId: string;
   readonly matterDeviceType?: MatterDeviceType;
@@ -192,6 +199,8 @@ export interface EntityMappingConfig {
    * Value is the Matter ModeTag.
    */
   readonly customFanSpeedTags?: Record<string, number>;
+  /** Localized HA fan preset names that map to Matter wind modes (#387). */
+  readonly fanWindPresets?: FanWindPresets;
   /**
    * Optional: Entity ID of a sensor that reports the room the vacuum is currently in.
    * Used for Dreame vacuums (Tasshack integration) which expose sensor.*_current_room.
@@ -344,6 +353,8 @@ export interface EntityMappingRequest {
   readonly mopIntensityEntity?: string;
   readonly customServiceAreas?: CustomServiceArea[];
   readonly customFanSpeedTags?: Record<string, number>;
+  /** Localized HA fan preset names that map to Matter wind modes (#387). */
+  readonly fanWindPresets?: FanWindPresets;
   readonly currentRoomEntity?: string;
   readonly cleanedAreaEntity?: string;
   readonly disableCustomAreaRoomModes?: boolean;

@@ -163,6 +163,9 @@ export function EntityMappingDialog({
   const [customFanSpeedTagsList, setCustomFanSpeedTagsList] = useState<
     { option: string; tag: number }[]
   >([]);
+  // Comma-separated HA preset names that map to natural / sleep wind (#387)
+  const [fanNaturalPresets, setFanNaturalPresets] = useState("");
+  const [fanSleepPresets, setFanSleepPresets] = useState("");
 
   const availableModeTags = useMemo(() => {
     return Object.entries(RvcCleanModeModeTag)
@@ -249,6 +252,12 @@ export function EntityMappingDialog({
           ([option, tag]) => ({ option, tag: tag as number }),
         ),
       );
+      setFanNaturalPresets(
+        (currentMapping?.fanWindPresets?.natural || []).join(", "),
+      );
+      setFanSleepPresets(
+        (currentMapping?.fanWindPresets?.sleep || []).join(", "),
+      );
     }
   }, [open, entityId, currentMapping]);
 
@@ -291,6 +300,20 @@ export function EntityMappingDialog({
       },
       {} as Record<string, number>,
     );
+    const splitPresets = (v: string) =>
+      v
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    const naturalPresets = splitPresets(fanNaturalPresets);
+    const sleepPresets = splitPresets(fanSleepPresets);
+    const fanWindPresets =
+      naturalPresets.length > 0 || sleepPresets.length > 0
+        ? {
+            natural: naturalPresets.length > 0 ? naturalPresets : undefined,
+            sleep: sleepPresets.length > 0 ? sleepPresets : undefined,
+          }
+        : undefined;
     onSave({
       entityId: editEntityId.trim(),
       matterDeviceType: matterDeviceType || undefined,
@@ -322,6 +345,7 @@ export function EntityMappingDialog({
         Object.keys(customFanSpeedTags).length > 0
           ? customFanSpeedTags
           : undefined,
+      fanWindPresets,
       valetudoIdentifier: valetudoIdentifier.trim() || undefined,
       coverSwapOpenClose: coverSwapOpenClose || undefined,
       coverExposeAsDimmableLight: coverExposeAsDimmableLight || undefined,
@@ -366,6 +390,8 @@ export function EntityMappingDialog({
     disableCustomAreaRoomModes,
     customServiceAreas,
     customFanSpeedTagsList,
+    fanNaturalPresets,
+    fanSleepPresets,
     valetudoIdentifier,
     coverSwapOpenClose,
     coverExposeAsDimmableLight,
@@ -384,6 +410,11 @@ export function EntityMappingDialog({
   const showFilterLifeField =
     matterDeviceType === "air_purifier" ||
     (currentDomain === "fan" && !matterDeviceType);
+
+  // Show wind preset mapping for fans (localized natural/sleep names, #387)
+  const showFanWindPresetFields =
+    currentDomain === "fan" &&
+    (!matterDeviceType || matterDeviceType === "fan");
 
   // Show cleaning mode entity field for vacuums
   const showCleaningModeField = currentDomain === "vacuum";
@@ -558,6 +589,40 @@ export function EntityMappingDialog({
             helperText="Sensor entity that provides filter life percentage (0-100%) for HEPA filter monitoring"
             domain="sensor"
           />
+        )}
+
+        {showFanWindPresetFields && (
+          <Box sx={{ mt: 2, mb: 1 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Wind Preset Mapping (optional)
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 1, display: "block" }}
+            >
+              Map localized preset names to Matter wind modes. Comma-separated
+              HA preset names, e.g. 自然风 for natural wind.
+            </Typography>
+            <TextField
+              fullWidth
+              margin="normal"
+              size="small"
+              label="Natural Wind Presets"
+              placeholder="自然风, Natural"
+              value={fanNaturalPresets}
+              onChange={(e) => setFanNaturalPresets(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              size="small"
+              label="Sleep Wind Presets"
+              placeholder="睡眠风, Sleep"
+              value={fanSleepPresets}
+              onChange={(e) => setFanSleepPresets(e.target.value)}
+            />
+          </Box>
         )}
 
         {showCleaningModeField && (

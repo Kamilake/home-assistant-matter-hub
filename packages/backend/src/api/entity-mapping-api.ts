@@ -52,6 +52,7 @@ export function entityMappingApi(
       mopIntensityEntity: body.mopIntensityEntity,
       customServiceAreas: body.customServiceAreas,
       customFanSpeedTags: body.customFanSpeedTags,
+      fanWindPresets: body.fanWindPresets,
       currentRoomEntity: body.currentRoomEntity,
       cleanedAreaEntity: body.cleanedAreaEntity,
       disableCustomAreaRoomModes: body.disableCustomAreaRoomModes,

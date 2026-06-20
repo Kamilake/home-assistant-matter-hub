@@ -86,12 +86,16 @@ export function FanDevice(
   if (testBit(supportedFeatures, FanDeviceFeature.OSCILLATE)) {
     features.add("Rocking");
   }
-  // Enable Wind mode if fan has natural/sleep preset modes
+  // Enable Wind mode if fan has english natural/sleep presets, or localized
+  // ones the user mapped via fanWindPresets (#387).
+  const windPresets = homeAssistantEntity.mapping?.fanWindPresets;
   const hasWindModes = presetModes.some(
     (m) =>
       m.toLowerCase() === "natural" ||
       m.toLowerCase() === "nature" ||
-      m.toLowerCase() === "sleep",
+      m.toLowerCase() === "sleep" ||
+      !!windPresets?.natural?.includes(m) ||
+      !!windPresets?.sleep?.includes(m),
   );
   if (hasWindModes) {
     features.add("Wind");

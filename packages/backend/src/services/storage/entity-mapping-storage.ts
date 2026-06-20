@@ -134,6 +134,12 @@ export class EntityMappingStorage extends Service {
         Object.keys(request.customFanSpeedTags).length > 0
           ? request.customFanSpeedTags
           : undefined,
+      fanWindPresets:
+        request.fanWindPresets &&
+        ((request.fanWindPresets.natural?.length ?? 0) > 0 ||
+          (request.fanWindPresets.sleep?.length ?? 0) > 0)
+          ? request.fanWindPresets
+          : undefined,
       currentRoomEntity: request.currentRoomEntity?.trim() || undefined,
       cleanedAreaEntity: request.cleanedAreaEntity?.trim() || undefined,
       disableCustomAreaRoomModes:
@@ -178,6 +184,9 @@ export class EntityMappingStorage extends Service {
       (!config.customServiceAreas || config.customServiceAreas.length === 0) &&
       (!config.customFanSpeedTags ||
         Object.keys(config.customFanSpeedTags).length === 0) &&
+      (!config.fanWindPresets ||
+        ((config.fanWindPresets.natural?.length ?? 0) === 0 &&
+          (config.fanWindPresets.sleep?.length ?? 0) === 0)) &&
       !config.currentRoomEntity &&
       !config.cleanedAreaEntity &&
       !config.disableCustomAreaRoomModes &&

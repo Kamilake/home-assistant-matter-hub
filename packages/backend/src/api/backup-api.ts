@@ -237,6 +237,7 @@ export function backupApi(
                     climateAutoMode: config.climateAutoMode,
                     customServiceAreas: config.customServiceAreas,
                     customFanSpeedTags: config.customFanSpeedTags,
+                    fanWindPresets: config.fanWindPresets,
                     composedEntities: config.composedEntities,
                   });
                   mappingsRestored++;
@@ -422,6 +423,7 @@ export function backupApi(
                   climateAutoMode: config.climateAutoMode,
                   customServiceAreas: config.customServiceAreas,
                   customFanSpeedTags: config.customFanSpeedTags,
+                  fanWindPresets: config.fanWindPresets,
                   composedEntities: config.composedEntities,
                 });
                 mappingsRestored++;
