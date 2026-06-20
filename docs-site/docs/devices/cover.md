@@ -58,6 +58,17 @@ By default, HAMH inverts the percentage to comply with the Matter specification.
 
 ## Troubleshooting
 
+### Alexa stopped controlling the cover
+
+Around June 2026 Alexa shows the cover and its live position, but the slider and voice commands answer "device not responding". A DEBUG log shows no `handleMovement` line, so the command never reaches the bridge, Alexa just stopped sending WindowCovering writes ([#372](https://github.com/RiDDiX/home-assistant-matter-hub/issues/372)).
+
+Workaround: set `coverExposeAsDimmableLight` per cover in the Entity Mapping dialog. Alexa still drives lights, so on/off maps to open/close and the 1-100% level maps to position. Turn it on for the covers you run from Alexa and re-add them in Alexa once.
+
+- Keep it off if you also use Apple Home or Google Home, they handle covers fine.
+- Don't put these covers in an Alexa room, or a room-wide "lights off" closes them too.
+- No stop command as a light, only on/off and position.
+- It is temporary. Once Alexa handles covers again, turn the option off, remove the light devices in Alexa, restart the bridge, and let Alexa rediscover.
+
 ### Alexa commands are reversed (open → close)
 
 Enable the `coverSwapOpenClose` feature flag in your bridge settings. This is a known Alexa behavior where the open/close direction is reversed for Matter WindowCovering devices.

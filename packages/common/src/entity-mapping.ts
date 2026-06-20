@@ -230,7 +230,8 @@ export interface EntityMappingConfig {
    * Optional: expose this cover as a Dimmable Light instead of a WindowCovering.
    * Level maps to position (100% open), on/off to open/close. Alexa workaround,
    * it stopped sending cover position commands but still drives lights (#372).
-   * Keep off for Apple/Google.
+   * No stop command, and don't put it in an Alexa room or "lights" commands move
+   * it. Keep off for Apple/Google.
    */
   readonly coverExposeAsDimmableLight?: boolean;
   /**
