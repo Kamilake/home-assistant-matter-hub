@@ -314,6 +314,18 @@ const featureFlagSchema: JSONSchema7 = {
       maximum: 5000,
       default: 0,
     },
+
+    fastSessionRecovery: {
+      title: "Fast Session Recovery (Google offline workaround)",
+      description:
+        "When a controller drops all subscriptions, clean up the dead session " +
+        "and re-announce after 5 seconds instead of 60. Opt-in for Google Home " +
+        "users whose devices go offline after a cancelled subscription (#386). " +
+        "It shortens the offline window but cannot stop the controller from " +
+        "rejecting the subscription. Default off.",
+      type: "boolean",
+      default: false,
+    },
   },
 };
 

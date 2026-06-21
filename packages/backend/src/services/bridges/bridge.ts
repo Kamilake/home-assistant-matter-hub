@@ -1,4 +1,5 @@
 import {
+  type BridgeFeatureFlags,
   BridgeStatus,
   type ExposedDeviceType,
   type UpdateBridgeRequest,
@@ -35,6 +36,16 @@ const AUTO_FORCE_SYNC_INTERVAL_MS = 90_000;
 // where the controller holds a stale CASE session and never re-subscribes
 // because it doesn't know the server canceled its subscriptions (#266).
 const DEAD_SESSION_TIMEOUT_MS = 60_000;
+
+// fastSessionRecovery: drop the dead session after 5s, not 60s (#386).
+// Keep a few seconds so a normal re-subscribe isn't cut off.
+const FAST_DEAD_SESSION_TIMEOUT_MS = 5_000;
+
+export function deadSessionTimeoutMs(flags?: BridgeFeatureFlags): number {
+  return flags?.fastSessionRecovery
+    ? FAST_DEAD_SESSION_TIMEOUT_MS
+    : DEAD_SESSION_TIMEOUT_MS;
+}
 
 // On shutdown, wait at most this long for active sessions to close cleanly.
 // A clean close tells the controller to drop its CASE session right away
@@ -445,12 +456,15 @@ export class Bridge {
             `All subscriptions lost, ${sessions.length} session(s) still active, waiting for controller to re-subscribe`,
           );
           if (!this.deadSessionTimer) {
+            const timeoutMs = deadSessionTimeoutMs(
+              this.dataProvider.featureFlags,
+            );
             this.deadSessionTimer = setTimeout(() => {
               this.deadSessionTimer = null;
               this.closeDeadSessions();
-            }, DEAD_SESSION_TIMEOUT_MS);
+            }, timeoutMs);
             this.log.info(
-              `Scheduled dead session cleanup in ${DEAD_SESSION_TIMEOUT_MS / 1000}s`,
+              `Scheduled dead session cleanup in ${timeoutMs / 1000}s`,
             );
           }
         } else if (totalSubs > 0 && this.deadSessionTimer) {
@@ -473,7 +487,7 @@ export class Bridge {
             setTimeout(() => {
               this.staleSessionTimers.delete(session.id);
               this.closeStaleSession(session.id);
-            }, DEAD_SESSION_TIMEOUT_MS),
+            }, deadSessionTimeoutMs(this.dataProvider.featureFlags)),
           );
         } else if (
           session.subscriptions.size > 0 &&
@@ -559,7 +573,7 @@ export class Bridge {
       for (const s of [...sessionManager.sessions]) {
         if (s.id === sessionId && !s.isClosing && s.subscriptions.size === 0) {
           this.log.warn(
-            `Closing stale session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${DEAD_SESSION_TIMEOUT_MS / 1000}s)`,
+            `Closing stale session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${deadSessionTimeoutMs(this.dataProvider.featureFlags) / 1000}s)`,
           );
           s.initiateClose()
             .catch(() => {
@@ -586,7 +600,7 @@ export class Bridge {
       for (const s of sessions) {
         if (!s.isClosing && s.subscriptions.size === 0) {
           this.log.warn(
-            `Closing dead session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${DEAD_SESSION_TIMEOUT_MS / 1000}s)`,
+            `Closing dead session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${deadSessionTimeoutMs(this.dataProvider.featureFlags) / 1000}s)`,
           );
           closes.push(
             s.initiateClose().catch(() => {
