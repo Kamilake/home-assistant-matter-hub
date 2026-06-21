@@ -383,6 +383,21 @@ export class FanControlServerBase extends FeaturedBase {
     if (!homeAssistant.isAvailable) {
       return;
     }
+    // Opt-in: a controller writing a speed while the fan is off is a power-on
+    // injection (Apple Home power button). Restore the last speed instead (#387).
+    const restoreOnPowerOn =
+      homeAssistant.state.mapping?.fanRestoreSpeedOnPowerOn === true;
+    const wasOff =
+      this.agent.has(OnOffBehavior) &&
+      !this.agent.get(OnOffBehavior).state.onOff;
+    if (
+      restoreOnPowerOn &&
+      wasOff &&
+      this.lastNonZeroPercent > 0 &&
+      percentage > 0
+    ) {
+      percentage = this.lastNonZeroPercent;
+    }
     const config = this.state.config;
     const supportsPercentage = config.supportsPercentage(
       homeAssistant.entity.state,

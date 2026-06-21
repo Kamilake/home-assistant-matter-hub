@@ -29,6 +29,8 @@ export interface MappingProfileEntry {
   readonly customFanSpeedTags?: Record<string, number>;
   /** Localized HA fan preset names that map to Matter wind modes (#387). */
   readonly fanWindPresets?: FanWindPresets;
+  /** Restore the last fan speed when a controller turns the fan on, ignoring an injected value (Apple Home power button, #387). */
+  readonly fanRestoreSpeedOnPowerOn?: boolean;
   readonly valetudoIdentifier?: string;
   readonly coverSwapOpenClose?: boolean;
   readonly coverSliderDebounceMs?: number;

@@ -149,6 +149,8 @@ export function EntityMappingDialog({
     useState(false);
   const [climateKeepModeOnIdle, setClimateKeepModeOnIdle] = useState(false);
   const [climateExposeFan, setClimateExposeFan] = useState(false);
+  const [fanRestoreSpeedOnPowerOn, setFanRestoreSpeedOnPowerOn] =
+    useState(false);
   const [climateAutoMode, setClimateAutoMode] = useState<ClimateAutoMode | "">(
     "",
   );
@@ -238,6 +240,9 @@ export function EntityMappingDialog({
       );
       setClimateKeepModeOnIdle(currentMapping?.climateKeepModeOnIdle || false);
       setClimateExposeFan(currentMapping?.climateExposeFan || false);
+      setFanRestoreSpeedOnPowerOn(
+        currentMapping?.fanRestoreSpeedOnPowerOn || false,
+      );
       setClimateAutoMode(currentMapping?.climateAutoMode || "");
       composedKeyRef.current = 0;
       setComposedEntities(
@@ -355,6 +360,7 @@ export function EntityMappingDialog({
       disableClimateFanControl: disableClimateFanControl || undefined,
       climateKeepModeOnIdle: climateKeepModeOnIdle || undefined,
       climateExposeFan: climateExposeFan || undefined,
+      fanRestoreSpeedOnPowerOn: fanRestoreSpeedOnPowerOn || undefined,
       climateAutoMode: climateAutoMode || undefined,
       composedEntities:
         composedEntities.filter((e) => e.entityId?.trim()).length > 0
@@ -401,6 +407,7 @@ export function EntityMappingDialog({
     disableClimateFanControl,
     climateKeepModeOnIdle,
     climateExposeFan,
+    fanRestoreSpeedOnPowerOn,
     climateAutoMode,
     composedEntities,
     onSave,
@@ -623,6 +630,19 @@ export function EntityMappingDialog({
               onChange={(e) => setFanSleepPresets(e.target.value)}
             />
           </Box>
+        )}
+
+        {currentDomain === "fan" && (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={fanRestoreSpeedOnPowerOn}
+                onChange={(e) => setFanRestoreSpeedOnPowerOn(e.target.checked)}
+              />
+            }
+            label="Restore the last fan speed when turned on, ignoring a controller's injected value (Apple Home power button). While on, you cannot turn on at full speed from off."
+            sx={{ mt: 1, display: "block" }}
+          />
         )}
 
         {showCleaningModeField && (

@@ -201,6 +201,8 @@ export interface EntityMappingConfig {
   readonly customFanSpeedTags?: Record<string, number>;
   /** Localized HA fan preset names that map to Matter wind modes (#387). */
   readonly fanWindPresets?: FanWindPresets;
+  /** Restore the last fan speed when a controller turns the fan on, ignoring an injected value (Apple Home power button, #387). */
+  readonly fanRestoreSpeedOnPowerOn?: boolean;
   /**
    * Optional: Entity ID of a sensor that reports the room the vacuum is currently in.
    * Used for Dreame vacuums (Tasshack integration) which expose sensor.*_current_room.
@@ -355,6 +357,8 @@ export interface EntityMappingRequest {
   readonly customFanSpeedTags?: Record<string, number>;
   /** Localized HA fan preset names that map to Matter wind modes (#387). */
   readonly fanWindPresets?: FanWindPresets;
+  /** Restore the last fan speed when a controller turns the fan on, ignoring an injected value (Apple Home power button, #387). */
+  readonly fanRestoreSpeedOnPowerOn?: boolean;
   readonly currentRoomEntity?: string;
   readonly cleanedAreaEntity?: string;
   readonly disableCustomAreaRoomModes?: boolean;
