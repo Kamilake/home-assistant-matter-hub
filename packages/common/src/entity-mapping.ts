@@ -28,6 +28,7 @@ export type MatterDeviceType =
   | "on_off_light"
   | "on_off_plugin_unit"
   | "on_off_switch"
+  | "mounted_on_off_control"
   | "ozone_sensor"
   | "pm1_sensor"
   | "pressure_sensor"
@@ -408,6 +409,7 @@ export const matterDeviceTypeLabels: Record<MatterDeviceType, string> = {
   on_off_light: "On/Off Light",
   on_off_plugin_unit: "On/Off Plug-in Unit",
   on_off_switch: "On/Off Switch",
+  mounted_on_off_control: "Mounted On/Off Control (experimental)",
   ozone_sensor: "Ozone (O\u2083) Sensor",
   pm1_sensor: "PM1 Sensor",
   pressure_sensor: "Pressure Sensor",
@@ -481,6 +483,13 @@ export const matterDeviceTypeControllerSupport: Record<
     google: "yes",
     alexa: "yes",
     aqara: "yes",
+  },
+  mounted_on_off_control: {
+    apple: "unknown",
+    google: "unknown",
+    alexa: "unknown",
+    aqara: "unknown",
+    note: "Experimental on/off type (0x010F). Not on Google's supported list, test whether your controller shows it as a switch (#380).",
   },
   door_lock: { apple: "yes", google: "partial", alexa: "yes", aqara: "yes" },
   window_covering: { apple: "yes", google: "yes", alexa: "yes", aqara: "yes" },
@@ -708,7 +717,11 @@ export const domainToDefaultMatterTypes: Partial<
   event: ["generic_switch"],
   fan: ["air_purifier", "fan"],
   humidifier: ["humidifier_dehumidifier"],
-  input_boolean: ["on_off_plugin_unit", "on_off_switch"],
+  input_boolean: [
+    "on_off_plugin_unit",
+    "on_off_switch",
+    "mounted_on_off_control",
+  ],
   input_select: ["mode_select"],
   lawn_mower: ["robotic_lawn_mower"],
   input_button: ["generic_switch"],
@@ -744,6 +757,7 @@ export const domainToDefaultMatterTypes: Partial<
     "dishwasher",
     "on_off_plugin_unit",
     "on_off_switch",
+    "mounted_on_off_control",
     "pump",
     "water_valve",
   ],
