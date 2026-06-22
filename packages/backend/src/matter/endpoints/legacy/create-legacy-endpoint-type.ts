@@ -242,7 +242,7 @@ const matterDeviceTypeFactories: Partial<
   // switch instead of a plug. Plain SwitchDevice is 0x010A (a plug), so the
   // override had no effect before (#380).
   on_off_switch: (ha) => OnOffLightType.set({ homeAssistantEntity: ha }),
-  // #380 experiment: Mounted On/Off Control (0x010F), a third on/off type.
+  // #380: expose an HA switch as Mounted On/Off Control (0x010F).
   mounted_on_off_control: (ha) =>
     MountedOnOffControlType.set({ homeAssistantEntity: ha }),
   door_lock: LockDevice,
