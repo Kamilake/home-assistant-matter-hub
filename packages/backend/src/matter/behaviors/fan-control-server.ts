@@ -397,6 +397,22 @@ export class FanControlServerBase extends FeaturedBase {
       percentage > 0
     ) {
       percentage = this.lastNonZeroPercent;
+      // Reflect it in the cluster too, else Apple's injected 100 stays and a
+      // later sync pushes it back over the restore (#387).
+      try {
+        applyPatchState(this.state, {
+          percentSetting: this.lastNonZeroPercent,
+          percentCurrent: this.lastNonZeroPercent,
+          ...(this.features.multiSpeed && this.lastNonZeroSpeed > 0
+            ? {
+                speedSetting: this.lastNonZeroSpeed,
+                speedCurrent: this.lastNonZeroSpeed,
+              }
+            : {}),
+        });
+      } catch {
+        // Transaction conflict, HA echo will set the correct values
+      }
     }
     const config = this.state.config;
     const supportsPercentage = config.supportsPercentage(

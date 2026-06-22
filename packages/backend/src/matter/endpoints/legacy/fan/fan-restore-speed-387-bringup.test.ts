@@ -119,6 +119,49 @@ async function powerOnPercentage(
   return (setPct?.data as { percentage?: number } | undefined)?.percentage;
 }
 
+// Same flow, but read back the Matter cluster after the restore. Apple's
+// injected 100 must be replaced in the cluster, not just in the HA call.
+async function powerOnClusterState(mapping: EntityMappingConfig): Promise<{
+  percentSetting?: number | null;
+  percentCurrent?: number | null;
+  speedSetting?: number | null;
+}> {
+  const server = await ServerNode.create({
+    // biome-ignore lint/suspicious/noExplicitAny: env valid at runtime
+    environment: env as any,
+    id: "fan-restore-state-node",
+    network: { port: 0 },
+    commissioning: { passcode: 20202021, discriminator: 3840 },
+    basicInformation: { vendorId: VendorId(0xfff1), productId: 0x8000 },
+  });
+  const aggregator = new AggregatorEndpoint("aggregator");
+  await server.add(aggregator);
+  const endpoint = new Endpoint(
+    FanDevice({ entity: fanEntity(), mapping } as never),
+    { id: "fan" },
+  );
+  await aggregator.add(endpoint);
+
+  const out: {
+    percentSetting?: number | null;
+    percentCurrent?: number | null;
+    speedSetting?: number | null;
+  } = {};
+  await endpoint.act((agent) => {
+    // biome-ignore lint/suspicious/noExplicitAny: drive the controller write
+    const fc = (agent as any).fanControl;
+    fc.state.percentSetting = 100; // Apple Home's injected power-on value
+    fc.lastNonZeroPercent = 24;
+    fc.lastNonZeroSpeed = 2;
+    fc.targetPercentSettingChanged(100, 0, { subject: {} });
+    out.percentSetting = fc.state.percentSetting;
+    out.percentCurrent = fc.state.percentCurrent;
+    out.speedSetting = fc.state.speedSetting;
+  });
+  await server.close().catch(() => {});
+  return out;
+}
+
 describe("fan restore speed on power-on (#387)", () => {
   it("restores the last speed when the flag is on", async () => {
     const pct = await powerOnPercentage({
@@ -131,5 +174,15 @@ describe("fan restore speed on power-on (#387)", () => {
   it("keeps the controller value when the flag is off", async () => {
     const pct = await powerOnPercentage({ entityId: "fan.test" });
     expect(pct).toBe(100);
+  });
+
+  it("patches the cluster state to the restored speed (flag on)", async () => {
+    const s = await powerOnClusterState({
+      entityId: "fan.test",
+      fanRestoreSpeedOnPowerOn: true,
+    });
+    expect(s.percentSetting).toBe(24);
+    expect(s.percentCurrent).toBe(24);
+    expect(s.speedSetting).toBe(2);
   });
 });
