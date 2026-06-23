@@ -8,7 +8,7 @@ describe("summarizeFabricHealth", () => {
   it("tags the ecosystem and flags a stale fabric", () => {
     const [google] = summarizeFabricHealth(
       [{ fabricIndex: 1, rootVendorId: GOOGLE, label: "Home" }],
-      [{ fabricIndex: 1, subscriptionCount: 6, lastActiveMsAgo: 50_000 }],
+      [{ fabricIndex: 1, subscriptionCount: 6, lastActiveMsAgo: 200_000 }],
     );
     expect(google.ecosystem).toBe("google");
     expect(google.connected).toBe(true);
@@ -22,6 +22,14 @@ describe("summarizeFabricHealth", () => {
       [{ fabricIndex: 2, subscriptionCount: 4, lastActiveMsAgo: 1_000 }],
     );
     expect(apple.ecosystem).toBe("apple");
+    expect(apple.stale).toBe(false);
+  });
+
+  it("does not flag a fabric inside one keepalive gap", () => {
+    const [apple] = summarizeFabricHealth(
+      [{ fabricIndex: 2, rootVendorId: APPLE, label: "Home" }],
+      [{ fabricIndex: 2, subscriptionCount: 4, lastActiveMsAgo: 60_000 }],
+    );
     expect(apple.stale).toBe(false);
   });
 

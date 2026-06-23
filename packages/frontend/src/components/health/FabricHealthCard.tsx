@@ -60,7 +60,7 @@ export function FabricHealthCard({
                 <Typography variant="caption" color="text.secondary">
                   {t("health.subscriptions")}: {f.subscriptions}
                   {f.lastActiveMsAgo != null
-                    ? ` · ${t("health.lastActiveAgo", {
+                    ? ` | ${t("health.lastActiveAgo", {
                         seconds: Math.round(f.lastActiveMsAgo / 1000),
                       })}`
                     : ""}

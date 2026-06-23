@@ -3,8 +3,10 @@ import {
   classifyController,
 } from "@home-assistant-matter-hub/common";
 
-// Subscriptions exist but no peer traffic for this long: a stale link.
-export const FABRIC_STALE_MS = 30_000;
+// Subscriptions exist but no peer traffic for this long: a stale link. The
+// bridge keepalive only lands every ~48-56s (60s max interval), so this must
+// clear two cycles to avoid flagging a healthy but quiet controller.
+export const FABRIC_STALE_MS = 120_000;
 
 export interface FabricInput {
   fabricIndex: number;
