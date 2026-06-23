@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { HomeAssistantEntityInformation } from "@home-assistant-matter-hub/common";
+import { Logger } from "@matter/general";
 import { VendorId } from "@matter/main";
 import { BridgedDeviceBasicInformationServer as Base } from "@matter/main/behaviors";
 import { BridgeDataProvider } from "../../services/bridges/bridge-data-provider.js";
@@ -7,6 +8,8 @@ import { applyPatchState } from "../../utils/apply-patch-state.js";
 import { sanitizeMatterString } from "../../utils/sanitize-matter-string.js";
 import { trimToLength } from "../../utils/trim-to-length.js";
 import { HomeAssistantEntityBehavior } from "./home-assistant-entity-behavior.js";
+
+const logger = Logger.get("BasicInformationServer");
 
 export class BasicInformationServer extends Base {
   override async initialize(): Promise<void> {
@@ -69,7 +72,9 @@ export class BasicInformationServer extends Base {
         ellipse(32, device?.model) ??
         hash(32, basicInformation.productName),
       productLabel:
-        ellipse(64, device?.model) ?? hash(64, basicInformation.productLabel),
+        ellipse(64, mapping?.customProductName) ??
+        ellipse(64, device?.model) ??
+        hash(64, basicInformation.productLabel),
       hardwareVersion: basicInformation.hardwareVersion,
       softwareVersion: basicInformation.softwareVersion,
       hardwareVersionString: ellipse(64, device?.hw_version),
@@ -86,6 +91,9 @@ export class BasicInformationServer extends Base {
         .digest("hex")
         .substring(0, 32),
     });
+    logger.debug(
+      `[${entity.entity_id}] basicInfo vendor=${this.state.vendorName} product=${this.state.productName} label=${this.state.productLabel} serial=${this.state.serialNumber} node=${this.state.nodeLabel}`,
+    );
   }
 }
 
