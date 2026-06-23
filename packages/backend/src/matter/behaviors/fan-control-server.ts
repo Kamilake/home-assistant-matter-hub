@@ -387,9 +387,13 @@ export class FanControlServerBase extends FeaturedBase {
     // injection (Apple Home power button). Restore the last speed instead (#387).
     const restoreOnPowerOn =
       homeAssistant.state.mapping?.fanRestoreSpeedOnPowerOn === true;
+    // Live onOff races: Apple sends onOff.on in a separate frame that can flip
+    // it true before this reactor runs, so also trust the HA state, still off
+    // here because turn_on hasn't been sent yet (#387).
     const wasOff =
-      this.agent.has(OnOffBehavior) &&
-      !this.agent.get(OnOffBehavior).state.onOff;
+      homeAssistant.entity.state?.state === "off" ||
+      (this.agent.has(OnOffBehavior) &&
+        !this.agent.get(OnOffBehavior).state.onOff);
     if (
       restoreOnPowerOn &&
       wasOff &&

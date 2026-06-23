@@ -162,6 +162,42 @@ async function powerOnClusterState(mapping: EntityMappingConfig): Promise<{
   return out;
 }
 
+// Reproduce the Apple race: onOff.on already flipped the Matter onOff true in a
+// separate frame before the percentSetting reactor runs. The HA state is still
+// off, so the restore must still fire (#387).
+async function powerOnPercentageOnOffRace(
+  mapping: EntityMappingConfig,
+): Promise<number | undefined> {
+  const server = await ServerNode.create({
+    // biome-ignore lint/suspicious/noExplicitAny: env valid at runtime
+    environment: env as any,
+    id: "fan-restore-race-node",
+    network: { port: 0 },
+    commissioning: { passcode: 20202021, discriminator: 3840 },
+    basicInformation: { vendorId: VendorId(0xfff1), productId: 0x8000 },
+  });
+  const aggregator = new AggregatorEndpoint("aggregator");
+  await server.add(aggregator);
+  const endpoint = new Endpoint(
+    FanDevice({ entity: fanEntity(), mapping } as never),
+    { id: "fan" },
+  );
+  await aggregator.add(endpoint);
+
+  calls.length = 0;
+  await endpoint.act((agent) => {
+    // biome-ignore lint/suspicious/noExplicitAny: drive the controller write
+    const a = agent as any;
+    a.onOff.state.onOff = true; // onOff.on already processed (the race)
+    a.fanControl.lastNonZeroPercent = 24;
+    a.fanControl.targetPercentSettingChanged(100, 0, { subject: {} });
+  });
+  await server.close().catch(() => {});
+
+  const setPct = calls.find((c) => c.action === "fan.set_percentage");
+  return (setPct?.data as { percentage?: number } | undefined)?.percentage;
+}
+
 describe("fan restore speed on power-on (#387)", () => {
   it("restores the last speed when the flag is on", async () => {
     const pct = await powerOnPercentage({
@@ -184,5 +220,13 @@ describe("fan restore speed on power-on (#387)", () => {
     expect(s.percentSetting).toBe(24);
     expect(s.percentCurrent).toBe(24);
     expect(s.speedSetting).toBe(2);
+  });
+
+  it("restores even when onOff already flipped true (Apple race)", async () => {
+    const pct = await powerOnPercentageOnOffRace({
+      entityId: "fan.test",
+      fanRestoreSpeedOnPowerOn: true,
+    });
+    expect(pct).toBe(24);
   });
 });
