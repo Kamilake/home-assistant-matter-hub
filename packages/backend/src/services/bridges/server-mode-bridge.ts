@@ -135,6 +135,7 @@ export class ServerModeBridge {
     sessions: Array<{
       id: number;
       peerNodeId: string;
+      fabricIndex: number | null;
       subscriptionCount: number;
       lastActiveMsAgo: number | null;
       lastAnyActivityMsAgo: number | null;
@@ -143,15 +144,38 @@ export class ServerModeBridge {
     }>;
     totalSessions: number;
     totalSubscriptions: number;
+    fabrics: Array<{
+      fabricIndex: number;
+      sessions: number;
+      subscriptions: number;
+    }>;
   } {
     try {
       const sessionManager = this.server.env.get(SessionManager);
       const sessions = [...sessionManager.sessions];
       let totalSubscriptions = 0;
+      const fabricMap = new Map<
+        number,
+        { sessions: number; subscriptions: number }
+      >();
       const sessionList = sessions.map((s) => {
         const subCount = s.subscriptions.size;
         totalSubscriptions += subCount;
-        // #365: per-session liveness, mirrors Bridge.getSessionInfo.
+        // #365: per-session liveness and per-fabric roll-up, mirrors
+        // Bridge.getSessionInfo so the health view matches in server mode.
+        const fi =
+          typeof s.fabric?.fabricIndex === "number"
+            ? s.fabric.fabricIndex
+            : null;
+        if (fi !== null) {
+          const existing = fabricMap.get(fi) ?? {
+            sessions: 0,
+            subscriptions: 0,
+          };
+          existing.sessions++;
+          existing.subscriptions += subCount;
+          fabricMap.set(fi, existing);
+        }
         const nowMs = Date.now();
         const lastActiveMsAgo =
           typeof s.activeTimestamp === "number" && s.activeTimestamp > 0
@@ -163,6 +187,7 @@ export class ServerModeBridge {
         return {
           id: s.id,
           peerNodeId: String(s.peerNodeId),
+          fabricIndex: fi,
           subscriptionCount: subCount,
           lastActiveMsAgo,
           lastAnyActivityMsAgo,
@@ -170,16 +195,23 @@ export class ServerModeBridge {
           ageMsFromOpen: startedAt != null ? nowMs - startedAt : null,
         };
       });
+      const fabrics = [...fabricMap.entries()].map(([fabricIndex, data]) => ({
+        fabricIndex,
+        sessions: data.sessions,
+        subscriptions: data.subscriptions,
+      }));
       return {
         sessions: sessionList,
         totalSessions: sessions.length,
         totalSubscriptions,
+        fabrics,
       };
     } catch {
       return {
         sessions: [],
         totalSessions: 0,
         totalSubscriptions: 0,
+        fabrics: [],
       };
     }
   }
