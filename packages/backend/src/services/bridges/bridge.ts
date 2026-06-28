@@ -23,6 +23,7 @@ import {
   ROTATION_CHECK_INTERVAL_MS,
   SESSION_MAX_AGE_HOURS_RANGE,
   seedExistingSessionStarts,
+  staleSessionShouldClose,
 } from "./session-rotation.js";
 
 // Auto Force Sync interval in milliseconds (90 seconds).
@@ -571,21 +572,38 @@ export class Bridge {
     try {
       const sessionManager = this.server.env.get(SessionManager);
       for (const s of [...sessionManager.sessions]) {
-        if (s.id === sessionId && !s.isClosing && s.subscriptions.size === 0) {
-          this.log.warn(
-            `Closing stale session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${deadSessionTimeoutMs(this.dataProvider.featureFlags) / 1000}s)`,
+        if (s.id !== sessionId || s.isClosing || s.subscriptions.size > 0) {
+          continue;
+        }
+        if (!staleSessionShouldClose(s)) {
+          // 0 subs but the peer is still talking: it is recovering, not dead.
+          // Re-arm and only close once it goes quiet, so a controller can
+          // re-subscribe on this session instead of being forced offline (#287).
+          this.log.info(
+            `Keeping session ${s.id} (peer ${s.peerNodeId}, 0 subs but peer still active)`,
           );
-          s.initiateClose()
-            .catch(() => {
-              // Graceful close failed (peer unreachable), force-close locally
-              return s.initiateForceClose({
-                cause: new Error("graceful close failed, forcing"),
-              });
-            })
-            .catch(() => {})
-            .finally(() => this.triggerMdnsReAnnounce());
+          this.staleSessionTimers.set(
+            sessionId,
+            setTimeout(() => {
+              this.staleSessionTimers.delete(sessionId);
+              this.closeStaleSession(sessionId);
+            }, deadSessionTimeoutMs(this.dataProvider.featureFlags)),
+          );
           break;
         }
+        this.log.warn(
+          `Closing stale session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${deadSessionTimeoutMs(this.dataProvider.featureFlags) / 1000}s)`,
+        );
+        s.initiateClose()
+          .catch(() => {
+            // Graceful close failed (peer unreachable), force-close locally
+            return s.initiateForceClose({
+              cause: new Error("graceful close failed, forcing"),
+            });
+          })
+          .catch(() => {})
+          .finally(() => this.triggerMdnsReAnnounce());
+        break;
       }
     } catch {
       // SessionManager may be disposed
@@ -597,23 +615,37 @@ export class Bridge {
       const sessionManager = this.server.env.get(SessionManager);
       const sessions = [...sessionManager.sessions];
       const closes: Promise<void>[] = [];
+      let kept = 0;
       for (const s of sessions) {
-        if (!s.isClosing && s.subscriptions.size === 0) {
-          this.log.warn(
-            `Closing dead session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${deadSessionTimeoutMs(this.dataProvider.featureFlags) / 1000}s)`,
-          );
-          closes.push(
-            s.initiateClose().catch(() => {
-              // Graceful close failed (peer unreachable), force-close locally
-              return s.initiateForceClose({
-                cause: new Error("graceful close failed, forcing"),
-              });
-            }),
-          );
+        if (s.isClosing || s.subscriptions.size > 0) {
+          continue;
         }
+        if (!staleSessionShouldClose(s)) {
+          // Peer still active: leave it so it can re-subscribe (#287).
+          kept++;
+          continue;
+        }
+        this.log.warn(
+          `Closing dead session ${s.id} (peer ${s.peerNodeId}, no subscriptions for ${deadSessionTimeoutMs(this.dataProvider.featureFlags) / 1000}s)`,
+        );
+        closes.push(
+          s.initiateClose().catch(() => {
+            // Graceful close failed (peer unreachable), force-close locally
+            return s.initiateForceClose({
+              cause: new Error("graceful close failed, forcing"),
+            });
+          }),
+        );
       }
       if (closes.length > 0) {
         Promise.allSettled(closes).then(() => this.triggerMdnsReAnnounce());
+      }
+      if (kept > 0 && !this.deadSessionTimer) {
+        // Some peers are still active; re-check after another interval.
+        this.deadSessionTimer = setTimeout(() => {
+          this.deadSessionTimer = null;
+          this.closeDeadSessions();
+        }, deadSessionTimeoutMs(this.dataProvider.featureFlags));
       }
     } catch {
       // SessionManager may be disposed

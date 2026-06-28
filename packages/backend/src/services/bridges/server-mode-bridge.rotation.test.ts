@@ -5,7 +5,41 @@ import {
   parseSessionMaxAgeHours,
   SESSION_MAX_AGE_HOURS_RANGE,
   seedExistingSessionStarts,
+  staleSessionShouldClose,
 } from "./session-rotation.js";
+
+describe("staleSessionShouldClose", () => {
+  const session = (
+    over: Partial<Parameters<typeof staleSessionShouldClose>[0]>,
+  ) => ({
+    subscriptions: { size: 0 },
+    isClosing: false,
+    isPeerActive: false,
+    ...over,
+  });
+
+  it("closes a 0-sub session whose peer has gone quiet", () => {
+    expect(staleSessionShouldClose(session({ isPeerActive: false }))).toBe(
+      true,
+    );
+  });
+
+  it("keeps a 0-sub session whose peer is still active (#287)", () => {
+    expect(staleSessionShouldClose(session({ isPeerActive: true }))).toBe(
+      false,
+    );
+  });
+
+  it("keeps a session that still has subscriptions", () => {
+    expect(
+      staleSessionShouldClose(session({ subscriptions: { size: 2 } })),
+    ).toBe(false);
+  });
+
+  it("keeps a session that is already closing", () => {
+    expect(staleSessionShouldClose(session({ isClosing: true }))).toBe(false);
+  });
+});
 
 describe("parseSessionMaxAgeHours", () => {
   it("returns the default when raw is undefined", () => {

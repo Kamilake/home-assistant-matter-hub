@@ -22,6 +22,22 @@ export function parseSessionMaxAgeHours(
   return n;
 }
 
+// A 0-subscription session whose peer is still talking (MRP-active) is a
+// controller mid-recovery, not a dead one. The stale/dead cleanup should leave
+// it open so it can re-subscribe instead of forcing it offline (#287); only
+// close it once the peer goes quiet (#266/#105).
+export function staleSessionShouldClose(session: {
+  subscriptions: { size: number };
+  isClosing: boolean;
+  isPeerActive: boolean;
+}): boolean {
+  return (
+    session.subscriptions.size === 0 &&
+    !session.isClosing &&
+    !session.isPeerActive
+  );
+}
+
 export function seedExistingSessionStarts(
   startedAt: Map<number, number>,
   sessions: Iterable<{ id: number }>,
