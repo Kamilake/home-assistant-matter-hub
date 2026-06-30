@@ -1,39 +1,39 @@
-# Standalone Devices
+# 독립형 기기(Standalone Devices)
 
-A standalone device exposes one or more Home Assistant entities as a single Matter device with its own pairing code, instead of living inside a bridge. Some controllers (for example Apple Home with robot vacuums) handle a device better when it is not presented as a bridged child, so this gives each device a clean, independent identity.
+독립형 기기는 하나 이상의 Home Assistant 엔티티를 브리지 안에 두는 대신, 자체 페어링 코드를 가진 단일 Matter 기기로 노출합니다. 일부 컨트롤러(예를 들어 로봇 청소기를 사용하는 Apple Home)는 기기가 브리지된 하위 요소로 제시되지 않을 때 더 잘 처리하므로, 이 방식은 각 기기에 깔끔하고 독립적인 정체성을 부여합니다.
 
-Under the hood a standalone device is a bridge running in Server Mode; every selected entity becomes one endpoint on the node and the first entity is the primary, it names the device and sets its advertised type. It works for any supported device type, not only robot vacuums. See [Supported Device Types](../supported-device-types.md) for the full list.
+내부적으로 독립형 기기는 서버 모드(Server Mode)로 실행되는 브리지입니다. 선택한 모든 엔티티는 노드의 하나의 엔드포인트가 되며, 첫 번째 엔티티가 기본(primary) 엔티티로 기기 이름을 정하고 광고되는 유형을 설정합니다. 로봇 청소기뿐만 아니라 지원되는 모든 기기 유형에 대해 작동합니다. 전체 목록은 [지원 기기 유형](../supported-device-types.md)을 참조하세요.
 
-## When to use it
+## 언제 사용하나요
 
-- A device type that a controller only handles well when it is not bridged, such as a robot vacuum in Apple Home.
-- You want one entity to pair as its own Matter device with its own QR code.
-- You want to keep a device separate from your main bridge.
+- Apple Home의 로봇 청소기처럼 컨트롤러가 브리지되지 않은 경우에만 잘 처리하는 기기 유형일 때.
+- 하나의 엔티티를 자체 QR 코드를 가진 독립된 Matter 기기로 페어링하고 싶을 때.
+- 기기를 메인 브리지와 분리해 유지하고 싶을 때.
 
-A normal bridge is still the right choice for exposing many entities together behind a single pairing code.
+여러 엔티티를 단일 페어링 코드 뒤에 함께 노출하는 경우에는 여전히 일반 브리지가 올바른 선택입니다.
 
-## Create a standalone device
+## 독립형 기기 생성하기
 
-1. Open the web UI and go to **Standalone Devices** in the navigation.
-2. Click **Add device**.
-3. Enter a name and pick one or more entities. The first one is the primary and names the device.
-4. Click **Create**. A free Matter port is assigned automatically.
+1. 웹 UI를 열고 내비게이션에서 **Standalone Devices**로 이동합니다.
+2. **Add device**를 클릭합니다.
+3. 이름을 입력하고 하나 이상의 엔티티를 선택합니다. 첫 번째 엔티티가 기본 엔티티가 되어 기기 이름을 정합니다.
+4. **Create**를 클릭합니다. 사용 가능한 Matter 포트가 자동으로 할당됩니다.
 
-The new device appears in the list with its current status.
+새 기기가 현재 상태와 함께 목록에 나타납니다.
 
-## Pair the device
+## 기기 페어링하기
 
-1. In the list, open the device with the launch icon to see its details.
-2. Scan the QR code, or type the manual pairing code, in your controller (Apple Home, Alexa, Google Home).
+1. 목록에서 실행 아이콘을 통해 기기를 열어 세부 정보를 확인합니다.
+2. 컨트롤러(Apple Home, Alexa, Google Home)에서 QR 코드를 스캔하거나 수동 페어링 코드를 입력합니다.
 
-Each standalone device has its own pairing code, so you add it to your controller like any other Matter device.
+각 독립형 기기는 자체 페어링 코드를 가지므로, 다른 Matter 기기와 마찬가지로 컨트롤러에 추가합니다.
 
-## Notes and limits
+## 참고 사항 및 제한
 
-- A device carries up to 10 entities; the first one drives the name and type shown during pairing. More than one entity per device is experimental: controllers render multi-endpoint devices differently, Alexa may only show the first endpoint, and an endpoint added to an already-paired device may need a re-pair to show up. Field reports are welcome on [#301](https://github.com/RiDDiX/home-assistant-matter-hub/issues/301).
-- Each device uses its own Matter port, assigned automatically when you create it.
-- Deleting a standalone device removes its bridge, which unpairs it from your controllers.
+- 하나의 기기는 최대 10개의 엔티티를 포함하며, 첫 번째 엔티티가 페어링 시 표시되는 이름과 유형을 결정합니다. 기기당 둘 이상의 엔티티를 두는 것은 실험적입니다. 컨트롤러마다 다중 엔드포인트 기기를 다르게 표시하며, Alexa는 첫 번째 엔드포인트만 표시할 수 있고, 이미 페어링된 기기에 추가된 엔드포인트는 표시되려면 재페어링이 필요할 수 있습니다. [#301](https://github.com/RiDDiX/home-assistant-matter-hub/issues/301)에 사용 경험을 공유해 주시면 감사하겠습니다.
+- 각 기기는 자체 Matter 포트를 사용하며, 생성 시 자동으로 할당됩니다.
+- 독립형 기기를 삭제하면 해당 브리지가 제거되어 컨트롤러에서 페어링이 해제됩니다.
 
-## Relation to Server Mode
+## 서버 모드와의 관계
 
-Standalone devices use the same Server Mode that powers single device bridges. You can still enable Server Mode by hand on a bridge through the bridge configuration if you prefer. The Standalone Devices page is just the simpler, device first way to do the same thing.
+독립형 기기는 단일 기기 브리지를 구동하는 것과 동일한 서버 모드를 사용합니다. 원한다면 브리지 구성을 통해 브리지에서 수동으로 서버 모드를 활성화할 수도 있습니다. Standalone Devices 페이지는 동일한 작업을 더 간단하고 기기 중심적인 방식으로 수행하는 것일 뿐입니다.

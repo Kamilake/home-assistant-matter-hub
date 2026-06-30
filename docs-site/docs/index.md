@@ -4,297 +4,296 @@
 
 ---
 
-> **Community Fork** - This is a fork of the original [t0bst4r/home-assistant-matter-hub](https://github.com/t0bst4r/home-assistant-matter-hub), which was discontinued in January 2026. We continue active development with bug fixes, new features, and community support.
+> **커뮤니티 포크** - 이것은 2026년 1월에 중단된 원본 [t0bst4r/home-assistant-matter-hub](https://github.com/t0bst4r/home-assistant-matter-hub)의 포크입니다. 저희는 버그 수정, 새 기능, 커뮤니티 지원을 통해 활발히 개발을 이어가고 있습니다.
 >
-> We actively work on fixing old issues from the original project and welcome new feature requests. This is a living project maintained by the community!
+> 저희는 원본 프로젝트의 오래된 이슈를 적극적으로 해결하고 있으며 새로운 기능 요청을 환영합니다. 이것은 커뮤니티가 유지보수하는 살아 있는 프로젝트입니다!
 
 ---
 
-This project simulates bridges to publish your entities from Home Assistant to any Matter-compatible controller like
-Alexa, Apple Home or Google Home. Using Matter, those can be connected easily using local communication without the need
-of port forwarding etc.
+이 프로젝트는 브리지를 시뮬레이션하여 Home Assistant의 엔티티를 Alexa, Apple Home, Google Home과 같은
+Matter 호환 컨트롤러에 게시합니다. Matter를 사용하면 포트 포워딩 등 없이 로컬 통신을 통해 이들을 쉽게
+연결할 수 있습니다.
 
 ---
 
-## Known issues and limitations
+## 알려진 문제 및 제한 사항
 
-### Device Type Support
+### 기기 유형 지원
 
-This project does not yet support all available device types in the matter specification.
-In addition, controllers like Alexa or Google Home do not support all device types, too.
+이 프로젝트는 아직 Matter 사양의 모든 기기 유형을 지원하지는 않습니다.
+또한 Alexa나 Google Home와 같은 컨트롤러도 모든 기기 유형을 지원하지는 않습니다.
 
-To check which types are supported, please review the
-[list of supported device types](./supported-device-types.md).
+어떤 유형이 지원되는지 확인하려면 [지원 기기 유형 목록](./supported-device-types.md)을 확인하세요.
 
 ### Alexa
 
-- Alexa cannot pair with a bridge which has too many devices attached. It seems to have a limit of
-  about 80-100 devices
-- Alexa needs at least one Amazon device which supports Matter to pair with a Matter device.
-  If you only have a third party smart speaker which supports Alexa, this isn't enough.
+- Alexa는 너무 많은 기기가 연결된 브리지와는 페어링할 수 없습니다. 약 80~100개의 기기 제한이
+  있는 것으로 보입니다
+- Alexa가 Matter 기기와 페어링하려면 Matter를 지원하는 Amazon 기기가 최소 하나 필요합니다.
+  Alexa를 지원하는 타사 스마트 스피커만 있다면 충분하지 않습니다.
 
 ### Google Home
 
-- Google Home needs an actual Google Hub to connect a Matter device. Just using the GH app isn't enough.
-- Google Home can deny the Matter device under certain conditions because it is not a certified Matter
-  device. You need to follow
-  [this guide](https://github.com/project-chip/matter.js/blob/main/docs/ECOSYSTEMS.md#google-home-ecosystem)
-  to register your hub.
+- Google Home이 Matter 기기를 연결하려면 실제 Google Hub가 필요합니다. GH 앱만 사용해서는 충분하지 않습니다.
+- Google Home은 인증된 Matter 기기가 아니면 특정 조건에서 Matter 기기를 거부할 수 있습니다.
+  허브를 등록하려면
+  [이 가이드](https://github.com/project-chip/matter.js/blob/main/docs/ECOSYSTEMS.md#google-home-ecosystem)를
+  따라야 합니다.
 
-### Network setup
+### 네트워크 설정
 
-The Matter protocol is designed to work best with UDP and IPv6 within your local network. At the moment some
-manufacturers built their controllers to be compatible with IPv4, too, but this can break at any time with any update.
+Matter 프로토콜은 로컬 네트워크 내에서 UDP와 IPv6로 가장 잘 작동하도록 설계되었습니다. 현재 일부
+제조사는 컨트롤러를 IPv4와도 호환되도록 만들었지만, 이는 어떤 업데이트에서든 언제든지 중단될 수 있습니다.
 
-Many users report connection issues when using VLANs or firewalls, where HAMH and the assistant devices (Alexa, Google
-Home, ...) are not placed in the same network segment. Please make sure to review the
-[common connectivity issues](./guides/connectivity-issues.md).
+많은 사용자가 HAMH와 어시스턴트 기기(Alexa, Google Home 등)가 같은 네트워크 세그먼트에 있지 않은
+VLAN이나 방화벽을 사용할 때 연결 문제를 보고합니다. 반드시
+[일반적인 연결 문제](./guides/connectivity-issues.md)를 확인하세요.
 
-## What's New
+## 새로운 기능(What's New)
 
 <details>
 <summary><strong>📦 Stable (v2.0.46) - Current</strong></summary>
 
-**New in v2.0.46:**
+**v2.0.46 신규:**
 
-- ❄️ Opt-in **companion fan** for climate ACs: a per-entity toggle exposes the AC's fan as its own Matter fan endpoint, the setting is persisted, and fan-speed presets are now ordered low→high ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309))
-- 🌦️ **Weather domain support**: `weather.*` entities are exposed as a composed Temperature + Humidity + Pressure sensor read from the entity's attributes (pressure converted to hPa, shown on Google Home)
-- 🤖 **Vacuum service-area editing**: edit area data inline in Entity Mapping and dispatch room cleaning in batches, plus a batch-room-data fix ([#291](https://github.com/RiDDiX/home-assistant-matter-hub/issues/291))
-- 🔒 **Door Lock credential hardening**: safer access-code handling and fabric-index casting on the lock cluster ([#313](https://github.com/RiDDiX/home-assistant-matter-hub/issues/313))
-- ⚡ **Skip unchanged endpoints on HA updates**: only endpoints whose entity or a mapped sub-entity actually changed are refreshed, so CPU no longer scales with entity count × event rate ([#351](https://github.com/RiDDiX/home-assistant-matter-hub/issues/351))
-- 🔌 **Registry stays resilient when HA drops**: an initial reload failure no longer puts the add-on in a restart loop on a flaky HA boot, and a mid-flight "Connection lost" retries once ([#352](https://github.com/RiDDiX/home-assistant-matter-hub/issues/352))
-- 🔁 **RVC sessions refreshed safely** so vacuum reactors don't go stale ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287))
-- 🪟 **Tilt-only covers** use the tilt channel for lift commands ([#350](https://github.com/RiDDiX/home-assistant-matter-hub/issues/350))
-- 🔋 **Battery auto-mapping narrowed** to avoid false matches, plus support for enum battery states ([#359](https://github.com/RiDDiX/home-assistant-matter-hub/issues/359))
-- 🔘 **`automation` entities are momentary**: turning one on triggers it and snaps back to off ([#364](https://github.com/RiDDiX/home-assistant-matter-hub/issues/364))
-- 🌀 **Climate swing-mode handling fix**
-- 🚨 **Non-5540 Alexa bridge warning**: a bridge on any other port now warns, since Alexa only pairs on port 5540
-- 🧵 **matter.js 0.17.0**: upgraded from 0.16.11; the local LG-TV NOC-serial patch is dropped because upstream now tolerates 21-octet operational cert serials ([#305](https://github.com/RiDDiX/home-assistant-matter-hub/issues/305))
-- 🧰 Build/runtime fixes: `bun:sqlite` `constants` export stubbed so the esbuild bundle builds against matter.js 0.17.0, add-on heap flag preserved ([#358](https://github.com/RiDDiX/home-assistant-matter-hub/issues/358))
-- ⬆️ Dependency vulnerabilities resolved
-- 📝 Docs: `hvac_action` requirement for the Auto running-state display ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)), Google Home ModeSelect label gap ([#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356)), Alexa cover-routine limitation ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312)), and the new weather domain
+- ❄️ 냉방 에어컨용 옵션(opt-in) **동반 팬(companion fan)**: 엔티티별 토글로 에어컨의 팬을 자체 Matter 팬 엔드포인트로 노출하며, 설정이 유지되고 팬 속도 프리셋이 이제 낮은순→높은순으로 정렬됩니다 ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309))
+- 🌦️ **Weather 도메인 지원**: `weather.*` 엔티티가 엔티티 속성에서 읽은 온도 + 습도 + 압력 복합 센서로 노출됩니다(압력은 hPa로 변환되어 Google Home에 표시)
+- 🤖 **청소기 서비스 영역 편집**: Entity Mapping에서 영역 데이터를 인라인으로 편집하고 방 청소를 일괄로 디스패치할 수 있으며, 일괄 방 데이터 수정도 포함됩니다 ([#291](https://github.com/RiDDiX/home-assistant-matter-hub/issues/291))
+- 🔒 **도어 잠금 자격 증명 강화**: 더 안전한 액세스 코드 처리와 잠금 클러스터의 fabric-index 캐스팅 ([#313](https://github.com/RiDDiX/home-assistant-matter-hub/issues/313))
+- ⚡ **HA 업데이트 시 변경되지 않은 엔드포인트 건너뛰기**: 엔티티 또는 매핑된 하위 엔티티가 실제로 변경된 엔드포인트만 새로고침되므로, CPU 사용량이 더 이상 엔티티 수 × 이벤트 빈도에 비례해 증가하지 않습니다 ([#351](https://github.com/RiDDiX/home-assistant-matter-hub/issues/351))
+- 🔌 **HA 연결이 끊겨도 레지스트리가 탄력적으로 유지**: 초기 리로드 실패가 불안정한 HA 부팅 시 애드온을 재시작 루프에 빠뜨리지 않으며, 진행 중 "Connection lost"는 한 번 재시도합니다 ([#352](https://github.com/RiDDiX/home-assistant-matter-hub/issues/352))
+- 🔁 **RVC 세션이 안전하게 갱신**되어 청소기 리액터가 오래되지 않습니다 ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287))
+- 🪟 **틸트 전용 커버**는 리프트 명령에 틸트 채널을 사용합니다 ([#350](https://github.com/RiDDiX/home-assistant-matter-hub/issues/350))
+- 🔋 **배터리 자동 매핑 범위 축소**로 잘못된 매칭을 방지하고, enum 배터리 상태를 지원합니다 ([#359](https://github.com/RiDDiX/home-assistant-matter-hub/issues/359))
+- 🔘 **`automation` 엔티티는 순간적(momentary)입니다**: 켜면 트리거되고 다시 꺼짐으로 돌아옵니다 ([#364](https://github.com/RiDDiX/home-assistant-matter-hub/issues/364))
+- 🌀 **냉방 스윙 모드 처리 수정**
+- 🚨 **5540 이외 포트 Alexa 브리지 경고**: Alexa는 포트 5540에서만 페어링되므로, 다른 포트의 브리지는 이제 경고를 표시합니다
+- 🧵 **matter.js 0.17.0**: 0.16.11에서 업그레이드되었으며, 업스트림이 이제 21옥텟 운영 인증서 시리얼을 허용하므로 로컬 LG-TV NOC-serial 패치가 제거되었습니다 ([#305](https://github.com/RiDDiX/home-assistant-matter-hub/issues/305))
+- 🧰 빌드/런타임 수정: esbuild 번들이 matter.js 0.17.0에서 빌드되도록 `bun:sqlite`의 `constants` export를 스텁 처리하고, 애드온 힙 플래그가 유지됩니다 ([#358](https://github.com/RiDDiX/home-assistant-matter-hub/issues/358))
+- ⬆️ 의존성 취약점 해결
+- 📝 문서: Auto 실행 상태 표시를 위한 `hvac_action` 요구 사항 ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)), Google Home ModeSelect 레이블 공백 ([#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356)), Alexa 커버 루틴 제한 ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312)), 그리고 새 weather 도메인
 
-**Previously in v2.0.45 (hotfix release):**
+**이전 v2.0.45 (핫픽스 릴리스):**
 
-- ⌨️ Typed text now binds in the entity-id autocomplete, so a partial entity id isn't dropped when you pick a suggestion ([#348](https://github.com/RiDDiX/home-assistant-matter-hub/issues/348))
+- ⌨️ 입력한 텍스트가 이제 엔티티 id 자동 완성에 바인딩되어, 제안을 선택할 때 부분 엔티티 id가 사라지지 않습니다 ([#348](https://github.com/RiDDiX/home-assistant-matter-hub/issues/348))
 
-**Previously in v2.0.44:**
+**이전 v2.0.44:**
 
-- 🪟 Cover reliability overhaul: Matter state/target/current reports split and correctly ordered, deferred target writes de-duplicated, legacy position attributes dropped from updates, cluster profile aligned with the certified Eve blind, current position held during external motion ([#328](https://github.com/RiDDiX/home-assistant-matter-hub/issues/328))
-- 🎚️ Per-bridge and per-entity cover slider debounce, window widened to 300 ms for smoother slider control ([#331](https://github.com/RiDDiX/home-assistant-matter-hub/issues/331))
-- 🤖 Vacuum service-area handling: `customServiceAreas` preserved in dynamic `RvcRunMode` supported modes, custom areas dispatched sequentially, `currentArea` cleared on dock return and no longer inherited stale across restarts, `observedCleaning` set on every cleaning event ([#335](https://github.com/RiDDiX/home-assistant-matter-hub/issues/335))
-- 🔋 Docked vacuum stops reporting charging once the battery is full ([#334](https://github.com/RiDDiX/home-assistant-matter-hub/issues/334))
-- ❄️ Per-entity `climateKeepModeOnIdle` for off+idle ACs; mode kept through a cool→off transition, freeze applied immediately on off and cleared on `action=off` ([#340](https://github.com/RiDDiX/home-assistant-matter-hub/issues/340))
-- 🔁 Matter session rotation: opt-in per-bridge setting, aged sessions rotated, RVC clean-mode reactor goes offline correctly, `pushKeepalive` guarded on construction ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287))
-- 🧠 Heap-headroom and force-sync pressure guard to reduce memory pressure ([#347](https://github.com/RiDDiX/home-assistant-matter-hub/issues/347))
-- 🏷️ Per-entity `customVendorId` with Home Assistant device-registry serial fallback ([#290](https://github.com/RiDDiX/home-assistant-matter-hub/issues/290))
-- 🔢 `serialNumberSuffix` now loads when editing a bridge and is preserved when the serial is trimmed to 32 characters ([#330](https://github.com/RiDDiX/home-assistant-matter-hub/issues/330))
-- 🔍 Regex filters for entity and device labels, plus an `any_field_regex` matcher for grouped AND/OR filter rules ([#337](https://github.com/RiDDiX/home-assistant-matter-hub/issues/337))
-- ⌨️ Entity-id autocomplete in the filter-rule editor ([#338](https://github.com/RiDDiX/home-assistant-matter-hub/issues/338))
-- ⚡ Energy sensor endpoints default `activePower` to 0 and gain `PowerTopology` + `cumulativeEnergyImported` defaults ([#343](https://github.com/RiDDiX/home-assistant-matter-hub/issues/343))
-- ⏱️ Home Assistant WebSocket message timeout is now configurable, default raised to 60 s ([#341](https://github.com/RiDDiX/home-assistant-matter-hub/issues/341))
-- 🪟 `device_class=window` covers no longer emit `EndProductType.Unknown` ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312))
-- 🖼️ Bridge-icon existence check now uses the `/exists` endpoint instead of a HEAD probe ([#336](https://github.com/RiDDiX/home-assistant-matter-hub/issues/336))
-- 🌍 Polish translation update, credited to [@MStankiewiczOfficial](https://github.com/MStankiewiczOfficial) ([#329](https://github.com/RiDDiX/home-assistant-matter-hub/pull/329))
+- 🪟 커버 안정성 개편: Matter 상태/목표/현재 보고가 분리되고 올바르게 정렬되며, 지연된 목표 쓰기가 중복 제거되고, 레거시 위치 속성이 업데이트에서 제외되며, 클러스터 프로필이 인증된 Eve 블라인드에 맞춰지고, 외부 동작 중 현재 위치가 유지됩니다 ([#328](https://github.com/RiDDiX/home-assistant-matter-hub/issues/328))
+- 🎚️ 브리지별 및 엔티티별 커버 슬라이더 디바운스, 더 부드러운 슬라이더 제어를 위해 윈도우가 300ms로 확대되었습니다 ([#331](https://github.com/RiDDiX/home-assistant-matter-hub/issues/331))
+- 🤖 청소기 서비스 영역 처리: 동적 `RvcRunMode` 지원 모드에서 `customServiceAreas` 유지, 사용자 지정 영역 순차 디스패치, 도크 복귀 시 `currentArea` 초기화 및 재시작 간 오래된 값 미상속, 모든 청소 이벤트에 `observedCleaning` 설정 ([#335](https://github.com/RiDDiX/home-assistant-matter-hub/issues/335))
+- 🔋 도크에 있는 청소기는 배터리가 가득 차면 충전 보고를 중지합니다 ([#334](https://github.com/RiDDiX/home-assistant-matter-hub/issues/334))
+- ❄️ 꺼짐+유휴 에어컨을 위한 엔티티별 `climateKeepModeOnIdle`; cool→off 전환 동안 모드 유지, 꺼짐 시 즉시 동결 적용 및 `action=off`에서 해제 ([#340](https://github.com/RiDDiX/home-assistant-matter-hub/issues/340))
+- 🔁 Matter 세션 순환: 브리지별 옵션 설정, 오래된 세션 순환, RVC 청소 모드 리액터가 올바르게 오프라인 전환, 생성 시 `pushKeepalive` 보호 ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287))
+- 🧠 메모리 압박을 줄이기 위한 힙 여유 공간 및 force-sync 압박 보호 ([#347](https://github.com/RiDDiX/home-assistant-matter-hub/issues/347))
+- 🏷️ Home Assistant 기기 레지스트리 시리얼 폴백을 갖춘 엔티티별 `customVendorId` ([#290](https://github.com/RiDDiX/home-assistant-matter-hub/issues/290))
+- 🔢 `serialNumberSuffix`가 이제 브리지 편집 시 로드되며 시리얼이 32자로 잘릴 때 유지됩니다 ([#330](https://github.com/RiDDiX/home-assistant-matter-hub/issues/330))
+- 🔍 엔티티 및 기기 레이블에 대한 정규식 필터와, 그룹화된 AND/OR 필터 규칙을 위한 `any_field_regex` 매처 ([#337](https://github.com/RiDDiX/home-assistant-matter-hub/issues/337))
+- ⌨️ 필터 규칙 편집기의 엔티티 id 자동 완성 ([#338](https://github.com/RiDDiX/home-assistant-matter-hub/issues/338))
+- ⚡ 에너지 센서 엔드포인트의 `activePower` 기본값이 0으로 설정되고 `PowerTopology` + `cumulativeEnergyImported` 기본값이 추가됩니다 ([#343](https://github.com/RiDDiX/home-assistant-matter-hub/issues/343))
+- ⏱️ Home Assistant WebSocket 메시지 타임아웃을 이제 구성할 수 있으며 기본값이 60초로 상향되었습니다 ([#341](https://github.com/RiDDiX/home-assistant-matter-hub/issues/341))
+- 🪟 `device_class=window` 커버가 더 이상 `EndProductType.Unknown`을 내보내지 않습니다 ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312))
+- 🖼️ 브리지 아이콘 존재 확인이 이제 HEAD 프로브 대신 `/exists` 엔드포인트를 사용합니다 ([#336](https://github.com/RiDDiX/home-assistant-matter-hub/issues/336))
+- 🌍 폴란드어 번역 업데이트, [@MStankiewiczOfficial](https://github.com/MStankiewiczOfficial) 제공 ([#329](https://github.com/RiDDiX/home-assistant-matter-hub/pull/329))
 
-**Previously in v2.0.43:**
+**이전 v2.0.43:**
 
-- 🤖 Vacuum `currentArea` updates when cleaning is started outside HAMH ([#281](https://github.com/RiDDiX/home-assistant-matter-hub/issues/281))
-- 📡 Sensor reactors mark themselves offline when HA disconnects, so updates reach controllers on reconnect ([#327](https://github.com/RiDDiX/home-assistant-matter-hub/issues/327))
-- 🪟 Lift+tilt window coverings pick a valid Matter Type ([#323](https://github.com/RiDDiX/home-assistant-matter-hub/issues/323))
-- 🪟 Cover `device_class=window` maps to Rollershade ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312))
-- 🧹 UWANT and Xiaomi sweep/mop labels recognised, mop usage routed via `mode.vacuum_mop` ([#322](https://github.com/RiDDiX/home-assistant-matter-hub/issues/322))
-- 🤖 Vacuum identify falls back to a sibling identify button when `vacuum.locate` is unsupported ([#320](https://github.com/RiDDiX/home-assistant-matter-hub/issues/320))
-- ❄️ HA-auto AC `systemMode` stays put when `hvac_action` is idle, ha-auto-only ACs no longer expose Matter Auto ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309))
-- 🌡️ Climate setpoints snap to the entity `target_temp_step` ([#321](https://github.com/RiDDiX/home-assistant-matter-hub/issues/321))
-- 🛰️ matter.js controller traffic captured in `/api/logs`
-- 🇯🇵 Japanese translation by [@kimera257](https://github.com/kimera257) ([#325](https://github.com/RiDDiX/home-assistant-matter-hub/pull/325))
-- 📝 Docs note for the iPhone-only stuck-on-updating vacuum workaround ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287))
+- 🤖 HAMH 외부에서 청소가 시작되면 청소기 `currentArea`가 업데이트됩니다 ([#281](https://github.com/RiDDiX/home-assistant-matter-hub/issues/281))
+- 📡 센서 리액터가 HA 연결이 끊기면 스스로를 오프라인으로 표시하여, 재연결 시 업데이트가 컨트롤러에 도달합니다 ([#327](https://github.com/RiDDiX/home-assistant-matter-hub/issues/327))
+- 🪟 리프트+틸트 창문 커버링이 유효한 Matter Type을 선택합니다 ([#323](https://github.com/RiDDiX/home-assistant-matter-hub/issues/323))
+- 🪟 커버 `device_class=window`가 Rollershade로 매핑됩니다 ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312))
+- 🧹 UWANT 및 Xiaomi의 쓸기/걸레질 레이블이 인식되며, 걸레질 사용이 `mode.vacuum_mop`을 통해 라우팅됩니다 ([#322](https://github.com/RiDDiX/home-assistant-matter-hub/issues/322))
+- 🤖 `vacuum.locate`가 지원되지 않을 때 청소기 식별이 형제 식별 버튼으로 폴백됩니다 ([#320](https://github.com/RiDDiX/home-assistant-matter-hub/issues/320))
+- ❄️ `hvac_action`이 유휴일 때 HA-auto 에어컨의 `systemMode`가 유지되며, ha-auto 전용 에어컨은 더 이상 Matter Auto를 노출하지 않습니다 ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309))
+- 🌡️ 냉난방 설정값이 엔티티 `target_temp_step`에 맞춰 스냅됩니다 ([#321](https://github.com/RiDDiX/home-assistant-matter-hub/issues/321))
+- 🛰️ matter.js 컨트롤러 트래픽이 `/api/logs`에 기록됩니다
+- 🇯🇵 [@kimera257](https://github.com/kimera257)의 일본어 번역 ([#325](https://github.com/RiDDiX/home-assistant-matter-hub/pull/325))
+- 📝 iPhone 전용 "업데이트 중" 멈춤 청소기 우회 방법에 대한 문서 노트 ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287))
 
-**Previously in v2.0.42 (hotfix release):**
+**이전 v2.0.42 (핫픽스 릴리스):**
 
-- 🇯🇵 Aqara bridge registration no longer stalls, root `softwareVersionString` now matches the numeric `softwareVersion` ([#316](https://github.com/RiDDiX/home-assistant-matter-hub/issues/316))
-- ❄️ Climate `auto` mode is clamped to `heat`/`cool` on devices without an `AutoMode` base ([#319](https://github.com/RiDDiX/home-assistant-matter-hub/issues/319))
-- 🌀 Per-entity `disableClimateFanControl` mapping flag, falls back to `ThermostatDevice` when controllers like Aqara don't recognise `RoomAirConditioner` (`0x0072`) ([#318](https://github.com/RiDDiX/home-assistant-matter-hub/issues/318))
-- 🗺️ Vacuum service area `selectedAreas` is kept after dispatch instead of being cleared
+- 🇯🇵 Aqara 브리지 등록이 더 이상 멈추지 않으며, 루트 `softwareVersionString`이 이제 숫자 `softwareVersion`과 일치합니다 ([#316](https://github.com/RiDDiX/home-assistant-matter-hub/issues/316))
+- ❄️ `AutoMode` 베이스가 없는 기기에서 냉난방 `auto` 모드가 `heat`/`cool`로 고정됩니다 ([#319](https://github.com/RiDDiX/home-assistant-matter-hub/issues/319))
+- 🌀 엔티티별 `disableClimateFanControl` 매핑 플래그, Aqara 같은 컨트롤러가 `RoomAirConditioner`(`0x0072`)를 인식하지 못할 때 `ThermostatDevice`로 폴백합니다 ([#318](https://github.com/RiDDiX/home-assistant-matter-hub/issues/318))
+- 🗺️ 청소기 서비스 영역 `selectedAreas`가 디스패치 후 초기화되지 않고 유지됩니다
 
-**Previously in v2.0.41:**
+**이전 v2.0.41:**
 
-| Feature | Description |
+| 기능 | 설명 |
 |---------|-------------|
-| 🌡️ Google Home AC offline fix | `DeadFrontBehavior` on climate OnOff cluster so RoomAirConditioner stops showing offline on Google Home ([#302](https://github.com/RiDDiX/home-assistant-matter-hub/issues/302)) |
-| 🪟 Cover device_class mapping | Map HA `garage`/`gate`/`window`/`awning`/etc. to the matching Matter WindowCovering type so voice commands hit the right device type ([#304](https://github.com/RiDDiX/home-assistant-matter-hub/issues/304)) |
-| 📺 LG TV commissioning patch | Local patch on matter.js 0.16.11 to accept long NOC operational cert serials ([#305](https://github.com/RiDDiX/home-assistant-matter-hub/issues/305)) |
-| 💡 Alexa brightness-reset behind flag | Old Alexa brightness-reset heuristic moved behind `alexaPreserveBrightnessOnTurnOn`, default off, Apple Home "set room to 100%" works again ([#306](https://github.com/RiDDiX/home-assistant-matter-hub/issues/306)) |
-| 🌀 Google Home fan speed | Uses `fan.set_percentage` so already-on fans pick up speed changes from Google Home ([#308](https://github.com/RiDDiX/home-assistant-matter-hub/issues/308)) |
-| ❄️ Climate auto mode | Expose Matter Auto mode when HA reports `auto` in `hvac_modes` ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)) |
-| 🆔 Server-mode root identity | Root identity now applies as a single transaction, so controllers don't drop devices mid-swap ([#311](https://github.com/RiDDiX/home-assistant-matter-hub/issues/311)) |
-| 🪟 Lift-only blinds | No more `TiltBlindTiltOnly` on covers without tilt, fixes Alexa routines for roller blinds ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312)) |
-| 🏷️ Per-entity `disableClimateOnOff` | Turn off the OnOff cluster on climate endpoints per entity for controllers that prefer mode-only control |
-| 🔢 `serialNumberSuffix` per bridge | Append a suffix to every entity serial, useful if controllers like Aqara cache stale device data |
-| 📝 `protocolLogLevel` option | Quiet matter.js logs independently from the app log level |
-| 🖥️ Bridge HW/SW version strings | HA device-registry `hw_version`/`sw_version` now show up in Matter BasicInformation on server-mode endpoints |
-| 🎨 Extended color light: XY + enhancedColorMode | XY feature added as mandatory, `enhancedColorMode` mirrors `colorMode` |
-| 🎭 Groups + Scenes | Scenes and Groups clusters added on light, plug, and fan endpoints |
-| 💧 Boolean state configuration | Cluster added on leak, freeze, rain, and contact sensors |
-| 🌍 Spanish translation | New `es` locale ([#314](https://github.com/RiDDiX/home-assistant-matter-hub/pull/314), thanks [@Yllelder](https://github.com/Yllelder)) |
-| 🧵 Matter.js 0.16.11 (pinned) | Kept pinned, local NOC serial patch applied |
-| ⬆️ Dep bumps | Vite 8, jsdom 29, MUI x-tree-view 9, i18next 26, react-i18next 17, TypeScript 6.0.3, biome pinned 2.4.3, pnpm overrides for transitive CVEs |
+| 🌡️ Google Home 에어컨 오프라인 수정 | 냉난방 OnOff 클러스터에 `DeadFrontBehavior`를 적용해 RoomAirConditioner가 Google Home에서 오프라인으로 표시되지 않습니다 ([#302](https://github.com/RiDDiX/home-assistant-matter-hub/issues/302)) |
+| 🪟 커버 device_class 매핑 | HA `garage`/`gate`/`window`/`awning`/등을 일치하는 Matter WindowCovering 유형으로 매핑하여 음성 명령이 올바른 기기 유형에 도달합니다 ([#304](https://github.com/RiDDiX/home-assistant-matter-hub/issues/304)) |
+| 📺 LG TV 커미셔닝 패치 | 긴 NOC 운영 인증서 시리얼을 허용하기 위한 matter.js 0.16.11의 로컬 패치 ([#305](https://github.com/RiDDiX/home-assistant-matter-hub/issues/305)) |
+| 💡 플래그 뒤로 옮긴 Alexa 밝기 재설정 | 기존 Alexa 밝기 재설정 휴리스틱이 `alexaPreserveBrightnessOnTurnOn` 뒤로 이동(기본 꺼짐), Apple Home "방을 100%로 설정"이 다시 작동합니다 ([#306](https://github.com/RiDDiX/home-assistant-matter-hub/issues/306)) |
+| 🌀 Google Home 팬 속도 | `fan.set_percentage`를 사용해 이미 켜진 팬이 Google Home의 속도 변경을 반영합니다 ([#308](https://github.com/RiDDiX/home-assistant-matter-hub/issues/308)) |
+| ❄️ 냉난방 auto 모드 | HA가 `hvac_modes`에 `auto`를 보고할 때 Matter Auto 모드를 노출합니다 ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)) |
+| 🆔 서버 모드 루트 ID | 루트 ID가 이제 단일 트랜잭션으로 적용되어, 컨트롤러가 교체 중 기기를 떨어뜨리지 않습니다 ([#311](https://github.com/RiDDiX/home-assistant-matter-hub/issues/311)) |
+| 🪟 리프트 전용 블라인드 | 틸트가 없는 커버에 더 이상 `TiltBlindTiltOnly`를 적용하지 않아 롤러 블라인드의 Alexa 루틴이 수정됩니다 ([#312](https://github.com/RiDDiX/home-assistant-matter-hub/issues/312)) |
+| 🏷️ 엔티티별 `disableClimateOnOff` | 모드 전용 제어를 선호하는 컨트롤러를 위해 엔티티별로 냉난방 엔드포인트의 OnOff 클러스터를 끕니다 |
+| 🔢 브리지별 `serialNumberSuffix` | 모든 엔티티 시리얼에 접미사를 추가합니다. Aqara 같은 컨트롤러가 오래된 기기 데이터를 캐시할 때 유용합니다 |
+| 📝 `protocolLogLevel` 옵션 | 앱 로그 레벨과 독립적으로 matter.js 로그를 조용하게 만듭니다 |
+| 🖥️ 브리지 HW/SW 버전 문자열 | HA 기기 레지스트리의 `hw_version`/`sw_version`이 이제 서버 모드 엔드포인트의 Matter BasicInformation에 표시됩니다 |
+| 🎨 확장 컬러 조명: XY + enhancedColorMode | XY 기능이 필수로 추가되고, `enhancedColorMode`가 `colorMode`를 미러링합니다 |
+| 🎭 Groups + Scenes | 조명, 플러그, 팬 엔드포인트에 Scenes 및 Groups 클러스터가 추가되었습니다 |
+| 💧 Boolean state 구성 | 누수, 결빙, 비, 접촉 센서에 클러스터가 추가되었습니다 |
+| 🌍 스페인어 번역 | 새 `es` 로케일 ([#314](https://github.com/RiDDiX/home-assistant-matter-hub/pull/314), [@Yllelder](https://github.com/Yllelder) 감사) |
+| 🧵 Matter.js 0.16.11 (고정) | 고정 유지, 로컬 NOC 시리얼 패치 적용 |
+| ⬆️ 의존성 업그레이드 | Vite 8, jsdom 29, MUI x-tree-view 9, i18next 26, react-i18next 17, TypeScript 6.0.3, biome 2.4.3 고정, 전이 CVE에 대한 pnpm 오버라이드 |
 
-**Reliability & resilience:** parallel bridge stop in `stopAll`/`restartAll`, parallel HA registry fetches, serialized bridge start/stop lifecycle, serialized `updateStates` with plugin listener detach, HA reconnect retry on transient network errors, 30s timeout on `sendMessagePromise`, port-conflict reject on web-api start, graceful shutdown on `/api/backup/restart`, `AppEnvironment` disposal on SIGINT, stale optimistic state sweep, pending debouncer clear, healthcheck 401 fix under basic auth, deep-equal entity attribute comparison, overlap guard for auto-refresh, safer mireds conversion, aligned `colorMode` publishing, surfaced bridge import errors, corrected thermostat running state for unknown modes + drying, unified Node version across Dockerfiles, sourcemaps excluded from npm tarball, unused deps dropped (rxjs, strip-color, lodash), unused `config-validator` utility removed.
+**안정성 및 복원력:** `stopAll`/`restartAll`에서 병렬 브리지 중지, 병렬 HA 레지스트리 가져오기, 직렬화된 브리지 시작/중지 라이프사이클, 플러그인 리스너 분리를 포함한 직렬화된 `updateStates`, 일시적 네트워크 오류 시 HA 재연결 재시도, `sendMessagePromise`에 30초 타임아웃, web-api 시작 시 포트 충돌 거부, `/api/backup/restart`에서 정상 종료, SIGINT 시 `AppEnvironment` 정리, 오래된 낙관적 상태 정리, 대기 중인 디바운서 정리, 기본 인증에서 헬스체크 401 수정, 엔티티 속성 깊은 비교(deep-equal), 자동 새로고침 중복 보호, 더 안전한 mireds 변환, 정렬된 `colorMode` 게시, 브리지 가져오기 오류 표면화, 알 수 없는 모드 + 건조에 대한 온도조절기 실행 상태 수정, Dockerfile 전반의 Node 버전 통일, npm tarball에서 소스맵 제외, 사용되지 않는 의존성 제거(rxjs, strip-color, lodash), 사용되지 않는 `config-validator` 유틸리티 제거.
 
-**Previously in v2.0.39 & v2.0.40 (hotfix releases):**
-- Fixed crash loop on startup caused by Node 22 native WebSocket dropping connections ([#297](https://github.com/RiDDiX/home-assistant-matter-hub/issues/297), [#299](https://github.com/RiDDiX/home-assistant-matter-hub/issues/299)), affects both aarch64 (RPi) and amd64
-- Fixed service initialization errors being silently swallowed, causing the process to hang instead of exiting
-- Registry fetch now waits for WebSocket reconnect between retries and has increased retry tolerance
-- Fixed `select`, `input_select`, `siren` domains showing as unsupported in filter preview ([#298](https://github.com/RiDDiX/home-assistant-matter-hub/issues/298))
+**이전 v2.0.39 & v2.0.40 (핫픽스 릴리스):**
+- Node 22 네이티브 WebSocket이 연결을 끊어 발생하는 시작 시 크래시 루프 수정 ([#297](https://github.com/RiDDiX/home-assistant-matter-hub/issues/297), [#299](https://github.com/RiDDiX/home-assistant-matter-hub/issues/299)), aarch64(RPi)와 amd64 모두에 영향
+- 서비스 초기화 오류가 조용히 삼켜져 프로세스가 종료되지 않고 멈추던 문제 수정
+- 레지스트리 가져오기가 이제 재시도 사이에 WebSocket 재연결을 기다리며 재시도 허용치가 늘어났습니다
+- 필터 미리보기에서 `select`, `input_select`, `siren` 도메인이 지원되지 않음으로 표시되던 문제 수정 ([#298](https://github.com/RiDDiX/home-assistant-matter-hub/issues/298))
 
-**Previously in v2.0.38:**
+**이전 v2.0.38:**
 
-| Feature | Description |
+| 기능 | 설명 |
 |---------|-------------|
-| **🏷️ Per-Entity Identity Overrides** | `customProductName`, `customVendorName`, `customSerialNumber` per entity mapping ([#277](https://github.com/RiDDiX/home-assistant-matter-hub/issues/277), [#290](https://github.com/RiDDiX/home-assistant-matter-hub/issues/290)) |
-| **🪟 Garage & Gate Open/Close** | Discrete Open/Close mode for garage and gate covers ([#55](https://github.com/RiDDiX/home-assistant-matter-hub/issues/55)) |
-| **🚿 Dishwasher Device Type** | Dishwasher override for switch entities |
-| **🚨 Siren Support** | Siren domain as OnOff Plug-in Unit |
-| **🏷️ productNameFromNodeLabel Flag** | Report node label as Matter productName for Aqara controllers |
-| **🤖 Vacuum Room Progress** | Dynamic room progress tracking via `currentRoomEntity` sensor |
-| **⚡ Startup Force Sync** | Immediate force sync on startup to beat stale Alexa queues ([#282](https://github.com/RiDDiX/home-assistant-matter-hub/pull/282)) |
-| **🌐 Network Diagnostic API** | mDNS/network diagnostic endpoint with dashboard card |
-| **🔌 Energy on Composed Devices** | Energy/power measurement clusters on composed endpoints |
-| **🩺 Multi-Admin Fabric Diagnostics** | Per-fabric session info in health API |
-| **🩺 Docker HEALTHCHECK** | Native healthcheck in standalone and addon images |
-| **🔒 Admin Password Hashing** | Admin password stored hashed, `timingSafeEqual` for lock PIN verification |
-| **🧵 Matter.js 0.16.11** | Updated Matter stack |
-| **🌍 Polish + Traditional Chinese** | New `pl` and `zh-tw` locales |
+| **🏷️ 엔티티별 ID 재정의** | 엔티티 매핑별 `customProductName`, `customVendorName`, `customSerialNumber` ([#277](https://github.com/RiDDiX/home-assistant-matter-hub/issues/277), [#290](https://github.com/RiDDiX/home-assistant-matter-hub/issues/290)) |
+| **🪟 차고 & 게이트 열기/닫기** | 차고 및 게이트 커버를 위한 개별 열기/닫기 모드 ([#55](https://github.com/RiDDiX/home-assistant-matter-hub/issues/55)) |
+| **🚿 식기세척기 기기 유형** | 스위치 엔티티에 대한 식기세척기 재정의 |
+| **🚨 사이렌 지원** | 사이렌 도메인을 OnOff Plug-in Unit으로 지원 |
+| **🏷️ productNameFromNodeLabel 플래그** | Aqara 컨트롤러를 위해 노드 레이블을 Matter productName으로 보고 |
+| **🤖 청소기 방 진행 상황** | `currentRoomEntity` 센서를 통한 동적 방 진행 상황 추적 |
+| **⚡ 시작 시 강제 동기화** | 오래된 Alexa 큐를 앞지르기 위해 시작 시 즉시 강제 동기화 ([#282](https://github.com/RiDDiX/home-assistant-matter-hub/pull/282)) |
+| **🌐 네트워크 진단 API** | 대시보드 카드를 갖춘 mDNS/네트워크 진단 엔드포인트 |
+| **🔌 복합 기기의 에너지** | 복합 엔드포인트의 에너지/전력 측정 클러스터 |
+| **🩺 다중 관리자 패브릭 진단** | 헬스 API의 패브릭별 세션 정보 |
+| **🩺 Docker HEALTHCHECK** | 독립형 및 애드온 이미지의 네이티브 헬스체크 |
+| **🔒 관리자 비밀번호 해싱** | 관리자 비밀번호를 해시로 저장, 잠금 PIN 검증을 위한 `timingSafeEqual` |
+| **🧵 Matter.js 0.16.11** | 업데이트된 Matter 스택 |
+| **🌍 폴란드어 + 번체 중국어** | 새 `pl` 및 `zh-tw` 로케일 |
 
-**Fix highlights:** vacuum keepalive for Apple Home "Updating…" ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287)), multi-phase clean progress ([#281](https://github.com/RiDDiX/home-assistant-matter-hub/issues/281)), GenericSwitch single/multi split for Apple Home buttons ([#289](https://github.com/RiDDiX/home-assistant-matter-hub/issues/289)), HA restart attribute guards ([#286](https://github.com/RiDDiX/home-assistant-matter-hub/issues/286)), fan speed restore on turn-on ([#275](https://github.com/RiDDiX/home-assistant-matter-hub/issues/275)), moisture sensor auto-map to HumiditySensor ([#273](https://github.com/RiDDiX/home-assistant-matter-hub/issues/273)), TV speaker override ([#293](https://github.com/RiDDiX/home-assistant-matter-hub/issues/293)), rain + radon sensor auto-mapping, composed sub-endpoint cleanup.
+**주요 수정:** Apple Home "Updating…"을 위한 청소기 keepalive ([#287](https://github.com/RiDDiX/home-assistant-matter-hub/issues/287)), 다단계 청소 진행 상황 ([#281](https://github.com/RiDDiX/home-assistant-matter-hub/issues/281)), Apple Home 버튼을 위한 GenericSwitch 단일/다중 분리 ([#289](https://github.com/RiDDiX/home-assistant-matter-hub/issues/289)), HA 재시작 속성 보호 ([#286](https://github.com/RiDDiX/home-assistant-matter-hub/issues/286)), 켤 때 팬 속도 복원 ([#275](https://github.com/RiDDiX/home-assistant-matter-hub/issues/275)), 습기 센서 HumiditySensor 자동 매핑 ([#273](https://github.com/RiDDiX/home-assistant-matter-hub/issues/273)), TV 스피커 재정의 ([#293](https://github.com/RiDDiX/home-assistant-matter-hub/issues/293)), 비 + 라돈 센서 자동 매핑, 복합 하위 엔드포인트 정리.
 
-**Previously in v2.0.36:**
+**이전 v2.0.36:**
 
-| Feature | Description |
+| 기능 | 설명 |
 |---------|-------------|
-| **🏗️ User-Defined Composed Devices** | Create custom composed devices via composedEntities mapping ([#220](https://github.com/RiDDiX/home-assistant-matter-hub/issues/220)) |
-| **🔌 Plugin Domain Mappings** | Domain mapping support in plugin API with cloud-mock example |
-| **🔋 Valve & Pump Battery** | Battery support for valve and pump endpoints |
-| **🌐 German + Russian Translations** | Complete German translation and new Russian language |
-| **📡 Session Recovery** | Graceful session close, dead session cleanup, mDNS re-announcement ([#266](https://github.com/RiDDiX/home-assistant-matter-hub/issues/266)) |
-| **🔗 Quick Link to Failed Devices** | Dashboard quick link to failed devices ([#270](https://github.com/RiDDiX/home-assistant-matter-hub/issues/270)) |
-| **🌡️ Thermostat Fix** | Skip climate.turn_on when already on ([#269](https://github.com/RiDDiX/home-assistant-matter-hub/issues/269)) |
-| **🪟 Cover Fix** | Correct stale targetPosition during external movement ([#268](https://github.com/RiDDiX/home-assistant-matter-hub/issues/268)) |
-| **🌬️ Air Purifier Fix** | Sub-endpoints for composed air purifier, manual temp/humidity mapping ([#265](https://github.com/RiDDiX/home-assistant-matter-hub/issues/265)) |
-| **🔥 Cooling-Only Thermostat Fix** | Prevent HeatingOnly on cooling-only thermostat ([#264](https://github.com/RiDDiX/home-assistant-matter-hub/issues/264)) |
-| **↔️ Per-Entity Cover Swap** | Individual coverSwapOpenClose per cover ([#263](https://github.com/RiDDiX/home-assistant-matter-hub/issues/263)) |
+| **🏗️ 사용자 정의 복합 기기** | composedEntities 매핑을 통한 사용자 지정 복합 기기 생성 ([#220](https://github.com/RiDDiX/home-assistant-matter-hub/issues/220)) |
+| **🔌 플러그인 도메인 매핑** | cloud-mock 예제를 갖춘 플러그인 API의 도메인 매핑 지원 |
+| **🔋 밸브 & 펌프 배터리** | 밸브 및 펌프 엔드포인트의 배터리 지원 |
+| **🌐 독일어 + 러시아어 번역** | 완전한 독일어 번역 및 새 러시아어 |
+| **📡 세션 복구** | 정상적인 세션 종료, 죽은 세션 정리, mDNS 재공지 ([#266](https://github.com/RiDDiX/home-assistant-matter-hub/issues/266)) |
+| **🔗 실패한 기기로 바로 가기** | 대시보드에서 실패한 기기로 바로 가는 링크 ([#270](https://github.com/RiDDiX/home-assistant-matter-hub/issues/270)) |
+| **🌡️ 온도조절기 수정** | 이미 켜져 있을 때 climate.turn_on 건너뛰기 ([#269](https://github.com/RiDDiX/home-assistant-matter-hub/issues/269)) |
+| **🪟 커버 수정** | 외부 이동 중 오래된 targetPosition 수정 ([#268](https://github.com/RiDDiX/home-assistant-matter-hub/issues/268)) |
+| **🌬️ 공기청정기 수정** | 복합 공기청정기를 위한 하위 엔드포인트, 수동 온도/습도 매핑 ([#265](https://github.com/RiDDiX/home-assistant-matter-hub/issues/265)) |
+| **🔥 냉방 전용 온도조절기 수정** | 냉방 전용 온도조절기에서 HeatingOnly 방지 ([#264](https://github.com/RiDDiX/home-assistant-matter-hub/issues/264)) |
+| **↔️ 엔티티별 커버 스왑** | 커버별 개별 coverSwapOpenClose ([#263](https://github.com/RiDDiX/home-assistant-matter-hub/issues/263)) |
 
 </details>
 
 <details>
 <summary><strong>🧪 Alpha (v2.1.0-alpha.x)</strong></summary>
 
-**Alpha is currently level with Stable (v2.0.46).** All alpha work up to the latest pre-release has been promoted into v2.0.46. New alpha work continues from the next pre-release tag onward and will appear here as development progresses. See the [Alpha Features Guide](./guides/alpha-features.md) for installation instructions.
+**현재 Alpha는 Stable(v2.0.46)과 동일한 수준입니다.** 최신 사전 릴리스까지의 모든 알파 작업이 v2.0.46으로 승격되었습니다. 새로운 알파 작업은 다음 사전 릴리스 태그부터 이어지며 개발이 진행됨에 따라 여기에 표시됩니다. 설치 방법은 [Alpha 기능 가이드](./guides/alpha-features.md)를 참조하세요.
 
 </details>
 
 <details>
-<summary><strong>📋 Previous Versions</strong></summary>
+<summary><strong>📋 이전 버전</strong></summary>
 
 ### v2.0.40
-Filter preview domain fix, `select`, `input_select`, `siren` now show as supported ([#298](https://github.com/RiDDiX/home-assistant-matter-hub/issues/298))
+필터 미리보기 도메인 수정, `select`, `input_select`, `siren`이 이제 지원됨으로 표시됩니다 ([#298](https://github.com/RiDDiX/home-assistant-matter-hub/issues/298))
 
 ### v2.0.39
-Node 22 WebSocket crash loop fix ([#297](https://github.com/RiDDiX/home-assistant-matter-hub/issues/297), [#299](https://github.com/RiDDiX/home-assistant-matter-hub/issues/299)), service init error surfacing, registry retry hardening, support link added
+Node 22 WebSocket 크래시 루프 수정 ([#297](https://github.com/RiDDiX/home-assistant-matter-hub/issues/297), [#299](https://github.com/RiDDiX/home-assistant-matter-hub/issues/299)), 서비스 초기화 오류 표면화, 레지스트리 재시도 강화, 지원 링크 추가
 
 ### v2.0.37
-Aqara productNameFromNodeLabel flag, Matter.js 0.16.11, Swedish locale update
+Aqara productNameFromNodeLabel 플래그, Matter.js 0.16.11, 스웨덴어 로케일 업데이트
 
 ### v2.0.35
-HA 2026.3 Clean Area Support, Valetudo Identifier Mapping, Plugin System Hardening, Registry Fingerprint Fix, Roomba Battery Fix, Contact Sensor Fix, Script Momentary Fix, Docusaurus Docs
+HA 2026.3 Clean Area 지원, Valetudo 식별자 매핑, 플러그인 시스템 강화, 레지스트리 핑거프린트 수정, Roomba 배터리 수정, 접촉 센서 수정, 스크립트 순간(momentary) 수정, Docusaurus 문서
 
 ### v2.0.34
-Automatic Backup, Vacuum Battery Auto-Map, Deprecated Feature Flags Fix
+자동 백업, 청소기 배터리 자동 매핑, 사용 중단된 기능 플래그 수정
 
 ### v2.0.33
-Endpoint Number Preservation, Binary Sensor Battery Auto-Map
+엔드포인트 번호 보존, 바이너리 센서 배터리 자동 매핑
 
 ### v2.0.32
-Multi-Language Support, Plugin System, New Device Types (PIR, Rain, Electrical, AQ Sensors), Cluster Diagnostics, Dashboard Enhancements, Mapping Profile Export/Import, Fan & Air Purifier Fixes, Stale Session Cleanup, KNX Cover Fix
+다국어 지원, 플러그인 시스템, 새 기기 유형(PIR, 비, 전기, AQ 센서), 클러스터 진단, 대시보드 개선, 매핑 프로필 내보내기/가져오기, 팬 & 공기청정기 수정, 오래된 세션 정리, KNX 커버 수정
 
 ### v2.0.31
-Controller Profiles & Area Setup, Fan Speed/Preset Fix, Optimistic State Fix, Cover Target Fix, Humidity Auto-Mapping Default
+컨트롤러 프로필 & 영역 설정, 팬 속도/프리셋 수정, 낙관적 상태 수정, 커버 목표 수정, 습도 자동 매핑 기본값
 
 ### v2.0.30
-Mapped Entity Propagation Fix, API Error Surfacing
+매핑된 엔티티 전파 수정, API 오류 표면화
 
 ### v2.0.29
-Light currentLevel Fix, Bridge Config Save Fix, Fan Device Feature Fix, Humidity Auto-Mapping Fix
+조명 currentLevel 수정, 브리지 구성 저장 수정, 팬 기기 기능 수정, 습도 자동 매핑 수정
 
 ### v2.0.28
-Device Image Support, Custom Fan Speed Mapping, TV Source Selection, Reverse Proxy Base Path, On/Off-Only Fans, Light Brightness Fix, Fan Speed Fixes, Composed Air Purifier Fix, Dreame Multi-Floor Fix, Optimistic State Updates, Frontend Improvements
+기기 이미지 지원, 사용자 지정 팬 속도 매핑, TV 소스 선택, 리버스 프록시 기본 경로, On/Off 전용 팬, 조명 밝기 수정, 팬 속도 수정, 복합 공기청정기 수정, Dreame 다층 수정, 낙관적 상태 업데이트, 프런트엔드 개선
 
 ### v2.0.27
-Valetudo support, Custom Service Areas, ServiceArea Maps, Vacuum Identify/Locate/Charging, Alarm Control Panel, Composed Air Purifier, Dashboard Controls, Vendor Brand Icons, Thermostat fixes, Air Purifier oscillation/wind
+Valetudo 지원, 사용자 지정 서비스 영역, ServiceArea 맵, 청소기 식별/위치 찾기/충전, 경보 제어 패널, 복합 공기청정기, 대시보드 제어, 벤더 브랜드 아이콘, 온도조절기 수정, 공기청정기 회전/바람
 
 ### v2.0.26
-Authentication UI, Select entity support, Webhook event bridge, Cluster diagnostics, Matter.js 0.16.10, Docker Node 22, vacuum cleaning mode fallback, vacuum entity filter fix
+인증 UI, Select 엔티티 지원, 웹훅 이벤트 브리지, 클러스터 진단, Matter.js 0.16.10, Docker Node 22, 청소기 청소 모드 폴백, 청소기 엔티티 필터 수정
 
 ### v2.0.25
-Vacuum mop intensity, vacuum auto-detection, Roborock room auto-detect, live entity mapping, dynamic heap sizing, multi-fabric commissioning, fan speed label fix
+청소기 걸레질 강도, 청소기 자동 감지, Roborock 방 자동 감지, 실시간 엔티티 매핑, 동적 힙 크기 조정, 다중 패브릭 커미셔닝, 팬 속도 레이블 수정
 
 ### v2.0.24
-Dashboard landing page, composed devices, bridge wizard feature flags, entity autocomplete, light transitions, live diagnostics, vacuum suction level, thermostat auto-resume, vacuum docked state, memory leak fix
+대시보드 랜딩 페이지, 복합 기기, 브리지 마법사 기능 플래그, 엔티티 자동 완성, 조명 전환, 실시간 진단, 청소기 흡입 레벨, 온도조절기 자동 재개, 청소기 도크 상태, 메모리 누수 수정
 
 ### v2.0.19-v2.0.23
-Bridge templates, live filter preview, entity diagnostics, multi-bridge bulk operations, entity health indicators, diagnostic export, EntityLabel/DeviceLabel filters, Power & Energy Measurement, Event domain (GenericSwitch)
+브리지 템플릿, 실시간 필터 미리보기, 엔티티 진단, 다중 브리지 일괄 작업, 엔티티 상태 표시기, 진단 내보내기, EntityLabel/DeviceLabel 필터, 전력 & 에너지 측정, 이벤트 도메인(GenericSwitch)
 
 ### v2.0.17 / v2.0.18
-Room Label (FixedLabel), thermostat overhaul, lock unlatch/unbolt, binary sensor fix, auto pressure mapping, vacuum fixes, dead session recovery, network map, mobile UI, Labels & Areas page, crash resilience, memory limit
+방 레이블(FixedLabel), 온도조절기 개편, 잠금 unlatch/unbolt, 바이너리 센서 수정, 자동 압력 매핑, 청소기 수정, 죽은 세션 복구, 네트워크 맵, 모바일 UI, Labels & Areas 페이지, 크래시 복원력, 메모리 제한
 
 ### v2.0.16
-Force Sync, Lock PIN, Cover/Blinds improvements, Roborock Rooms, Auto Entity Grouping, Water Heater, Vacuum Server Mode, OOM fix
+강제 동기화, 잠금 PIN, 커버/블라인드 개선, Roborock 방, 자동 엔티티 그룹화, 온수기, 청소기 서버 모드, OOM 수정
 
 ### v1.10.4
-Climate/Thermostat fixes, Cover position fix, Vacuum battery, Humidifier improvements, Entity Mapping, Alexa brightness preserve
+냉난방/온도조절기 수정, 커버 위치 수정, 청소기 배터리, 가습기 개선, 엔티티 매핑, Alexa 밝기 유지
 
 ### v1.9.0
-Custom bridge icons, Basic Video Player (TV), Alexa deduplication, Auto-only thermostat, Health Check API, WebSocket, Full backup/restore
+사용자 지정 브리지 아이콘, 기본 비디오 플레이어(TV), Alexa 중복 제거, Auto 전용 온도조절기, 헬스 체크 API, WebSocket, 전체 백업/복원
 
 ### v1.8.x
-Graceful crash handler, PM2.5/PM10 sensors, Water Valve, Smoke/CO Detector, Pressure/Flow sensors, Air Purifier, Pump device
+정상 크래시 핸들러, PM2.5/PM10 센서, 워터 밸브, 연기/CO 감지기, 압력/유량 센서, 공기청정기, 펌프 기기
 
 ### v1.7.x
-Dark Mode toggle, Device list sorting
+다크 모드 토글, 기기 목록 정렬
 
 ### v1.5.x
-Matter Bridge, Multi-Fabric support, Health Monitoring, Bridge Wizard, AirQuality sensors, Fan control, Media playback
+Matter 브리지, 다중 패브릭 지원, 상태 모니터링, 브리지 마법사, AirQuality 센서, 팬 제어, 미디어 재생
 
 </details>
 
-## Getting started
+## 시작하기
 
-To get things up and running, please follow the [installation guide](./getting-started/installation.md).
+설정을 진행하려면 [설치 가이드](./getting-started/installation.md)를 따르세요.
 
-## Additional Resources
+## 추가 자료
 
-If you need more assistance on the topic, please have a look at the following external resources:
+이 주제에 대해 더 많은 도움이 필요하면 다음 외부 자료를 참조하세요:
 
-### Videos
+### 동영상
 
-#### YouTube-Video on "HA Matter HUB/BRIDGE 😲 👉 Das ändert alles für ALEXA und GOOGLE Nutzer" (🇩🇪)
+#### "HA Matter HUB/BRIDGE 😲 👉 Das ändert alles für ALEXA und GOOGLE Nutzer" YouTube 동영상 (🇩🇪)
 
 [![HA Matter HUB/BRIDGE 😲 👉 Das ändert alles für ALEXA und GOOGLE Nutzer](https://img.youtube.com/vi/yOkPzEzuVhM/mqdefault.jpg)](https://www.youtube.com/watch?v=yOkPzEzuVhM)
 
-#### YouTube-Video on "Alexa et Google Home dans Home Assistant GRATUITEMENT grâce à Matter" (🇫🇷)
+#### "Alexa et Google Home dans Home Assistant GRATUITEMENT grâce à Matter" YouTube 동영상 (🇫🇷)
 
 [![Alexa et Google Home dans Home Assistant GRATUITEMENT grâce à Matter](https://img.youtube.com/vi/-TMzuHFo_-g/mqdefault.jpg)](https://www.youtube.com/watch?v=-TMzuHFo_-g)
 
-## Support the Project
+## 프로젝트 후원하기
 
-> **This is completely optional!** The project will continue regardless of donations.
-> I maintain this in my free time because I believe in open source and helping the community.
+> **이것은 전적으로 선택 사항입니다!** 이 프로젝트는 후원 여부와 관계없이 계속됩니다.
+> 저는 오픈소스와 커뮤니티에 기여하는 것을 믿기에 여가 시간에 이 프로젝트를 유지보수합니다.
 
-If you find this project useful and want to support its development, consider buying me a coffee! ☕
+이 프로젝트가 유용하다고 생각하고 개발을 지원하고 싶다면, 커피 한 잔 사주시는 것을 고려해 주세요! ☕
 
 [![PayPal](https://img.shields.io/badge/PayPal-Donate-blue?logo=paypal)](https://www.paypal.me/RiDDiX93)
 
-Maintaining this project takes time and effort - from fixing bugs, adding new features, to helping users in issues.
-Your support is appreciated but never expected. Thank you for using Home-Assistant-Matter-Hub! ❤️
+이 프로젝트를 유지보수하는 데는 버그 수정, 새 기능 추가부터 이슈에서 사용자를 돕는 것까지 시간과 노력이 듭니다.
+여러분의 후원은 감사하지만 결코 당연한 것으로 여기지 않습니다. Home-Assistant-Matter-Hub를 사용해 주셔서 감사합니다! ❤️

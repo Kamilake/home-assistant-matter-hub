@@ -1,47 +1,47 @@
-# Installation
+# 설치
 
-This application can be installed in different ways:
+이 애플리케이션은 여러 가지 방법으로 설치할 수 있습니다:
 
-1. Home-Assistant AddOn for Home Assistant OS (preferred)
-2. Manual Deployment
-   1. Ready to use Docker Image
-   2. Manual installation using `npm`
-   3. Configuration options
+1. Home Assistant OS용 Home-Assistant 애드온 (권장)
+2. 수동 배포
+   1. 바로 사용 가능한 Docker 이미지
+   2. `npm`을 사용한 수동 설치
+   3. 구성 옵션
 
 > [!WARNING]
-> In order to successfully use this application, you need to ensure IPv6 is enabled properly.
-> In addition, the matter protocol is relying on mDNS and UDP. If you are using VLANs you need
-> to make sure that UDP (especially mDNS) packages are routed properly.
+> 이 애플리케이션을 성공적으로 사용하려면 IPv6가 제대로 활성화되어 있는지 확인해야 합니다.
+> 또한 Matter 프로토콜은 mDNS와 UDP에 의존합니다. VLAN을 사용하는 경우
+> UDP(특히 mDNS) 패킷이 올바르게 라우팅되도록 해야 합니다.
 >
-> If you are facing issues, make sure to look at the [troubleshooting guide](../guides/connectivity-issues.md).
+> 문제가 발생하면 [문제 해결 가이드](../guides/connectivity-issues.md)를 확인하세요.
 
-## 1. Native Home-Assistant AddOn
+## 1. 네이티브 Home-Assistant 애드온
 
 > [!WARNING]
-> Home Assistant AddOns can only be used with Home Assistant OS.
+> Home Assistant 애드온은 Home Assistant OS에서만 사용할 수 있습니다.
 
-Simply add the following GitHub Repository URL to your Home Assistant AddOn Store.
+다음 GitHub 저장소 URL을 Home Assistant 애드온 스토어에 추가하기만 하면 됩니다.
 
 > https://github.com/riddix/home-assistant-addons
 
-1. Open the UI of your Home Assistant instance
-2. Go to `Settings` -> `Add-Ons` -> `Add-On Store`
-3. Click the three dots in the top-right corner and select `Repositories`
-4. Paste the repository URL into the text-field and click "Add"
-5. Refresh your Add-On Store and Install the Add-On
-6. You can configure the log level in the AddOn configuration page
-7. Click "Start" to start the addon
-8. Follow the [Bridge configuration guide](./bridge-configuration.md)
+1. Home Assistant 인스턴스의 UI를 엽니다
+2. `Settings` -> `Add-Ons` -> `Add-On Store`로 이동합니다
+3. 우측 상단의 점 세 개를 클릭하고 `Repositories`를 선택합니다
+4. 텍스트 필드에 저장소 URL을 붙여넣고 "Add"를 클릭합니다
+5. 애드온 스토어를 새로고침하고 애드온을 설치합니다
+6. 애드온 구성 페이지에서 로그 레벨을 설정할 수 있습니다
+7. "Start"를 클릭해 애드온을 시작합니다
+8. [브리지 구성 가이드](./bridge-configuration.md)를 따릅니다
 
-## 2. Manual Deployment
+## 2. 수동 배포
 
-### 2.1 Docker Image
+### 2.1 Docker 이미지
 
 > [!WARNING]
-> Make sure your docker installation has IPv6 enabled, too.
-> See [this guide](https://fariszr.com/docker-ipv6-setup-with-propagation/) for more information.
+> Docker 설치에서도 IPv6가 활성화되어 있는지 확인하세요.
+> 자세한 내용은 [이 가이드](https://fariszr.com/docker-ipv6-setup-with-propagation/)를 참조하세요.
 
-This repository builds a docker image for every release. You can simply run it by using `docker-compose`:
+이 저장소는 릴리스마다 Docker 이미지를 빌드합니다. `docker-compose`를 사용해 간단히 실행할 수 있습니다:
 
 ```yaml
 services:
@@ -58,11 +58,11 @@ services:
       - $PWD/home-assistant-matter-hub:/data
 ```
 
-Having that you can simply run `docker compose up -d` to start the container.
+그런 다음 `docker compose up -d`를 실행하면 컨테이너가 시작됩니다.
 
-For the docker image, data is stored in `/data`, so you can mount a volume there for persistence.
+Docker 이미지의 경우 데이터는 `/data`에 저장되므로, 영속성을 위해 해당 위치에 볼륨을 마운트할 수 있습니다.
 
-Alternatively, you can also run the container as follows:
+또는 다음과 같이 컨테이너를 실행할 수도 있습니다:
 
 ```bash
 docker run -d \
@@ -84,19 +84,19 @@ docker run -d \
   ghcr.io/riddix/home-assistant-matter-hub:latest
 ```
 
-See 2.3 for more configuration options.
+추가 구성 옵션은 2.3을 참조하세요.
 
-Now you can go ahead and follow the [bridge configuration guide](./bridge-configuration.md).
+이제 [브리지 구성 가이드](./bridge-configuration.md)를 계속 진행하면 됩니다.
 
-### 2.2 Manual installation using `npm`
+### 2.2 `npm`을 사용한 수동 설치
 
-If you want to install this application by hand, you simply need to run
+이 애플리케이션을 수동으로 설치하려면 다음을 실행하기만 하면 됩니다
 
 ```bash
 npm install -g home-assistant-matter-hub
 ```
 
-To start the application, run
+애플리케이션을 시작하려면 다음을 실행합니다
 
 ```bash
 home-assistant-matter-hub start \
@@ -116,17 +116,17 @@ home-assistant-matter-hub start \
   --http-port=8482
 ```
 
-The application will store its data in `$HOME/.home-assistant-matter-hub`. You can configure the storage path by
-using the `--storage-location=/path/to/storage` option or `HAMH_STORAGE_LOCATION` environment variable.
+애플리케이션은 데이터를 `$HOME/.home-assistant-matter-hub`에 저장합니다. `--storage-location=/path/to/storage` 옵션이나
+`HAMH_STORAGE_LOCATION` 환경 변수를 사용해 저장 경로를 구성할 수 있습니다.
 
-See 2.3 for more configuration options.
+추가 구성 옵션은 2.3을 참조하세요.
 
-Now you can go ahead and follow the [bridge configuration guide](./bridge-configuration.md).
+이제 [브리지 구성 가이드](./bridge-configuration.md)를 계속 진행하면 됩니다.
 
-### 2.3 Configuration options
+### 2.3 구성 옵션
 
-General app configuration is done using the command line interface or environment variables. The following parameters
-are available:
+일반적인 앱 구성은 명령줄 인터페이스 또는 환경 변수를 사용해 수행합니다. 사용 가능한 매개변수는
+다음과 같습니다:
 
 ```
 home-assistant-matter-hub start
@@ -152,7 +152,7 @@ Options:
   --home-assistant-access-token  A long-lived access token for your Home Assistant Instance                              [string] [required]
 ```
 
-Each of those configuration options can be configured via environment variables, too. Simply prefix them with `HAMH_`
-and write them in capslock with underscores (e.g. `HAMH_MDNS_NETWORK_INTERFACE`).
+이러한 구성 옵션은 모두 환경 변수로도 구성할 수 있습니다. 접두사로 `HAMH_`를 붙이고
+밑줄을 사용해 대문자로 작성하면 됩니다(예: `HAMH_MDNS_NETWORK_INTERFACE`).
 
-**Those configuration options are not needed for the Home Assistant Addon Installation type.**
+**이러한 구성 옵션은 Home Assistant 애드온 설치 유형에서는 필요하지 않습니다.**

@@ -8,18 +8,18 @@ const config: Config = {
   tagline: "Expose Home Assistant devices as Matter devices",
   favicon: "img/hamh-logo-small.png",
 
-  url: "https://riddix.github.io",
+  url: "https://Kamilake.github.io",
   baseUrl: "/home-assistant-matter-hub/",
 
-  organizationName: "riddix",
+  organizationName: "Kamilake",
   projectName: "home-assistant-matter-hub",
 
   onBrokenLinks: "throw",
   trailingSlash: false,
 
   i18n: {
-    defaultLocale: "en",
-    locales: ["en"],
+    defaultLocale: "ko",
+    locales: ["ko"],
   },
 
   presets: [
@@ -30,7 +30,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           routeBasePath: "/",
           editUrl:
-            "https://github.com/riddix/home-assistant-matter-hub/tree/main/docs-site/",
+            "https://github.com/Kamilake/home-assistant-matter-hub/tree/main/docs-site/",
         },
         blog: false,
         theme: {
@@ -103,10 +103,10 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "docs",
           position: "left",
-          label: "Documentation",
+          label: "문서",
         },
         {
-          href: "https://github.com/riddix/home-assistant-matter-hub",
+          href: "https://github.com/Kamilake/home-assistant-matter-hub",
           label: "GitHub",
           position: "right",
         },
@@ -116,31 +116,31 @@ const config: Config = {
       style: "dark",
       links: [
         {
-          title: "Docs",
+          title: "문서",
           items: [
-            { label: "Getting Started", to: "/getting-started/installation" },
-            { label: "Devices", to: "/supported-device-types" },
-            { label: "Plugins", to: "/guides/plugin-system" },
-            { label: "API Reference", to: "/guides/api-reference" },
+            { label: "시작하기", to: "/getting-started/installation" },
+            { label: "기기", to: "/supported-device-types" },
+            { label: "플러그인", to: "/guides/plugin-system" },
+            { label: "API 레퍼런스", to: "/guides/api-reference" },
           ],
         },
         {
-          title: "Help",
+          title: "도움말",
           items: [
-            { label: "Troubleshooting", to: "/guides/connectivity-issues" },
+            { label: "문제 해결", to: "/guides/connectivity-issues" },
             { label: "FAQ", to: "/faq" },
           ],
         },
         {
-          title: "Community",
+          title: "커뮤니티",
           items: [
             {
               label: "GitHub Issues",
-              href: "https://github.com/riddix/home-assistant-matter-hub/issues",
+              href: "https://github.com/Kamilake/home-assistant-matter-hub/issues",
             },
             {
               label: "GitHub Discussions",
-              href: "https://github.com/riddix/home-assistant-matter-hub/discussions",
+              href: "https://github.com/Kamilake/home-assistant-matter-hub/discussions",
             },
           ],
         },

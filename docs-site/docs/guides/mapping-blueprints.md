@@ -1,14 +1,14 @@
-# Mapping Blueprints
+# 매핑 블루프린트
 
-This page provides ready-to-use mapping examples for complex device setups. You can use these as reference when configuring entity mappings in the HAMH UI or when creating mapping profiles for import.
+이 페이지는 복잡한 장치 설정을 위한 바로 사용 가능한 매핑 예제를 제공합니다. HAMH UI에서 엔터티 매핑을 구성하거나 가져올 매핑 프로파일을 생성할 때 참고 자료로 사용할 수 있습니다.
 
 ---
 
-## Composed Temperature + Humidity + Pressure Sensor
+## 합성 온도 + 습도 + 압력 센서
 
-Combines a temperature sensor with related humidity and pressure sensors into a single Matter composed device. Each sensor appears as a proper sub-device in Apple Home, Google Home, and Alexa.
+온도 센서를 관련 습도 및 압력 센서와 결합하여 하나의 Matter 합성 장치로 만듭니다. 각 센서는 Apple Home, Google Home, Alexa에서 적절한 하위 장치로 표시됩니다.
 
-**Requirements:** Enable the `autoComposedDevices` feature flag on the bridge.
+**요구 사항:** 브리지에서 `autoComposedDevices` 기능 플래그를 활성화하세요.
 
 ```json
 {
@@ -19,9 +19,9 @@ Combines a temperature sensor with related humidity and pressure sensors into a 
 }
 ```
 
-### With Power Monitoring
+### 전력 모니터링 포함
 
-If your sensor hub also reports power consumption:
+센서 허브가 전력 소비도 보고하는 경우:
 
 ```json
 {
@@ -36,11 +36,11 @@ If your sensor hub also reports power consumption:
 
 ---
 
-## Air Purifier with Sensors
+## 센서가 있는 공기청정기
 
-Maps a fan entity as an air purifier with temperature, humidity, and HEPA filter monitoring.
+fan 엔터티를 온도, 습도, HEPA 필터 모니터링이 있는 공기청정기로 매핑합니다.
 
-**Requirements:** Enable the `autoComposedDevices` feature flag. Set `matterDeviceType` to `air_purifier`.
+**요구 사항:** `autoComposedDevices` 기능 플래그를 활성화하세요. `matterDeviceType`을 `air_purifier`로 설정하세요.
 
 ```json
 {
@@ -56,9 +56,9 @@ Maps a fan entity as an air purifier with temperature, humidity, and HEPA filter
 
 ---
 
-## Smart Plug with Energy Monitoring
+## 에너지 모니터링이 있는 스마트 플러그
 
-A switch with real-time power and cumulative energy measurement.
+실시간 전력과 누적 에너지 측정이 있는 스위치입니다.
 
 ```json
 {
@@ -70,7 +70,7 @@ A switch with real-time power and cumulative energy measurement.
 
 ---
 
-## Dimmable Light with Energy Monitoring
+## 에너지 모니터링이 있는 디머 가능 조명
 
 ```json
 {
@@ -82,9 +82,9 @@ A switch with real-time power and cumulative energy measurement.
 
 ---
 
-## Roborock Vacuum with Room Cleaning
+## 방별 청소가 있는 Roborock 청소기
 
-Maps a vacuum with room-specific cleaning buttons and a cleaning mode selector.
+방별 청소 버튼과 청소 모드 선택기가 있는 청소기를 매핑합니다.
 
 ```json
 {
@@ -100,7 +100,7 @@ Maps a vacuum with room-specific cleaning buttons and a cleaning mode selector.
 }
 ```
 
-### Dreame Vacuum Variant
+### Dreame 청소기 변형
 
 ```json
 {
@@ -115,7 +115,7 @@ Maps a vacuum with room-specific cleaning buttons and a cleaning mode selector.
 }
 ```
 
-### Valetudo Vacuum
+### Valetudo 청소기
 
 ```json
 {
@@ -130,9 +130,9 @@ Maps a vacuum with room-specific cleaning buttons and a cleaning mode selector.
 
 ---
 
-## Door Lock with PIN Disabled
+## PIN이 비활성화된 도어락
 
-Useful when you have multiple locks and only want PIN protection on some.
+여러 잠금장치가 있고 일부에만 PIN 보호를 적용하려는 경우에 유용합니다.
 
 ```json
 {
@@ -143,9 +143,9 @@ Useful when you have multiple locks and only want PIN protection on some.
 
 ---
 
-## Cover with Swapped Open/Close
+## 열기/닫기가 바뀜 커버
 
-For covers where Home Assistant reports inverted position values.
+Home Assistant가 반전된 위치 값을 보고하는 커버용입니다.
 
 ```json
 {
@@ -156,16 +156,16 @@ For covers where Home Assistant reports inverted position values.
 
 ---
 
-## Using Mapping Profiles
+## 매핑 프로파일 사용
 
-You can export and import mapping configurations as profiles via the HAMH UI or API:
+HAMH UI 또는 API를 통해 매핑 구성을 프로파일로 내보내고 가져올 수 있습니다:
 
-1. **Export:** Go to Bridge Settings → Export Mapping Profile
-2. **Import:** Go to Bridge Settings → Import Mapping Profile → Select entities to apply
+1. **내보내기:** Bridge Settings → Export Mapping Profile로 이동
+2. **가져오기:** Bridge Settings → Import Mapping Profile → 적용할 엔터티 선택
 
-A mapping profile bundles multiple entity mappings into a single JSON file that can be shared between installations.
+매핑 프로파일은 여러 엔터티 매핑을 설치 간에 공유할 수 있는 단일 JSON 파일로 번들로 묶습니다.
 
-### Profile Format
+### 프로파일 형식
 
 ```json
 {
@@ -194,5 +194,5 @@ A mapping profile bundles multiple entity mappings into a single JSON file that 
 ```
 
 :::tip
-Entity ID patterns in profiles use glob-style matching. Use `*` to match any characters within the entity ID.
+프로파일의 엔터티 ID 패턴은 glob 스타일 매칭을 사용합니다. 엔터티 ID 내의 임의 문자와 일치시키려면 `*`를 사용하세요.
 :::

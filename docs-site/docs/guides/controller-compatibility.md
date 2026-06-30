@@ -1,16 +1,16 @@
-# Controller Compatibility Matrix
+# 컨트롤러 호환성 매트릭스
 
-This page documents which Matter device types work with which controllers, based on community testing and the vendors' published Matter device-type lists.
+이 페이지는 커뮤니티 테스트와 공급업체가 공개한 Matter 장치 유형 목록을 바탕으로, 어떤 Matter 장치 유형이 어떤 컨트롤러와 작동하는지를 문서화합니다.
 
 :::info
-Compatibility depends on controller firmware versions. This matrix reflects the latest known state. If you find discrepancies, please open an issue.
+호환성은 컨트롤러 펀웨어 버전에 따라 달라집니다. 이 매트릭스는 알려진 최신 상태를 반영합니다. 불일치하는 점을 발견하면 이슈를 열어 주세요.
 :::
 
-## Device Type Support
+## 장치 유형 지원
 
-Rows flagged with a footnote number link to the vendor source that establishes the value. Rows without a number are established by community testing or by earlier releases of HAMH.
+각주 번호가 표시된 행은 해당 값을 뒷받침하는 공급업체 출처로 연결됩니다. 번호가 없는 행은 커뮤니티 테스트 또는 HAMH의 이전 릴리스로 뒷받침됩니다.
 
-| HA Domain | Matter Device Type | Apple Home | Google Home | Alexa | Aqara Home | SmartThings |
+| HA 도메인 | Matter 장치 유형 | Apple Home | Google Home | Alexa | Aqara Home | SmartThings |
 |---|---|:---:|:---:|:---:|:---:|:---:|
 | `light` | OnOffLight | ✅ | ✅ [¹](#sources) | ✅ [²](#sources) | ✅ [⁴](#sources) | ✅ |
 | `light` | DimmableLight | ✅ | ✅ [¹](#sources) | ✅ [²](#sources) | ✅ [⁴](#sources) | ✅ |
@@ -46,62 +46,62 @@ Rows flagged with a footnote number link to the vendor source that establishes t
 | `dishwasher` (override) | Dishwasher | ❌ [³](#sources) | ✅ [¹](#sources) | ✅ [²](#sources) | ❓ | ✅ |
 | `weather` | TemperatureSensor (+Humidity, +Pressure) | ⚠️**** | ⚠️**** | ⚠️**** | ❓ | ❓ |
 
-:::note Leak and freeze detectors are opt-in
-By default a `moisture` or `cold` binary sensor is exposed as a plain ContactSensor (Matter 1.3), which every controller handles. The WaterLeakDetector and WaterFreezeDetector rows above are Matter 1.4 types that are only used if you set the entity's Matter device type by hand in the Entity Mapping dialog. Setting WaterLeakDetector gives Apple Home (iOS 18.4+) a real leak/alarm tile, but Google does not list these types, Alexa maps water leak to no capability, and exposing a 1.4 detector type can knock out an Alexa bridge so every device on it goes unresponsive ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365)). Stay on the default unless you are Apple-only.
+:::note 누수 및 결빙 감지기는 옵인(opt-in)입니다
+기본적으로 `moisture` 또는 `cold` 바이너리 센서는 모든 컨트롤러가 처리할 수 있는 일반 ContactSensor(Matter 1.3)로 노출됩니다. 위의 WaterLeakDetector와 WaterFreezeDetector 행은 Matter 1.4 유형으로, Entity Mapping 대화 상자에서 엔터티의 Matter 장치 유형을 수동으로 설정한 경우에만 사용됩니다. WaterLeakDetector를 설정하면 Apple Home(iOS 18.4+)에서 실제 누수/경보 타일을 표시하지만, Google은 이러한 유형을 목록화하지 않으며, Alexa는 누수를 아무 기능에도 매핑하지 않고, 1.4 감지기 유형을 노출하면 Alexa 브리지가 방해되어 해당 브리지의 모든 장치가 응답하지 않게 될 수 있습니다 ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365)). Apple 전용이 아니라면 기본값을 유지하세요.
 :::
 
-### Legend
+### 범례
 
-- ✅ = Confirmed working
-- ⚠️ = Partial support or known issues
-- ❓ = Untested or unknown
-- ❌ = Not supported by the controller
+- ✅ = 작동 확인됨
+- ⚠️ = 부분 지원 또는 알려진 문제 있음
+- ❓ = 테스트되지 않았거나 알 수 없음
+- ❌ = 컨트롤러에서 지원하지 않음
 
-\* Alexa vacuum support requires the `vacuumOnOff` feature flag enabled.
+\* Alexa 청소기 지원은 `vacuumOnOff` 기능 플래그가 활성화되어 있어야 합니다.
 
-\*\* Alexa does not support the standalone ModeSelect device type (0x0027). The ModeSelect cluster is only recognized on specific device types like Lamp or Fan. See [Alexa Supported Device Categories](https://developer.amazon.com/en-US/docs/alexa/smarthome/supported-matter-device-categories.html) and [#273](https://github.com/RiDDiX/home-assistant-matter-hub/issues/273).
+\*\* Alexa는 독립 ModeSelect 장치 유형(0x0027)을 지원하지 않습니다. ModeSelect 클러스터는 Lamp나 Fan 같은 특정 장치 유형에서만 인식됩니다. [Alexa 지원 장치 카테고리](https://developer.amazon.com/en-US/docs/alexa/smarthome/supported-matter-device-categories.html)와 [#273](https://github.com/RiDDiX/home-assistant-matter-hub/issues/273)을 참조하세요.
 
-\*\*\* Google Home does not support the standalone ModeSelect device type (0x0027): it is absent from Google's published Matter device types, so Google shows a generic info screen with no options control (#356). The option labels are sent correctly on the wire, this is a controller-side device-type gap, not a bridge bug. The Home Assistant Google Assistant cloud integration does expose these entities as Google "Modes", but that is a separate non-Matter path, not the HAMH bridge. Workaround: use that cloud integration, or expose the entity as an HA template switch or script. See [#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356) and [#296](https://github.com/RiDDiX/home-assistant-matter-hub/issues/296).
+\*\*\* Google Home은 독립 ModeSelect 장치 유형(0x0027)을 지원하지 않습니다: Google이 공개한 Matter 장치 유형에서 누락되어 있어 Google은 옵션 제어가 없는 일반 정보 화면을 표시합니다(#356). 옵션 레이블은 올바르게 전송되며, 이는 브리지 버그가 아닌 컨트롤러 측 장치 유형 공백입니다. Home Assistant Google Assistant 클라우드 통합은 이러한 엔터티를 Google "모드"로 노출하지만, 이는 HAMH 브리지가 아닌 별도의 비Matter 경로입니다. 해결 방법: 해당 클라우드 통합을 사용하거나 엔터티를 HA 템플릿 스위치 또는 스크립트로 노출하세요. [#356](https://github.com/RiDDiX/home-assistant-matter-hub/issues/356)과 [#296](https://github.com/RiDDiX/home-assistant-matter-hub/issues/296)을 참조하세요.
 
-\*\*\*\* A `weather` entity is exposed as a TemperatureSensor with Humidity and Pressure clusters stacked on one device. Temperature and Humidity should work where the standalone sensor rows do; Pressure is Google-only (see the PressureSensor row). The stacked-cluster shape on a single device is not yet community-tested, so treat these cells as expected, not confirmed.
+\*\*\*\* `weather` 엔터티는 Humidity와 Pressure 클러스터가 하나의 장치에 쌓인 TemperatureSensor로 노출됩니다. 온도와 습도는 독립 센서 행이 작동하는 곳에서 작동해야 합니다. 압력은 Google 전용입니다(PressureSensor 행 참조). 단일 장치에 클러스터를 쌓는 형태는 아직 커뮤니티 테스트가 이루어지지 않았으므로, 이러한 셀은 확인된 것이 아닌 예상되는 것으로 간주하세요.
 
-### Sources
+### 출처
 
-Footnote references for the ✅ / ❌ cells above:
+위의 ✅ / ❌ 셀에 대한 각주 참조:
 
-1. Google Home, [Supported devices](https://developers.home.google.com/matter/supported-devices) (doc dated 2024-12-20). Rows marked ❌ for Google are device types not listed on that page. The Google doc is roughly 16 months old; a cell not listed may just mean "not yet documented".
-2. Amazon Alexa, [Supported Matter Device Categories and Clusters](https://developer.amazon.com/en-US/docs/alexa/smarthome/supported-matter-device-categories.html) (doc dated 2026-04-08). Rows marked ❌ for Alexa are device types absent from that page.
-3. Apple Home, [Use Matter accessories with the Home app](https://support.apple.com/en-us/102135) (doc dated 2025-12-12) plus iOS 18.4 release coverage for robot vacuum support. Apple's public doc does not list dishwashers as a supported category.
-4. Aqara Home, [Everything Matter](https://www.aqara.com/en/explore/everything-matter/) device list (fetched 2026-06) plus the [April 2025 Matter controller update](https://www.businesswire.com/news/home/20250409001178/en). Aqara surfaces one of the widest device-type ranges; ❓ for Aqara means the type is not named on that page, not that it is known to fail.
+1. Google Home, [지원 장치](https://developers.home.google.com/matter/supported-devices) (문서 일자 2024-12-20). Google에 ❌로 표시된 행은 해당 페이지에 나열되지 않은 장치 유형입니다. Google 문서는 약 16개월 되었으며, 나열되지 않은 셀은 단지 "아직 문서화되지 않음"을 의미할 수 있습니다.
+2. Amazon Alexa, [지원 Matter 장치 카테고리 및 클러스터](https://developer.amazon.com/en-US/docs/alexa/smarthome/supported-matter-device-categories.html) (문서 일자 2026-04-08). Alexa에 ❌로 표시된 행은 해당 페이지에 없는 장치 유형입니다.
+3. Apple Home, [Home 앱과 함께 Matter 액세서리 사용](https://support.apple.com/en-us/102135) (문서 일자 2025-12-12) 및 로봇 청소기 지원에 대한 iOS 18.4 릴리스 커버리지. Apple의 공개 문서는 식기세척기를 지원 카테고리로 나열하지 않습니다.
+4. Aqara Home, [Everything Matter](https://www.aqara.com/en/explore/everything-matter/) 장치 목록(2026-06 가져옴) 및 [2025년 4월 Matter 컨트롤러 업데이트](https://www.businesswire.com/news/home/20250409001178/en). Aqara는 가장 넓은 장치 유형 범위 중 하나를 제공합니다. Aqara의 ❓는 해당 유형이 그 페이지에 명시되지 않았다는 의미이지, 실패한다고 알려진 것은 아닙니다.
 
-Apple, Google, Alexa, Aqara, and SmartThings each move at a different cadence. A ❌ here means the vendor has not published support on their current device-type page, not that the device is known to fail. When a vendor adds the category we flip the cell and cite the update.
+Apple, Google, Alexa, Aqara, SmartThings는 각각 다른 주기로 움직입니다. 여기서 ❌는 공급업체가 현재 장치 유형 페이지에 지원을 공개하지 않았다는 의미이지, 장치가 실패한다고 알려진 것은 아닙니다. 공급업체가 카테고리를 추가하면 해당 셀을 변경하고 업데이트를 인용합니다.
 
 ## Aqara Home
 
-Aqara Home is recognized as a controller: when an Aqara fabric is commissioned, the per-device support chips and the warnings reflect the Aqara column above. These warnings show on the bridge's own page and in the Health Dashboard. Aqara surfaces a wide range of Matter device types, so it rarely warns.
+Aqara Home은 컨트롤러로 인식됩니다. Aqara fabric이 커미셔닝되면 장치별 지원 칩과 경고가 위의 Aqara 열을 반영합니다. 이러한 경고는 브리지의 자체 페이지와 Health Dashboard에 표시됩니다. Aqara는 넓은 범위의 Matter 장치 유형을 제공하므로 경고가 드물게 발생합니다.
 
-A few Aqara quirks are handled for you:
+몇 가지 Aqara 특이사항이 자동으로 처리됩니다:
 
-- Power/energy clusters are kept off light endpoints, which Aqara would otherwise drop ([#374](https://github.com/RiDDiX/home-assistant-matter-hub/discussions/374)).
-- The root `softwareVersionString` is aligned with the numeric version so bridge registration does not stall ([#316](https://github.com/RiDDiX/home-assistant-matter-hub/issues/316)).
-- `productName` is stripped of characters that crash Aqara when the `productNameFromNodeLabel` flag is on ([#330](https://github.com/RiDDiX/home-assistant-matter-hub/issues/330)).
+- 전력/에너지 클러스터는 조명 엔드포인트에서 제외됩니다. 그렇지 않으면 Aqara가 해당 엔드포인트를 누락시킵니다 ([#374](https://github.com/RiDDiX/home-assistant-matter-hub/discussions/374)).
+- 루트 `softwareVersionString`이 숫자 버전과 일치하도록 조정되어 브리지 등록이 멈추지 않습니다 ([#316](https://github.com/RiDDiX/home-assistant-matter-hub/issues/316)).
+- `productNameFromNodeLabel` 플래그가 켜져 있을 때 Aqara를 크래시하게 하는 문자가 `productName`에서 제거됩니다 ([#330](https://github.com/RiDDiX/home-assistant-matter-hub/issues/330)).
 
-If Aqara does not show an air conditioner, set the entity's `disableClimateFanControl` flag to expose it as a plain Thermostat ([#318](https://github.com/RiDDiX/home-assistant-matter-hub/issues/318)). For naming, the `productNameFromNodeLabel` bridge flag and the per-entity `customProductName` / `customVendorId` overrides help Aqara show the device name you expect.
+Aqara가 에어컨을 표시하지 않는 경우, 엔터티의 `disableClimateFanControl` 플래그를 설정하여 일반 Thermostat로 노출하세요 ([#318](https://github.com/RiDDiX/home-assistant-matter-hub/issues/318)). 이름 지정의 경우 `productNameFromNodeLabel` 브리지 플래그와 엔터티별 `customProductName` / `customVendorId` 재정의가 Aqara가 원하는 장치 이름을 표시하는 데 도움이 됩니다.
 
-## Controller Profiles
+## 컨트롤러 프로파일
 
-HAMH includes built-in controller profiles that pre-configure feature flags for optimal compatibility:
+HAMH에는 최적의 호환성을 위해 기능 플래그를 미리 구성하는 내장 컨트롤러 프로파일이 포함되어 있습니다:
 
-| Profile | Key Settings |
+| 프로파일 | 주요 설정 |
 |---|---|
 | **Apple Home** | `autoForceSync: true`, `coverUseHomeAssistantPercentage: true` |
 | **Google Home** | `autoForceSync: true` |
 | **Alexa** | `autoForceSync: true`, `vacuumOnOff: true` |
 | **Multi-Controller** | `autoForceSync: true`, `vacuumOnOff: true`, `coverUseHomeAssistantPercentage: true` |
 
-See [Bridge Configuration](../getting-started/bridge-configuration.md) for details on how to select a profile.
+프로파일 선택 방법에 대한 자세한 내용은 [브리지 구성](../getting-started/bridge-configuration.md)을 참조하세요.
 
-## Official Controller Documentation
+## 공식 컨트롤러 문서
 
 - **Alexa**: [Matter Support](https://developer.amazon.com/en-US/docs/alexa/smarthome/matter-support.html#device-categories-and-clusters)
 - **Google Home**: [Supported Devices](https://developers.home.google.com/matter/supported-devices#device_type_and_control_support)
@@ -109,10 +109,10 @@ See [Bridge Configuration](../getting-started/bridge-configuration.md) for detai
 - **Aqara Home**: [Everything Matter](https://www.aqara.com/en/explore/everything-matter/)
 - **SmartThings**: [Supported Device Types](https://developer.smartthings.com/docs/devices/hub-connected/matter/matter-device-types)
 
-## Contributing
+## 기여하기
 
-If you have tested a device type with a controller not marked above, please open an issue or PR with your findings. Include:
-- Controller name and firmware version
-- Device type tested
-- Whether it works, partially works, or doesn't work
-- Any specific issues encountered
+위에 표시되지 않은 컨트롤러로 장치 유형을 테스트한 경우, 결과를 담아 이슈나 PR을 열어 주세요. 다음을 포함하세요:
+- 컨트롤러 이름과 펀웨어 버전
+- 테스트한 장치 유형
+- 작동 여부(정상 작동, 부분 작동, 또는 작동하지 않음)
+- 발생한 특정 문제

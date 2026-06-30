@@ -1,19 +1,19 @@
-# Plugin System
+# 플러그인 시스템
 
-Home Assistant Matter Hub supports plugins that register additional Matter devices on the bridge. Plugins can provide virtual devices or integrate third-party services.
+Home Assistant Matter Hub는 브리지에 추가 Matter 장치를 등록하는 플러그인을 지원합니다. 플러그인은 가상 장치를 제공하거나 서드파티 서비스를 통합할 수 있습니다.
 
-## Installing a Plugin
+## 플러그인 설치
 
-### From npm
+### npm에서
 
-1. Open the **Plugins** page in the HAMH web UI
-2. Enter the npm package name (e.g., `hamh-plugin-example`)
-3. Click **Install**
-4. Restart the bridge to load the plugin
+1. HAMH 웹 UI에서 **Plugins** 페이지를 엽니다
+2. npm 패키지 이름을 입력합니다(예: `hamh-plugin-example`)
+3. **Install**을 클릭합니다
+4. 플러그인을 로드하려면 브리지를 재시작합니다
 
-### From a local `.tgz` file
+### 로컬 `.tgz` 파일에서
 
-Upload a packaged plugin via the API:
+API를 통해 패키지화된 플러그인을 업로드합니다:
 
 ```bash
 curl -X POST http://localhost:8482/api/plugins/upload \
@@ -21,9 +21,9 @@ curl -X POST http://localhost:8482/api/plugins/upload \
   --data-binary @hamh-plugin-example-1.0.0.tgz
 ```
 
-### From a local folder (development)
+### 로컬 폴더에서(개발)
 
-Link a local plugin directory:
+로컬 플러그인 디렉터리를 연결합니다:
 
 ```bash
 curl -X POST http://localhost:8482/api/plugins/install-local \
@@ -31,13 +31,13 @@ curl -X POST http://localhost:8482/api/plugins/install-local \
   -d '{"path": "/path/to/your/plugin"}'
 ```
 
-This creates a symlink, so changes to your plugin source apply on bridge restart. Note that locally linked plugins are not added to the internal `package.json` dependencies, they rely on the symlink persisting. This method is intended for development only.
+이는 심볼링크를 생성하므로 플러그인 소스의 변경 사항이 브리지 재시작 시 적용됩니다. 로컬로 연결된 플러그인은 내부 `package.json` 의존성에 추가되지 않으며 심볼링크가 유지되는 것에 의존한다는 점에 유의하세요. 이 방법은 개발 전용입니다.
 
-## Writing a Plugin
+## 플러그인 작성
 
-A plugin is an npm package that exports a class implementing the `MatterHubPlugin` interface.
+플러그인은 `MatterHubPlugin` 인터페이스를 구현하는 클래스를 내보내는 npm 패키지입니다.
 
-### Minimal Structure
+### 최소 구조
 
 ```
 my-plugin/
@@ -57,7 +57,7 @@ my-plugin/
 }
 ```
 
-The `hamhPluginApiVersion` field declares which plugin API version your plugin targets. HAMH logs a warning if this doesn't match the current API version.
+`hamhPluginApiVersion` 필드는 플러그인이 대상으로 하는 플러그인 API 버전을 선언합니다. 이것이 현재 API 버전과 일치하지 않으면 HAMH는 경고를 기록합니다.
 
 **index.js:**
 
@@ -86,31 +86,31 @@ export default class MyPlugin {
 }
 ```
 
-### Plugin Lifecycle
+### 플러그인 수명 주기
 
-| Hook | When | Purpose |
+| 훅 | 시점 | 목적 |
 |------|------|---------|
-| `onStart(context)` | Bridge starts | Register devices, set up connections |
-| `onConfigure()` | After all devices registered | Restore persistent state |
-| `onShutdown(reason?)` | Bridge stops | Clean up resources |
-| `getConfigSchema()` | On demand | Provide config UI schema |
-| `onConfigChanged(config)` | User updates config | Apply new configuration |
+| `onStart(context)` | 브리지 시작 | 장치 등록, 연결 설정 |
+| `onConfigure()` | 모든 장치 등록 후 | 영속 상태 복원 |
+| `onShutdown(reason?)` | 브리지 중지 | 리소스 정리 |
+| `getConfigSchema()` | 요청 시 | 구성 UI 스키마 제공 |
+| `onConfigChanged(config)` | 사용자가 구성 업데이트 | 새 구성 적용 |
 
 ### PluginContext API
 
-The `context` object passed to `onStart` provides:
+`onStart`에 전달되는 `context` 객체는 다음을 제공합니다:
 
-- **`registerDevice(device)`**, Register a Matter device on the bridge
-- **`unregisterDevice(deviceId)`**, Remove a previously registered device
-- **`updateDeviceState(deviceId, clusterId, attributes)`**, Push attribute updates to a device
-- **`registerDomainMapping(mapping)`**, Map an HA domain to a Matter device type (see [Domain Mappings](#domain-mappings))
-- **`storage`**, Persistent key-value store (survives restarts)
-- **`log`**, Scoped logger (`info`, `warn`, `error`, `debug`)
-- **`bridgeId`**, ID of the bridge this plugin is attached to
+- **`registerDevice(device)`**, 브리지에 Matter 장치를 등록
+- **`unregisterDevice(deviceId)`**, 이전에 등록된 장치 제거
+- **`updateDeviceState(deviceId, clusterId, attributes)`**, 장치에 속성 업데이트 전송
+- **`registerDomainMapping(mapping)`**, HA 도메인을 Matter 장치 유형에 매핑([도메인 매핑](#domain-mappings) 참조)
+- **`storage`**, 영속 키-값 저장소(재시작 후에도 유지됨)
+- **`log`**, 범위가 지정된 로거(`info`, `warn`, `error`, `debug`)
+- **`bridgeId`**, 이 플러그인이 연결된 브리지의 ID
 
-### Supported Device Types
+### 지원 장치 유형
 
-| Key | Matter Device |
+| 키 | Matter 장치 |
 |-----|--------------|
 | `on_off_light` | On/Off Light (0x0100) |
 | `dimmable_light` | Dimmable Light (0x0101) |
@@ -133,9 +133,9 @@ The `context` object passed to `onStart` provides:
 | `generic_switch` | Generic Switch (0x000F) |
 | `water_leak_detector` | Water Leak Detector (0x0043) |
 
-### Custom endpoints (advanced)
+### 사용자 지정 엔드포인트(고급)
 
-If the device type or cluster you need is not in the table above, a plugin can supply its own matter.js `EndpointType` via `endpointType` instead of `deviceType`. This lets you expose any Matter device type, including ones with custom clusters and your own command handlers (a `Behavior` subclass), without changes to HAMH core.
+필요한 장치 유형이나 클러스터가 위의 표에 없는 경우, 플러그인은 `deviceType` 대신 `endpointType`를 통해 자체 matter.js `EndpointType`을 제공할 수 있습니다. 이를 통해 HAMH 코어를 변경하지 않고도 사용자 지정 클러스터와 자체 명령 핸들러(`Behavior` 서브클래스)를 가진 것을 포함하여 모든 Matter 장치 유형을 노출할 수 있습니다.
 
 ```typescript
 import { OnOffLightDevice } from "@matter/main/devices";
@@ -150,46 +150,46 @@ await context.registerDevice({
 });
 ```
 
-:::warning matter.js instance matters
-A live `EndpointType` only works if it comes from the exact same matter.js instance the backend runs. The backend bundles `@matter/*`, while externally installed plugins live in a separate folder and resolve their own copy, so a live `endpointType` from an external package will not attach. Plugins that pass live matter.js objects therefore ship as built-ins (see below). External plugins are best for the `deviceType` + cluster-data flow, which crosses the boundary as plain data.
+:::warning matter.js 인스턴스가 중요합니다
+라이브 `EndpointType`은 백엔드가 실행하는 정확히 동일한 matter.js 인스턴스에서 온 경우에만 작동합니다. 백엔드는 `@matter/*`를 번들링하는 반면, 외부에서 설치된 플러그인은 별도 폴더에 존재하며 자체 사본을 해결하므로, 외부 패키지의 라이브 `endpointType`은 연결되지 않습니다. 따라서 라이브 matter.js 객체를 전달하는 플러그인은 내장(built-in)으로 제공됩니다(아래 참조). 외부 플러그인은 경계를 일반 데이터로 넘는 `deviceType` + 클러스터 데이터 흐름에 가장 적합합니다.
 :::
 
-### Built-in plugins
+### 내장 플러그인
 
-Some device types need a live matter.js `EndpointType` (custom clusters and command handlers), which only works from inside the backend bundle. These ship as built-in plugins. They show up in the Plugins page like any other plugin and are configured there; nothing to install.
+일부 장치 유형은 라이브 matter.js `EndpointType`(사용자 지정 클러스터 및 명령 핸들러)이 필요하며, 이는 백엔드 번들 내부에서만 작동합니다. 이러한 것은 내장 플러그인으로 제공됩니다. 다른 플러그인처럼 Plugins 페이지에 표시되고 거기서 구성합니다. 설치할 것은 없습니다.
 
-**Camera** exposes a Home Assistant camera as a Matter Camera (0x0142). It implements the Matter `WebRtcTransportProvider` flow and bridges HA's WebRTC. Configure it on the Plugins page:
+**Camera**는 Home Assistant 카메라를 Matter Camera(0x0142)로 노출합니다. Matter `WebRtcTransportProvider` 흐름을 구현하고 HA의 WebRTC를 브리지합니다. Plugins 페이지에서 구성하세요:
 
-| Setting | Description |
+| 설정 | 설명 |
 |---------|-------------|
-| `haUrl` | Home Assistant URL, e.g. `http://homeassistant.local:8123` |
-| `haToken` | Long-lived access token |
-| `cameras` | Camera entity ids, comma-separated |
+| `haUrl` | Home Assistant URL, 예: `http://homeassistant.local:8123` |
+| `haToken` | 장기 액세스 토큰 |
+| `cameras` | 캴마 엔터티 ID, 쉼표로 구분 |
 
-Experimental: the WebRTC media path is not verified end to end, and as of 2026 only SmartThings renders Matter cameras.
+실험적: WebRTC 미디어 경로는 종단 간 검증되지 않았으며, 2026년 기준으로 SmartThings만 Matter 카메라를 렌더링합니다.
 
-### Cluster IDs
+### 클러스터 ID
 
-Use Matter.js behavior key names as cluster IDs. Common ones:
+클러스터 ID로 Matter.js behavior 키 이름을 사용하세요. 일반적인 것들:
 
-| Cluster ID | Description |
+| 클러스터 ID | 설명 |
 |-----------|------------|
-| `onOff` | On/Off state |
-| `levelControl` | Brightness level |
-| `colorControl` | Color (hue/saturation/temperature) |
-| `pressureMeasurement` | Pressure (in 0.1 kPa units) |
-| `flowMeasurement` | Flow rate (in 0.1 m³/h units) |
-| `windowCovering` | Window covering position and motion |
-| `temperatureMeasurement` | Temperature (in 0.01°C units) |
-| `relativeHumidityMeasurement` | Relative humidity (in 0.01% units) |
-| `booleanState` | Binary state (open/closed) |
-| `occupancySensing` | Occupancy detection |
-| `fanControl` | Fan speed and mode |
-| `doorLock` | Lock state |
+| `onOff` | On/Off 상태 |
+| `levelControl` | 밝기 레벨 |
+| `colorControl` | 색상(색조/채도/온도) |
+| `pressureMeasurement` | 압력(0.1 kPa 단위) |
+| `flowMeasurement` | 유량(0.1 m³/h 단위) |
+| `windowCovering` | 창 커버 위치 및 움직임 |
+| `temperatureMeasurement` | 온도(0.01°C 단위) |
+| `relativeHumidityMeasurement` | 상대 습도(0.01% 단위) |
+| `booleanState` | 이진 상태(열림/닫힘) |
+| `occupancySensing` | 재실 감지 |
+| `fanControl` | 팬 속도 및 모드 |
+| `doorLock` | 잠금 상태 |
 
-### Handling Controller Commands
+### 컨트롤러 명령 처리
 
-When a Matter controller writes an attribute (e.g., turns a light on), your device's `onAttributeWrite` callback is called:
+Matter 컨트롤러가 속성을 쓸 때(예: 조명을 콤), 장치의 `onAttributeWrite` 콜백이 호출됩니다:
 
 ```typescript
 await context.registerDevice({
@@ -208,9 +208,9 @@ await context.registerDevice({
 });
 ```
 
-### Persistent Storage
+### 영속 저장소
 
-Use `context.storage` to persist data across restarts:
+재시작 후에도 데이터를 유지하려면 `context.storage`를 사용하세요:
 
 ```typescript
 // Save
@@ -220,9 +220,9 @@ await context.storage.set("lastState", { temperature: 21.5 });
 const saved = await context.storage.get("lastState");
 ```
 
-### Plugin Config Schema
+### 플러그인 구성 스키마
 
-Plugins can provide a JSON-schema-like config for the UI:
+플러그인은 UI용으로 JSON 스키마 형태의 구성을 제공할 수 있습니다:
 
 ```typescript
 getConfigSchema() {
@@ -240,9 +240,9 @@ async onConfigChanged(config) {
 }
 ```
 
-## Domain Mappings
+## 도메인 매핑
 
-Plugins can register domain mappings to tell HAMH how to handle HA entity domains that are not natively supported. Call `context.registerDomainMapping()` during `onStart`:
+플러그인은 HAMH가 기본적으로 지원하지 않는 HA 엔터티 도메인을 처리하는 방법을 HAMH에 알리기 위해 도메인 매핑을 등록할 수 있습니다. `onStart` 중에 `context.registerDomainMapping()`을 호출하세요:
 
 ```javascript
 async onStart(context) {
@@ -254,54 +254,54 @@ async onStart(context) {
 }
 ```
 
-The `matterDeviceType` must be one of the [Supported Device Types](#supported-device-types). Plugin domain mappings are checked after user-configured overrides but before the built-in domain table, they only apply to domains that HAMH does not already handle.
+`matterDeviceType`은 [지원 장치 유형](#supported-device-types) 중 하나여야 합니다. 플러그인 도메인 매핑은 사용자가 구성한 재정의 이후에, 내장 도메인 테이블 이전에 확인되며, HAMH가 이미 처리하지 않는 도메인에만 적용됩니다.
 
-If multiple plugins register the same domain, the last one wins (a warning is logged).
+여러 플러그인이 동일한 도메인을 등록하면 마지막 것이 적용됩니다(경고가 기록됨).
 
-## Cloud Provider / Device Source Plugins
+## 클라우드 제공자 / 장치 소스 플러그인
 
-Plugins can integrate external cloud services by discovering devices, polling for state, and forwarding controller commands. See `examples/hamh-plugin-cloud-mock/` for a full working example that demonstrates:
+플러그인은 장치를 발견하고, 상태를 폴링하며, 컨트롤러 명령을 전달하여 외부 클라우드 서비스를 통합할 수 있습니다. 다음을 보여주는 완전한 작동 예제는 `examples/hamh-plugin-cloud-mock/`를 참조하세요:
 
-- Device discovery from an external API
-- Periodic polling for state changes
-- Forwarding Matter controller commands to the cloud API
-- Storing API tokens securely via `context.storage` (never logged)
-- Config schema for polling interval and credentials
+- 외부 API로부터의 장치 발견
+- 상태 변경에 대한 주기적 폴링
+- Matter 컨트롤러 명령을 클라우드 API로 전달
+- `context.storage`를 통한 API 토큰 안전 저장(절대 로그에 기록되지 않음)
+- 폴링 간격 및 자격 증명에 대한 구성 스키마
 
-Replace the `MockCloudApi` class with your real provider's SDK to build a production plugin.
+프로덕션 플러그인을 만들려면 `MockCloudApi` 클래스를 실제 제공자의 SDK로 교체하세요.
 
-## Error Handling
+## 오류 처리
 
-Plugins run in-process with a safety wrapper:
+플러그인은 안전 래퍼와 함께 프로세스 내에서 실행됩니다:
 
-- **Timeout**: Each lifecycle call has a 10-second timeout
-- **Circuit breaker**: 3 consecutive failures auto-disable the plugin
-- **Recovery**: Use the **Reset** button in the Plugins UI to re-enable a disabled plugin
-- **Unhandled rejections**: Fire-and-forget promises from plugins are caught at the process level and logged without crashing HAMH
+- **타임아웃**: 각 수명 주기 호출에는 10초 타임아웃이 있습니다
+- **서킷 브레이커**: 3회 연속 실패 시 플러그인이 자동으로 비활성화됩니다
+- **복구**: Plugins UI의 **Reset** 버튼을 사용하여 비활성화된 플러그인을 다시 활성화합니다
+- **처리되지 않은 거부(rejection)**: 플러그인의 fire-and-forget 프로미스는 프로세스 수준에서 포착되어 HAMH를 크래시시키지 않고 기록됩니다
 
-The bridge continues running even if a plugin fails. See `examples/hamh-plugin-broken/` for a test plugin that exercises various failure modes.
+플러그인이 실패해도 브리지는 계속 실행됩니다. 다양한 실패 모드를 테스트하는 테스트 플러그인은 `examples/hamh-plugin-broken/`를 참조하세요.
 
-## Troubleshooting
+## 문제 해결
 
-| Problem | Solution |
+| 문제 | 해결 |
 |---------|----------|
-| Plugin not loading after install | Restart the bridge, plugins load on startup |
-| "Circuit breaker tripped" | Check logs for the error, fix the issue, then click Reset |
-| Device not appearing in controller | Verify `deviceType` is in the supported list above |
-| Attribute updates ignored | Ensure `clusterId` matches a behavior key (e.g., `onOff`, not `OnOff`) |
-| Plugin crashes on start | Check that `onStart` doesn't throw, wrap risky code in try/catch |
+| 설치 후 플러그인이 로드되지 않음 | 브리지를 재시작하세요. 플러그인은 시작 시 로드됩니다 |
+| "Circuit breaker tripped" | 로그에서 오류를 확인하고 문제를 수정한 다음 Reset을 클릭하세요 |
+| 컨트롤러에 장치가 나타나지 않음 | `deviceType`이 위의 지원 목록에 있는지 확인하세요 |
+| 속성 업데이트가 무시됨 | `clusterId`가 behavior 키와 일치하는지 확인하세요(예: `OnOff`가 아닌 `onOff`) |
+| 시작 시 플러그인 크래시 | `onStart`가 예외를 던지지 않는지 확인하고, 위험한 코드는 try/catch로 감싸세요 |
 
-## API Reference
+## API 레퍼런스
 
-| Endpoint | Method | Description |
+| 엔드포인트 | 메서드 | 설명 |
 |----------|--------|-------------|
-| `/api/plugins` | GET | List installed packages and active plugins per bridge |
-| `/api/plugins/install` | POST | Install from npm (`{ packageName }`) |
-| `/api/plugins/upload` | POST | Install from uploaded `.tgz` (binary body) |
-| `/api/plugins/install-local` | POST | Link local folder (`{ path }`) |
-| `/api/plugins/uninstall` | POST | Uninstall package (`{ packageName }`) |
-| `/api/plugins/:bridgeId/:pluginName/enable` | POST | Enable a plugin |
-| `/api/plugins/:bridgeId/:pluginName/disable` | POST | Disable a plugin |
-| `/api/plugins/:bridgeId/:pluginName/reset` | POST | Reset circuit breaker |
-| `/api/plugins/:bridgeId/:pluginName/config-schema` | GET | Get config schema |
-| `/api/plugins/:bridgeId/:pluginName/config` | POST | Update config (`{ config }`) |
+| `/api/plugins` | GET | 설치된 패키지와 브리지별 활성 플러그인 나열 |
+| `/api/plugins/install` | POST | npm에서 설치(`{ packageName }`) |
+| `/api/plugins/upload` | POST | 업로드한 `.tgz`에서 설치(바이너리 본문) |
+| `/api/plugins/install-local` | POST | 로컬 폴더 연결(`{ path }`) |
+| `/api/plugins/uninstall` | POST | 패키지 제거(`{ packageName }`) |
+| `/api/plugins/:bridgeId/:pluginName/enable` | POST | 플러그인 활성화 |
+| `/api/plugins/:bridgeId/:pluginName/disable` | POST | 플러그인 비활성화 |
+| `/api/plugins/:bridgeId/:pluginName/reset` | POST | 서킷 브레이커 재설정 |
+| `/api/plugins/:bridgeId/:pluginName/config-schema` | GET | 구성 스키마 조회 |
+| `/api/plugins/:bridgeId/:pluginName/config` | POST | 구성 업데이트(`{ config }`) |

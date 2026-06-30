@@ -1,10 +1,10 @@
-# Supported Device Types
+# 지원되는 기기 유형
 
-All device types Home-Assistant-Matter-Hub supports, with their capabilities, controller compatibility, and configuration options.
+Home-Assistant-Matter-Hub가 지원하는 모든 기기 유형과 그 기능, 컨트롤러 호환성, 구성 옵션입니다.
 
 ---
 
-## Quick Reference
+## 빠른 참조
 
 | Home Assistant Domain | Matter Device Type |
 |-----------------------|-------------------|
@@ -26,14 +26,14 @@ All device types Home-Assistant-Matter-Hub supports, with their capabilities, co
 | `alarm_control_panel` | Mode Select |
 | `event` | Generic Switch |
 | `siren` | On/Off Plug-in Unit |
-| `humidifier` | Fan (with humidity control) |
+| `humidifier` | Fan (\uc2b5\ub3c4 \uc81c\uc5b4 \uac00\ub2a5) |
 
 > [!NOTE]
-> Controller compatibility varies by device type and firmware version. Not all controllers support all Matter device types. Check the official documentation below for current support status.
+> 컨트롤러 호환성은 기기 유형과 펀웨어 버전에 따라 다릅니다. 모든 컨트롤러가 모든 Matter 기기 유형을 지원하는 것은 아닙니다. 현재 지원 상태는 아래 공식 문서를 확인하세요.
 
 ---
 
-## Controller Compatibility Links
+## 컨트롤러 호환성 링크
 
 - **Alexa**: [Matter Support Documentation](https://developer.amazon.com/en-US/docs/alexa/smarthome/matter-support.html#device-categories-and-clusters)
 - **Google Home**: [Supported Devices](https://developers.home.google.com/matter/supported-devices#device_type_and_control_support)
@@ -41,124 +41,124 @@ All device types Home-Assistant-Matter-Hub supports, with their capabilities, co
 
 ---
 
-## Detailed Device Types
+## 상세 기기 유형
 
-### Lights (`light`)
+### 조명 (`light`)
 
-Home Assistant lights are mapped to the appropriate Matter light type based on supported features.
+Home Assistant 조명은 지원되는 기능을 기반으로 적절한 Matter 조명 유형에 매핑됩니다.
 
-| HA Features | Matter Device Type | Capabilities |
+| HA Features | Matter Device Type | 기능 |
 |-------------|-------------------|--------------|
-| On/Off only | OnOffLight | Power control |
-| Brightness | DimmableLight | Power + brightness |
-| Color temp | ColorTemperatureLight | Power + brightness + temperature |
-| RGB/HS/XY | ExtendedColorLight | Full color control |
+| On/Off only | OnOffLight | 전원 제어 |
+| Brightness | DimmableLight | 전원 + 밝기 |
+| Color temp | ColorTemperatureLight | 전원 + 밝기 + 색온도 |
+| RGB/HS/XY | ExtendedColorLight | 전체 색상 제어 |
 
-**Supported Attributes:**
+**지원되는 속성:**
 - `brightness` (0-255) → Matter Level (0-254)
 - `color_temp` (mireds) → Matter Color Temperature (Kelvin)
-- `rgb_color` / `hs_color` / `xy_color` → Matter Hue/Saturation or XY
+- `rgb_color` / `hs_color` / `xy_color` → Matter Hue/Saturation 또는 XY
 
-**Power & Energy Measurement:**
-- Lights can optionally report electrical power and energy consumption via Matter clusters
-- Lights are no longer auto-mapped. You must set `powerEntity` / `energyEntity` explicitly via Entity Mapping
-- A light that used to show an energy readout may drop it after upgrading, add the mapping back to restore it ([#374](https://github.com/RiDDiX/home-assistant-matter-hub/issues/374))
+**전력 및 에너지 측정:**
+- 조명은 Matter 클러스터를 통해 선택적으로 전력과 에너지 소비량을 보고할 수 있습니다
+- 조명은 더 이상 자동 매핑되지 않습니다. Entity Mapping을 통해 `powerEntity` / `energyEntity`를 명시적으로 설정해야 합니다
+- 이전에 에너지 수치를 표시하던 조명은 업그레이드 후 이를 표시하지 않을 수 있습니다. 복원하려면 매핑을 다시 추가하세요 ([#374](https://github.com/RiDDiX/home-assistant-matter-hub/issues/374))
 
-**Controller Notes:**
-- All major controllers support all light types
-- Color temperature range may differ between HA and Matter specifications
+**컨트롤러 참고:**
+- 모든 주요 컨트롤러가 모든 조명 유형을 지원합니다
+- 색온도 범위는 HA와 Matter 사양 간에 다를 수 있습니다
 
-See [Light Guide](./devices/light.md) for detailed setup, color conversion, and troubleshooting.
-
----
-
-### Switches & Booleans (`switch`, `input_boolean`)
-
-Mapped to **OnOffPlugInUnit** - a simple on/off controllable outlet.
-
-**Supported Actions:**
-- Turn on
-- Turn off
-- Toggle
-
-**Power & Energy Measurement:**
-- Switches can optionally report electrical power and energy consumption via Matter clusters
-- Auto-mapped from HA power/energy sensor entities on the same device
-- Manual mapping via Entity Mapping: `powerEntity`, `energyEntity`
-
-**Use Cases:**
-- Smart plugs
-- Relays
-- Virtual switches
-- Helper booleans
+자세한 설정, 색상 변환, 문제 해결은 [조명 가이드](./devices/light.md)를 참조하세요.
 
 ---
 
-### Locks (`lock`)
+### 스위치 및 불리언 (`switch`, `input_boolean`)
 
-Mapped to **DoorLock** with PIN code support where available.
+간단한 켜기/끄기 제어가 가능한 콘센트인 **OnOffPlugInUnit**에 매핑됩니다.
 
-**Supported Actions:**
-- Lock (no PIN required)
-- Unlock (PIN required if configured)
-- Unlatch / Unbolt (when HA entity supports `OPEN` feature)
+**지원되는 액션:**
+- 켜기
+- 끄기
+- 토글
 
-**Supported States:**
+**전력 및 에너지 측정:**
+- 스위치는 Matter 클러스터를 통해 선택적으로 전력과 에너지 소비량을 보고할 수 있습니다
+- 동일한 기기의 HA power/energy 센서 엔터티로부터 자동 매핑됩니다
+- Entity Mapping을 통한 수동 매핑: `powerEntity`, `energyEntity`
+
+**활용 사례:**
+- 스마트 플러그
+- 릴레이
+- 가상 스위치
+- 헬퍼 불리언
+
+---
+
+### 잠금장치 (`lock`)
+
+가능한 경우 PIN 코드 지원과 함께 **DoorLock**에 매핑됩니다.
+
+**지원되는 액션:**
+- 잠금(PIN 불필요)
+- 잠금 해제(구성된 경우 PIN 필요)
+- 고리 풀기 / 빗장 풀기(HA 엔터티가 `OPEN` 기능을 지원하는 경우)
+
+**지원되는 상태:**
 - `locked` / `locking` → Matter Locked
 - `unlocked` / `unlocking` → Matter Unlocked
 - `open` / `opening` → Matter Unlatched
 
-**Feature Flags:**
-- **PIN Credentials** - Configure PIN codes via Entity Mapping UI
-- **Lock without PIN** - Locking is always allowed, only unlock requires PIN (Alpha)
-- **Unlatch (Unbolting)** - Automatically enabled when HA lock supports `OPEN` feature. Maps to `lock.open` action. Apple Home shows an "Unlatch" button.
+**기능 플래그:**
+- **PIN Credentials** - Entity Mapping UI를 통해 PIN 코드를 구성합니다
+- **Lock without PIN** - 잠금은 항상 허용되며 잠금 해제만 PIN이 필요합니다(Alpha)
+- **Unlatch (Unbolting)** - HA 잠금장치가 `OPEN` 기능을 지원할 때 자동으로 활성화됩니다. `lock.open` 액션에 매핑됩니다. Apple Home은 "Unlatch" 버튼을 표시합니다.
 
-**Controller Notes:**
-- PIN code entry may not be supported by all controllers
-- Some controllers may require additional confirmation for unlock
-- Google Home has disabled voice unlock for Matter locks (Google policy)
-- Apple Home shows an "Unlatch" button when the lock supports the Unbolting feature
+**컨트롤러 참고:**
+- PIN 코드 입력은 모든 컨트롤러에서 지원되지 않을 수 있습니다
+- 일부 컨트롤러는 잠금 해제에 추가 확인을 요구할 수 있습니다
+- Google Home은 Matter 잠금장치에 대한 음성 잠금 해제를 비활성화했습니다(Google 정책)
+- Apple Home은 잠금장치가 Unbolting 기능을 지원할 때 "Unlatch" 버튼을 표시합니다
 
-See [Lock Guide](./devices/lock.md) for PIN credentials, unlatch setup, and troubleshooting.
+PIN 자격 증명, 고리 풀기 설정, 문제 해결은 [잠금장치 가이드](./devices/lock.md)를 참조하세요.
 
 ---
 
-### Covers (`cover`)
+### 커버 (`cover`)
 
-Mapped to **WindowCovering** supporting position and tilt control.
+위치 및 기울기 제어를 지원하는 **WindowCovering**에 매핑됩니다.
 
-**Supported Features:**
+**지원되는 기능:**
 | HA Feature | Matter Capability |
 |------------|------------------|
-| `open` / `close` | Open/Close commands |
-| `set_position` | Lift percentage (0-100%) |
-| `set_tilt_position` | Tilt percentage (0-100%) |
-| `stop` | Stop movement |
+| `open` / `close` | 열기/닫기 명령 |
+| `set_position` | 리프트 백분율 (0-100%) |
+| `set_tilt_position` | 기울기 백분율 (0-100%) |
+| `stop` | 움직임 정지 |
 
-**Feature Flags (Bridge Settings):**
-| Flag | Description |
+**기능 플래그 (Bridge Settings):**
+| Flag | 설명 |
 |------|-------------|
-| `coverDoNotInvertPercentage` | Skip percentage inversion (not Matter compliant) |
-| `coverUseHomeAssistantPercentage` | Display HA percentages in Matter (Alexa-friendly) |
-| `coverSwapOpenClose` | Swap open/close commands (fixes reversed Alexa commands) |
+| `coverDoNotInvertPercentage` | 백분율 반전 건너뛰기(Matter 규격 비준수) |
+| `coverUseHomeAssistantPercentage` | Matter에 HA 백분율 표시(Alexa 친화적) |
+| `coverSwapOpenClose` | 열기/닫기 명령 교체(반대로 된 Alexa 명령 수정) |
 
-**Supported Device Classes:**
+**지원되는 Device Class:**
 - `blind`
 - `curtain`
 - `shade`
 - `shutter`
 - `awning`
-- `garage` (limited support)
+- `garage`(제한적 지원)
 
-See [Cover Guide](./devices/cover.md) for percentage mapping, feature flags, and troubleshooting.
+백분율 매핑, 기능 플래그, 문제 해결은 [커버 가이드](./devices/cover.md)를 참조하세요.
 
 ---
 
-### Climate (`climate`)
+### 공조 (`climate`)
 
-Mapped to **Thermostat** with heating, cooling, and auto modes.
+난방, 냉방, 자동 모드를 지원하는 **Thermostat**에 매핑됩니다.
 
-**Supported HVAC Modes:**
+**지원되는 HVAC 모드:**
 | HA Mode | Matter SystemMode |
 |---------|------------------|
 | `off` | Off |
@@ -169,41 +169,41 @@ Mapped to **Thermostat** with heating, cooling, and auto modes.
 | `dry` | Dry |
 | `fan_only` | FanOnly |
 
-> **Important:** Matter's "Auto" mode means automatic switching between heat/cool based on temperature. This matches HA's `heat_cool` mode, NOT the `auto` mode which typically means "device decides".
+> **중요:** Matter의 "Auto" 모드는 온도에 따라 난방/냉방을 자동으로 전환하는 것을 의미합니다. 이는 일반적으로 "기기가 결정"을 의미하는 `auto` 모드가 아니라 HA의 `heat_cool` 모드와 일치합니다.
 
-**Supported Attributes:**
-- `current_temperature` → Local Temperature (falls back to setpoint if unavailable)
-- `target_temp_high` / `target_temp_low` → Setpoints
-- `hvac_action` → Running State (active heating/cooling display)
-- `min_temp` / `max_temp` → Thermostat limits
+**지원되는 속성:**
+- `current_temperature` → Local Temperature(사용 불가한 경우 설정값으로 대체)
+- `target_temp_high` / `target_temp_low` → 설정값(Setpoints)
+- `hvac_action` → Running State(활성 난방/냉방 표시)
+- `min_temp` / `max_temp` → 온도조절기 제한
 
-> **Auto display needs `hvac_action`:** Under Auto, controllers show whether the device is heating or cooling right now from the running state, which HAMH maps from HA `hvac_action`. ACs that do not publish `hvac_action` (many IR / SmartIR blasters) leave it empty, so Apple Home falls back to comparing the temperature against the setpoints and may show Cooling then flip to Heating once the target is reached, even while the AC keeps cooling ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)).
+> **Auto 표시에는 `hvac_action`이 필요:** Auto 상태에서 컨트롤러는 running state를 통해 기기가 지금 난방 중인지 냉방 중인지를 표시하며, HAMH는 이를 HA `hvac_action`에서 매핑합니다. `hvac_action`을 게시하지 않는 에어컨(다수의 IR / SmartIR 블래스터)는 이를 비워두므로 Apple Home은 온도를 설정값과 비교하는 방식으로 대체하며, 에어컨이 계속 냉방 중이더라도 목표 온도에 도달하면 Cooling을 표시했다가 Heating으로 전환할 수 있습니다 ([#309](https://github.com/RiDDiX/home-assistant-matter-hub/issues/309)).
 
-**Feature Variants (auto-detected from HA hvac_modes):**
-- **Heating Only**: Heat-only TRVs, water heaters, exposes only `Heating` feature
-- **Cooling Only**: Cool-only ACs, exposes only `Cooling` feature
-- **Heating + Cooling**: Devices with `heat` and `cool` but no `heat_cool`, exposes `Heating` + `Cooling` without AutoMode. Apple Home won't show Auto button, preventing mode flipping.
-- **Full HVAC (AutoMode)**: Devices with `heat_cool` in hvac_modes, exposes `Heating` + `Cooling` + `AutoMode` with dual setpoints
-- **heat_cool-only zones** *(new in v2.0.27)*: Devices with `heat_cool` but no explicit `heat` or `cool` mode (e.g. zoned ACs), exposes `Heating` + `Cooling` without AutoMode. The `controlSequenceOfOperation` dynamically switches between `CoolingOnly` and `HeatingOnly` based on `hvac_action`. ([#207](https://github.com/RiDDiX/home-assistant-matter-hub/issues/207))
+**기능 변형 (HA hvac_modes에서 자동 감지):**
+- **Heating Only**: 난방 전용 TRV, 온수기. `Heating` 기능만 노출
+- **Cooling Only**: 냉방 전용 에어컨. `Cooling` 기능만 노출
+- **Heating + Cooling**: `heat`와 `cool`은 있지만 `heat_cool`이 없는 기기. AutoMode 없이 `Heating` + `Cooling` 노출. Apple Home이 Auto 버튼을 표시하지 않아 모드 전환을 방지합니다.
+- **Full HVAC (AutoMode)**: hvac_modes에 `heat_cool`이 있는 기기. 이중 설정값과 함께 `Heating` + `Cooling` + `AutoMode` 노출
+- **heat_cool 전용 구역** *(v2.0.27 신규)*: `heat_cool`은 있지만 명시적인 `heat`나 `cool` 모드가 없는 기기(예: 구역형 에어컨). AutoMode 없이 `Heating` + `Cooling` 노출. `controlSequenceOfOperation`이 `hvac_action`에 따라 `CoolingOnly`와 `HeatingOnly` 사이를 동적으로 전환합니다. ([#207](https://github.com/RiDDiX/home-assistant-matter-hub/issues/207))
 
-> **New in v2.0.20:** AutoMode is now only exposed when the device supports `heat_cool` (dual setpoint) in Home Assistant. Devices with only `auto` mode (single setpoint, device decides) no longer get AutoMode, which previously caused Apple Home to send conflicting commands and mode flipping.
+> **v2.0.20 신규:** 이제 AutoMode는 기기가 Home Assistant에서 `heat_cool`(이중 설정값)을 지원할 때만 노출됩니다. `auto` 모드만 있는 기기(단일 설정값, 기기가 결정)는 더 이상 AutoMode를 얻지 않으며, 이는 이전에 Apple Home이 충돌하는 명령을 보내고 모드 전환을 일으키던 문제를 유발했습니다.
 
-> **New in v2.0.27:** Devices with `auto` + `cool` but no explicit `heat` mode (e.g. SmartIR ACs) no longer crash with a Matter conformance error. The `controlSequenceOfOperation` is now dynamically set to `CoolingOnly` or `HeatingOnly` instead of `CoolingAndHeating` for devices without AutoMode capability. ([#28](https://github.com/RiDDiX/home-assistant-matter-hub/issues/28))
+> **v2.0.27 신규:** `auto` + `cool`을 가지지만 명시적인 `heat` 모드가 없는 기기(예: SmartIR 에어컨)는 더 이상 Matter 적합성 오류로 충돌하지 않습니다. AutoMode 기능이 없는 기기의 경우 `controlSequenceOfOperation`이 이제 `CoolingAndHeating` 대신 `CoolingOnly` 또는 `HeatingOnly`로 동적으로 설정됩니다. ([#28](https://github.com/RiDDiX/home-assistant-matter-hub/issues/28))
 
-This prevents Alexa from rejecting commands on single-capability thermostats ([#136](https://github.com/RiDDiX/home-assistant-matter-hub/issues/136)).
+이는 단일 기능 온도조절기에서 Alexa가 명령을 거부하는 것을 방지합니다 ([#136](https://github.com/RiDDiX/home-assistant-matter-hub/issues/136)).
 
-**Temperature Display Unit:**
-The `ThermostatUserInterfaceConfiguration` cluster exposes your HA temperature unit preference (°C or °F) to Matter controllers.
+**온도 표시 단위:**
+`ThermostatUserInterfaceConfiguration` 클러스터는 HA 온도 단위 설정(°C 또는 °F)을 Matter 컨트롤러에 노출합니다.
 
-See [Climate Guide](./devices/climate.md) for detailed feature variants, mode mapping, and troubleshooting.
+자세한 기능 변형, 모드 매핑, 문제 해결은 [공조 가이드](./devices/climate.md)를 참조하세요.
 
 ---
 
-### Fans (`fan`)
+### 팬 (`fan`)
 
-Mapped to **Fan** device with speed and direction control.
+속도 및 방향 제어를 지원하는 **Fan** 기기에 매핑됩니다.
 
-**Supported Features:**
+**지원되는 기능:**
 | HA Feature | Matter Capability |
 |------------|------------------|
 | On/Off | FanControl On/Off |
@@ -212,53 +212,53 @@ Mapped to **Fan** device with speed and direction control.
 | Direction | FanControl AirflowDirection |
 | Oscillation | FanControl Rocking |
 
-**Wind Modes:**
-| Feature | Description |
+**바람 모드:**
+| Feature | 설명 |
 |---------|-------------|
-| **Oscillation** | Maps `oscillating` attribute to Matter Rocking |
-| **Natural Wind** | Maps "Natural" preset mode to naturalWind |
-| **Sleep Wind** | Maps "Sleep" preset mode to sleepWind |
+| **Oscillation** | `oscillating` 속성을 Matter Rocking에 매핑 |
+| **Natural Wind** | "Natural" 프리셋 모드를 naturalWind에 매핑 |
+| **Sleep Wind** | "Sleep" 프리셋 모드를 sleepWind에 매핑 |
 
 **Entity Mapping:**
-- Can be mapped to **Air Purifier** device type via Entity Mapping UI
-- Air Purifier supports `filterLifeEntity` for HEPA filter monitoring
+- Entity Mapping UI를 통해 **Air Purifier** 기기 유형으로 매핑할 수 있습니다
+- Air Purifier는 HEPA 필터 모니터링을 위한 `filterLifeEntity`를 지원합니다
 
-**Speed Mapping:**
-- HA percentage (0-100%) → Matter percentage (0-100)
-- Named presets mapped to Low/Medium/High/Auto
+**속도 매핑:**
+- HA 백분율 (0-100%) → Matter 백분율 (0-100)
+- 명명된 프리셋은 Low/Medium/High/Auto에 매핑
 
 ---
 
-### Sensors (`sensor`)
+### 센서 (`sensor`)
 
-Various sensor types mapped based on `device_class` and `unit_of_measurement`.
+`device_class`와 `unit_of_measurement`를 기반으로 다양한 센서 유형이 매핑됩니다.
 
-#### Temperature Sensor
+#### 온도 센서
 - **Device Class:** `temperature`
-- **Units:** `°C`, `°F`
+- **단위:** `°C`, `°F`
 - **Matter Type:** TemperatureSensor
 
-#### Humidity Sensor
+#### 습도 센서
 - **Device Class:** `humidity`
-- **Units:** `%`
+- **단위:** `%`
 - **Matter Type:** HumiditySensor
 
-#### Pressure Sensor
+#### 압력 센서
 - **Device Class:** `pressure`, `atmospheric_pressure`
-- **Units:** `hPa`, `mbar`, `kPa`, `Pa`
+- **단위:** `hPa`, `mbar`, `kPa`, `Pa`
 - **Matter Type:** PressureSensor
 
-#### Flow Sensor
+#### 유량 센서
 - **Device Class:** `volume_flow_rate`
-- **Units:** `m³/h`, `L/min`, `gal/min`
+- **단위:** `m³/h`, `L/min`, `gal/min`
 - **Matter Type:** FlowSensor
 
-#### Illuminance Sensor
+#### 조도 센서
 - **Device Class:** `illuminance`
-- **Units:** `lx`
+- **단위:** `lx`
 - **Matter Type:** IlluminanceSensor
 
-#### Air Quality Sensors
+#### 공기질 센서
 | Device Class | Matter Cluster |
 |--------------|----------------|
 | `aqi` | AirQuality |
@@ -267,209 +267,209 @@ Various sensor types mapped based on `device_class` and `unit_of_measurement`.
 | `co2` | CO2 Concentration |
 | `volatile_organic_compounds` | TVOC Concentration |
 
-#### Auto Sensor Grouping
+#### 자동 센서 그룹화
 
-HAMH can automatically combine related sensors from the same HA device into a single Matter endpoint:
+HAMH는 동일한 HA 기기의 관련 센서를 하나의 Matter 엔드포인트로 자동 결합할 수 있습니다:
 
-| Feature Flag | Description |
+| Feature Flag | 설명 |
 |--------------|-------------|
-| `autoBatteryMapping` | Combines battery sensor with the primary sensor (default: disabled) |
-| `autoHumidityMapping` | Combines humidity sensor with temperature sensor (default: enabled) |
-| `autoPressureMapping` | Combines pressure sensor with temperature sensor (default: enabled) |
+| `autoBatteryMapping` | 배터리 센서를 기본 센서와 결합(기본값: 비활성화) |
+| `autoHumidityMapping` | 습도 센서를 온도 센서와 결합(기본값: 활성화) |
+| `autoPressureMapping` | 압력 센서를 온도 센서와 결합(기본값: 활성화) |
 
-You can also manually assign sensors via **Entity Mapping**:
-- `batteryEntity`, Battery sensor entity ID
-- `humidityEntity`, Humidity sensor entity ID
-- `pressureEntity`, Pressure sensor entity ID
+**Entity Mapping**을 통해 센서를 수동으로 할당할 수도 있습니다:
+- `batteryEntity`: 배터리 센서 엔터티 ID
+- `humidityEntity`: 습도 센서 엔터티 ID
+- `pressureEntity`: 압력 센서 엔터티 ID
 
-See [Temperature & Humidity Sensor](./devices/temperature-humidity-sensor.md) for detailed setup instructions.
+자세한 설정 안내는 [온도 & 습도 센서](./devices/temperature-humidity-sensor.md)를 참조하세요.
 
 ---
 
-### Weather (`weather`)
+### 날씨 (`weather`)
 
-Mapped to **TemperatureSensor** with Humidity and Pressure measurement clusters stacked on one device. A weather entity's state is the text condition (e.g. `sunny`), so the readings come from its attributes.
+습도와 압력 측정 클러스터가 하나의 기기에 쌓인 **TemperatureSensor**에 매핑됩니다. 날씨 엔터티의 상태는 텍스트 조건(예: `sunny`)이므로 측정값은 속성에서 가져옵니다.
 
-**Supported Attributes:**
+**지원되는 속성:**
 - `temperature` + `temperature_unit` → Temperature
 - `humidity` (%) → Humidity
-- `pressure` + `pressure_unit` (`hPa`, `mbar`, `inHg`, `mmHg`) → Pressure (converted to hPa)
+- `pressure` + `pressure_unit` (`hPa`, `mbar`, `inHg`, `mmHg`) → Pressure(hPa로 변환)
 
-**Behavior:**
-- On by default. A `weather.*` entity matching your bridge filter is exposed automatically. Use the per-entity `disabled` mapping to suppress one you do not want.
-- Humidity and Pressure are optional; a missing reading reports no value instead of zero.
+**동작:**
+- 기본적으로 켜집니다. 브리지 필터와 일치하는 `weather.*` 엔터티가 자동으로 노출됩니다. 원하지 않는 것을 제외하려면 엔터티별 `disabled` 매핑을 사용하세요.
+- 습도와 압력은 선택 사항입니다. 누락된 측정값은 0이 아닌 값 없음으로 보고됩니다.
 
-**Controller Notes:**
-- Temperature and Humidity work where the standalone sensor types do (Apple, Google, Alexa).
-- Pressure is Google-only. Apple Home does not display barometric pressure and Alexa does not support the Pressure cluster.
-- The three measurements are stacked on a single TemperatureSensor device. How each controller renders the extra clusters is not yet community-tested.
+**컨트롤러 참고:**
+- 온도와 습도는 독립형 센서 유형이 작동하는 곳(Apple, Google, Alexa)에서 작동합니다.
+- 압력은 Google 전용입니다. Apple Home은 기압을 표시하지 않으며 Alexa는 Pressure 클러스터를 지원하지 않습니다.
+- 세 가지 측정값은 하나의 TemperatureSensor 기기에 쌓입니다. 각 컨트롤러가 추가 클러스터를 어떻게 렌더링하는지는 아직 커뮤니티에서 테스트되지 않았습니다.
 
 ---
 
-### Binary Sensors (`binary_sensor`)
+### 바이너리 센서 (`binary_sensor`)
 
-Mapped based on `device_class` attribute.
+`device_class` 속성을 기반으로 매핑됩니다.
 
-| Device Class | Matter Device Type | Controller Display |
+| Device Class | Matter Device Type | 컨트롤러 표시 |
 |--------------|-------------------|--------------------|
 | `running`, `plug`, `power`, `battery_charging`, `light` | OnOffSensor | On/Off |
 | `door`, `window`, `garage_door`, `opening`, `lock` | ContactSensor | Open/Closed |
-| `cold` | Contact Sensor (default) | Open/Closed |
+| `cold` | Contact Sensor (기본) | Open/Closed |
 | `battery`, `heat`, `connectivity`, `problem`, `safety`, `sound`, `tamper`, `update`, `vibration` | ContactSensor | Open/Closed |
 | `motion`, `moving` | OccupancySensor (PIR) | Motion detected/Clear |
 | `occupancy`, `presence` | OccupancySensor (PhysicalContact) | Occupied/Clear |
-| `moisture` | Contact Sensor (default) | Open/Closed |
+| `moisture` | Contact Sensor (기본) | Open/Closed |
 | `smoke` | SmokeCoAlarm (Smoke) | Alarm |
 | `carbon_monoxide`, `gas` | SmokeCoAlarm (CO) | Alarm |
-| Other / unset | OnOffSensor | On/Off |
+| 기타 / 미설정 | OnOffSensor | On/Off |
 
 > [!NOTE]
-> Leak (`moisture`) and freeze (`cold`) `binary_sensor`s default to a Matter 1.3 Contact Sensor, which keeps Alexa bridges stable. The Matter 1.4 Water Leak, Water Freeze, and Rain detector types are opt-in per entity via the device-type override ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365)).
+> 누수(`moisture`) 및 동결(`cold`) `binary_sensor`는 기본적으로 Matter 1.3 Contact Sensor로 설정되며, 이는 Alexa 브리지를 안정적으로 유지합니다. Matter 1.4 Water Leak, Water Freeze, Rain detector 유형은 device-type override를 통해 엔터티별로 선택할 수 있습니다 ([#365](https://github.com/RiDDiX/home-assistant-matter-hub/issues/365)).
 
 ---
 
-### Media Players (`media_player`)
+### 미디어 플레이어 (`media_player`)
 
-Mapped to **Speaker** device with volume and playback control.
+볼륨 및 재생 제어를 지원하는 **Speaker** 기기에 매핑됩니다.
 
-**Supported Features:**
+**지원되는 기능:**
 - On/Off
-- Volume control (0-100%)
-- Mute
-- Play/Pause
-- Stop
-- Next/Previous track
+- 볼륨 제어 (0-100%)
+- 음소거
+- 재생/일시정지
+- 정지
+- 다음/이전 트랙
 
-**Device Type Override:**
-Media players can be overridden to other device types via Entity Mapping. For example, mapping a media player to **OnOffPlugInUnit** (switch) makes it appear as a simple on/off switch in controllers like Alexa, useful when you only need power control.
+**기기 유형 재정의:**
+미디어 플레이어는 Entity Mapping을 통해 다른 기기 유형으로 재정의할 수 있습니다. 예를 들어 미디어 플레이어를 **OnOffPlugInUnit**(스위치)에 매핑하면 Alexa 같은 컨트롤러에서 간단한 켜기/끄기 스위치로 나타나므로 전원 제어만 필요할 때 유용합니다.
 
-**Controller Notes:**
-- Media player support in Matter is limited
-- Not all controllers support all features
-- Best support in Apple Home
-
----
-
-### Events (`event`)
-
-Mapped to **GenericSwitch** device.
-
-**Supported Use Cases:**
-- Doorbells
-- Button events
-- Remote control button presses
-
-**Behavior:**
-- Events from HA `event.*` entities are forwarded as Matter GenericSwitch position changes
-- Controllers can react to button press events
+**컨트롤러 참고:**
+- Matter의 미디어 플레이어 지원은 제한적입니다
+- 모든 컨트롤러가 모든 기능을 지원하지는 않습니다
+- Apple Home에서 가장 잘 지원됩니다
 
 ---
 
-### Buttons (`button`, `input_button`)
+### 이벤트 (`event`)
 
-Mapped to **OnOffPlugInUnit** with auto-off behavior.
+**GenericSwitch** 기기에 매핑됩니다.
 
-**Behavior:**
-1. Controller sends "turn on" command
-2. Button press is triggered in HA
-3. Device automatically turns off after 3 seconds
+**지원되는 활용 사례:**
+- 초인종
+- 버튼 이벤트
+- 리모컨 버튼 누름
 
----
-
-### Scenes (`scene`)
-
-Mapped to **OnOffPlugInUnit** with activate-only behavior.
-
-**Behavior:**
-- Turning "on" activates the scene
-- State always shows as "off" after activation
+**동작:**
+- HA `event.*` 엔터티의 이벤트는 Matter GenericSwitch 위치 변경으로 전달됩니다
+- 컨트롤러는 버튼 누름 이벤트에 반응할 수 있습니다
 
 ---
 
-### Scripts (`script`)
+### 버튼 (`button`, `input_button`)
 
-Mapped to **OnOffPlugInUnit**.
+자동 꺼짐 동작과 함께 **OnOffPlugInUnit**에 매핑됩니다.
 
-**Behavior:**
-- Turning "on" executes the script
-- State always shows as "off" (scripts are momentary actions)
-
-> **Note:** Scripts that are hidden in Home Assistant (`hidden_by: user`) will still be included if explicitly matched by your filter configuration.
-
----
-
-### Valves (`valve`)
-
-Mapped to **WaterValve** device.
-
-**Supported Actions:**
-- Open valve
-- Close valve
-
-**Controller Support:**
-- Apple Home: | Limited
-- Google Home: | Limited
-- Alexa: | Limited
+**동작:**
+1. 컨트롤러가 "켜기" 명령을 보냅니다
+2. HA에서 버튼 누름이 트리거됩니다
+3. 3초 후 기기가 자동으로 꺼집니다
 
 ---
 
-### Humidifiers (`humidifier`)
+### 씬 (`scene`)
 
-Mapped to **Fan** device with humidity control.
+활성화 전용 동작과 함께 **OnOffPlugInUnit**에 매핑됩니다.
 
-> Note: Matter does not have a native humidifier device type. The Fan device type is used as the closest match, with the FanControl cluster mapped to humidity level.
+**동작:**
+- "켜기"는 씬을 활성화합니다
+- 활성화 후 상태는 항상 "꺼짐"으로 표시됩니다
 
-**Supported Features:**
+---
+
+### 스크립트 (`script`)
+
+**OnOffPlugInUnit**에 매핑됩니다.
+
+**동작:**
+- "켜기"는 스크립트를 실행합니다
+- 상태는 항상 "꺼짐"으로 표시됩니다(스크립트는 순간적인 액션입니다)
+
+> **참고:** Home Assistant에서 숨겨진(`hidden_by: user`) 스크립트도 필터 구성에서 명시적으로 일치하면 포함됩니다.
+
+---
+
+### 밸브 (`valve`)
+
+**WaterValve** 기기에 매핑됩니다.
+
+**지원되는 액션:**
+- 밸브 열기
+- 밸브 닫기
+
+**컨트롤러 지원:**
+- Apple Home: | 제한적
+- Google Home: | 제한적
+- Alexa: | 제한적
+
+---
+
+### 가습기 (`humidifier`)
+
+습도 제어 기능이 있는 **Fan** 기기에 매핑됩니다.
+
+> 참고: Matter에는 기본 가습기 기기 유형이 없습니다. 가장 유사한 것으로 Fan 기기 유형이 사용되며, FanControl 클러스터가 습도 수준에 매핑됩니다.
+
+**지원되는 기능:**
 - On/Off
-- Target humidity (as fan speed percentage)
-- Auto mode (if available modes include "auto")
+- 목표 습도(팬 속도 백분율로)
+- 자동 모드(사용 가능한 모드에 "auto"가 포함된 경우)
 
 ---
 
-### Vacuums (`vacuum`)
+### 청소기 (`vacuum`)
 
-Mapped to **RoboticVacuumCleaner**.
+**RoboticVacuumCleaner**에 매핑됩니다.
 
-**Supported Features:**
-- Start/Stop cleaning
-- Return to dock
-- Operating mode (Idle, Cleaning)
-- Room selection (if supported by vacuum)
-- Cleaning mode selection (Sweeping, Mopping, Sweeping and mopping, Mopping after sweeping)
-- Battery level (if available)
+**지원되는 기능:**
+- 청소 시작/정지
+- 도킹으로 복귀
+- 작동 모드(Idle, Cleaning)
+- 방 선택(청소기가 지원하는 경우)
+- 청소 모드 선택(Sweeping, Mopping, Sweeping and mopping, Mopping after sweeping)
+- 배터리 잔량(사용 가능한 경우)
 
-**Entity Mapping Options:**
-| Option | Description |
+**Entity Mapping 옵션:**
+| Option | 설명 |
 |--------|-------------|
-| `roomEntities` | Array of button entity IDs for room selection (Roborock) |
-| `batteryEntity` | External battery sensor entity (Roomba, Deebot) |
-| `cleaningModeEntity` | Select entity for cleaning mode (Dreame, Ecovacs, etc.) |
-| `suctionLevelEntity` | Select entity for suction level, adds Quiet/Max intensity toggles to Apple Home's extra features panel |
-| `mopIntensityEntity` | Select entity for mop intensity / water level, adds mop intensity modes to Apple Home's extra features panel |
+| `roomEntities` | 방 선택용 버튼 엔터티 ID 배열(Roborock) |
+| `batteryEntity` | 외부 배터리 센서 엔터티(Roomba, Deebot) |
+| `cleaningModeEntity` | 청소 모드용 select 엔터티(Dreame, Ecovacs 등) |
+| `suctionLevelEntity` | 흡입 레벨용 select 엔터티. Apple Home의 추가 기능 패널에 Quiet/Max 강도 토글을 추가 |
+| `mopIntensityEntity` | 걸레 강도 / 물 수준용 select 엔터티. Apple Home의 추가 기능 패널에 걸레 강도 모드를 추가 |
 
-**Feature Flags (Bridge Settings):**
-| Flag | Description |
+**기능 플래그 (Bridge Settings):**
+| Flag | 설명 |
 |------|-------------|
-| `serverMode` | Expose as standalone device (required for Apple Home/Alexa) |
-| `vacuumIncludeUnnamedRooms` | Include rooms without names in room selection |
+| `serverMode` | 독립형 기기로 노출(Apple Home/Alexa에 필요) |
+| `vacuumIncludeUnnamedRooms` | 방 선택에 이름이 없는 방도 포함 |
 
-**Important Limitations:**
-- **Server Mode recommended** - For full voice command support (Siri, Alexa)
-- **Server Mode = one device per bridge** - The vacuum must be the only device
-- **Apple Home** requires iOS/tvOS/AudioOS 18.4+ on all Home hubs
-- **Google Home** has limited RVC support, basic start/stop works, room selection and cleaning modes may vary
+**주요 제한사항:**
+- **서버 모드 권장** - 완전한 음성 명령 지원(Siri, Alexa)을 위해
+- **서버 모드 = 브리지당 기기 하나** - 청소기가 유일한 기기여야 합니다
+- **Apple Home**은 모든 홈 허브에서 iOS/tvOS/AudioOS 18.4+를 요구합니다
+- **Google Home**은 RVC 지원이 제한적입니다. 기본 시작/정지는 작동하지만 방 선택과 청소 모드는 다를 수 있습니다
 
-See [Robot Vacuum Guide](./devices/robot-vacuum.md) for detailed setup instructions.
+자세한 설정 안내는 [로봇청소기 가이드](./devices/robot-vacuum.md)를 참조하세요.
 
-> **Note:** `lawn_mower` entities reuse the RVC mapping (start/pause/dock, battery, charging state) via the `robotic_lawn_mower` override ([#301](https://github.com/RiDDiX/home-assistant-matter-hub/issues/301)).
+> **참고:** `lawn_mower` 엔터티는 `robotic_lawn_mower` override를 통해 RVC 매핑(시작/일시정지/도킹, 배터리, 충전 상태)을 재사용합니다 ([#301](https://github.com/RiDDiX/home-assistant-matter-hub/issues/301)).
 
 ---
 
-### Alarm Control Panel (`alarm_control_panel`)
+### 비상 제어 패널 (`alarm_control_panel`)
 
-Mapped to **ModeSelectDevice** (0x0027). Each alarm state becomes a selectable mode.
+**ModeSelectDevice** (0x0027)에 매핑됩니다. 각 경보 상태가 선택 가능한 모드가 됩니다.
 
-**Supported Modes:**
+**지원되는 모드:**
 - Disarmed
 - Armed Home
 - Armed Away
@@ -477,112 +477,112 @@ Mapped to **ModeSelectDevice** (0x0027). Each alarm state becomes a selectable m
 - Armed Vacation
 - Armed Custom Bypass
 
-**Behavior:**
-- Changing mode from a controller calls the corresponding `alarm_control_panel.alarm_*` action in HA
-- Current mode reflects the entity's current alarm state
-- For Apple Home compatibility, an OnOff fallback is included: turning "on" arms the alarm, turning "off" disarms it
+**동작:**
+- 컨트롤러에서 모드를 변경하면 HA에서 해당 `alarm_control_panel.alarm_*` 액션을 호출합니다
+- 현재 모드는 엔터티의 현재 경보 상태를 반영합니다
+- Apple Home 호환성을 위해 OnOff 폴백이 포함됩니다: "켬면" 경보가 설정되고 "끄면" 해제됩니다
 
-**Controller Notes:**
-- Matter does not have a native alarm panel device type, so ModeSelect is used as the closest match
-- Voice commands like "Hey Siri, set alarm to Armed Away" may not work, use the controller app to switch modes
+**컨트롤러 참고:**
+- Matter에는 기본 경보 패널 기기 유형이 없으므로 가장 유사한 것으로 ModeSelect가 사용됩니다
+- "Hey Siri, set alarm to Armed Away" 같은 음성 명령은 작동하지 않을 수 있으므로 컨트롤러 앱을 사용하여 모드를 전환하세요
 
 ---
 
 ### Select / Input Select (`select`, `input_select`)
 
-Mapped to **ModeSelectDevice** (0x0027). Each option in the select entity becomes a selectable mode.
+**ModeSelectDevice** (0x0027)에 매핑됩니다. select 엔터티의 각 옵션이 선택 가능한 모드가 됩니다.
 
-**Behavior:**
-- Each option is exposed as a numbered mode
-- Changing mode from a controller calls `select.select_option` in HA
-- Current mode reflects the entity's current state
+**동작:**
+- 각 옵션은 번호가 매겨진 모드로 노출됩니다
+- 컨트롤러에서 모드를 변경하면 HA에서 `select.select_option`을 호출합니다
+- 현재 모드는 엔터티의 현재 상태를 반영합니다
 
-**Use Cases:**
-- Washing machine programs
-- HVAC operation modes
-- Irrigation zones
-- Scene selectors
-- Any entity with a fixed list of options
+**활용 사례:**
+- 세탁기 프로그램
+- HVAC 작동 모드
+- 관개 구역
+- 씬 선택기
+- 고정된 옵션 목록이 있는 모든 엔터티
 
-**Configuration:** No special setup needed. `select` and `input_select` entities matching your bridge filter are automatically exposed. You can also manually assign the `Mode Select` device type via Entity Mapping.
-
----
-
-### Automations (`automation`)
-
-Mapped to **OnOffPlugInUnit**.
-
-**Behavior:**
-- Turning "on" triggers the automation (runs it once)
-- Turning "off" disables the automation
-- State reflects the automation's enabled/disabled status
+**구성:** 특별한 설정이 필요 없습니다. 브리지 필터와 일치하는 `select` 및 `input_select` 엔터티는 자동으로 노출됩니다. Entity Mapping을 통해 `Mode Select` 기기 유형을 수동으로 할당할 수도 있습니다.
 
 ---
 
-### Remotes (`remote`)
+### 자동화 (`automation`)
 
-Mapped to **OnOffPlugInUnit**.
+**OnOffPlugInUnit**에 매핑됩니다.
 
-**Behavior:**
-- Turning "on" calls `remote.turn_on` in HA
-- Turning "off" calls `remote.turn_off` in HA
-- State reflects the remote entity's on/off state
-
----
-
-### Sirens (`siren`)
-
-Mapped to **OnOffPlugInUnit**.
-
-**Supported Actions:**
-- Turn on → `siren.turn_on`
-- Turn off → `siren.turn_off`
-
-**Behavior:**
-- State reflects the siren entity's on/off state in HA
-- Appears as a simple on/off device in all controllers
-
-**Controller Notes:**
-- Supported by all major controllers (Apple Home, Google Home, Alexa, SmartThings) as a standard on/off device
+**동작:**
+- "켜기"는 자동화를 트리거합니다(한 번 실행)
+- "끄기"는 자동화를 비활성화합니다
+- 상태는 자동화의 활성화/비활성화 상태를 반영합니다
 
 ---
 
-### Dishwashers (Entity Mapping Override)
+### 리모컨 (`remote`)
 
-Available as a **device type override** for `switch` entities via the Entity Mapping UI. Maps to the Matter **Dishwasher** device type with OperationalState and OnOff clusters.
+**OnOffPlugInUnit**에 매핑됩니다.
 
-**HA State → Matter OperationalState Mapping:**
+**동작:**
+- "켜기"는 HA에서 `remote.turn_on`을 호출합니다
+- "끄기"는 HA에서 `remote.turn_off`를 호출합니다
+- 상태는 리모컨 엔터티의 켜기/끄기 상태를 반영합니다
+
+---
+
+### 사이렌 (`siren`)
+
+**OnOffPlugInUnit**에 매핑됩니다.
+
+**지원되는 액션:**
+- 켜기 → `siren.turn_on`
+- 끄기 → `siren.turn_off`
+
+**동작:**
+- 상태는 HA에서 사이렌 엔터티의 켜기/끄기 상태를 반영합니다
+- 모든 컨트롤러에서 간단한 켜기/끄기 기기로 나타납니다
+
+**컨트롤러 참고:**
+- 모든 주요 컨트롤러(Apple Home, Google Home, Alexa, SmartThings)에서 표준 켜기/끄기 기기로 지원됩니다
+
+---
+
+### 식기세척기 (Entity Mapping Override)
+
+Entity Mapping UI를 통해 `switch` 엔터티의 **device type override**로 사용할 수 있습니다. OperationalState와 OnOff 클러스터를 갖춘 Matter **Dishwasher** 기기 유형에 매핑됩니다.
+
+**HA 상태 → Matter OperationalState 매핑:**
 | HA State | Matter State |
 |----------|-------------|
 | `off`, `idle`, `standby`, `complete`, `finished` | Stopped |
 | `on`, `running`, `active`, `drying`, `washing` | Running |
 | `paused` | Paused |
 
-**Supported Commands:**
+**지원되는 명령:**
 - **Start** → `homeassistant.turn_on`
 - **Stop** → `homeassistant.turn_off`
 - **Resume** → `homeassistant.turn_on`
-- **Pause** → Not supported (returns error)
+- **Pause** → 지원되지 않음(오류 반환)
 
-**Controller Notes:**
-- **Google Home**: Supported
-- **Amazon Alexa**: Supported
-- **Samsung SmartThings**: Supported
-- **Apple Home**: Not supported (Apple does not support the Dishwasher device type)
+**컨트롤러 참고:**
+- **Google Home**: 지원됨
+- **Amazon Alexa**: 지원됨
+- **Samsung SmartThings**: 지원됨
+- **Apple Home**: 지원되지 않음(Apple은 Dishwasher 기기 유형을 지원하지 않음)
 
 ---
 
-## Entity Mapping Customization
+## Entity Mapping 커스터마이징
 
-You can override the default device type mapping per entity using the Entity Mapping UI.
+Entity Mapping UI를 사용하여 엔터티별로 기본 기기 유형 매핑을 재정의할 수 있습니다.
 
-**Available Override Types:**
+**사용 가능한 Override 유형:**
 - OnOffLight
 - DimmableLight
 - ColorTemperatureLight
 - ExtendedColorLight
 - OnOffPlugInUnit
-- OnOffSwitch (now produces a real 0x0100 On/Off Light with an OnOff server that controllers render as a switch, instead of the old no-op plug; opt-in users need a one-time re-pair) ([#380](https://github.com/RiDDiX/home-assistant-matter-hub/issues/380))
+- OnOffSwitch(이제 이전의 동작 없는 플러그 대신 컨트롤러가 스위치로 렌더링하는 OnOff 서버를 갖춘 실제 0x0100 On/Off Light를 생성합니다. 옵트인 사용자는 한 번 재페어링이 필요합니다) ([#380](https://github.com/RiDDiX/home-assistant-matter-hub/issues/380))
 - DoorLock
 - WindowCovering
 - Thermostat
@@ -600,33 +600,33 @@ You can override the default device type mapping per entity using the Entity Map
 - GenericSwitch
 - SmokeCO Alarm, Water Leak Detector, Water Freeze Detector
 
-**Use Cases:**
-- Map a `media_player` to OnOffPlugInUnit for simple on/off switch in Alexa
-- Map a `fan` to Air Purifier type for HEPA filter monitoring
-- Map a `switch` to Pump type
-- Map a `switch` to Dishwasher type for OperationalState support (Google/Alexa/SmartThings)
-- Force a specific light type
+**활용 사례:**
+- Alexa에서 간단한 켜기/끄기 스위치를 위해 `media_player`를 OnOffPlugInUnit에 매핑
+- HEPA 필터 모니터링을 위해 `fan`을 Air Purifier 유형에 매핑
+- `switch`를 Pump 유형에 매핑
+- OperationalState 지원을 위해 `switch`를 Dishwasher 유형에 매핑(Google/Alexa/SmartThings)
+- 특정 조명 유형 강제
 
-> **Note:** Since v2.0.25, entity mapping changes take effect automatically within ~30 seconds. No bridge restart is required.
+> **참고:** v2.0.25부터 엔터티 매핑 변경은 약 30초 이내에 자동으로 적용됩니다. 브리지 재시작은 필요하지 않습니다.
 
 ---
 
-## Known Controller Limitations
+## 알려진 컨트롤러 제한사항
 
 ### Google Home
 
-#### Light Brightness Reset After Extended Off Period
+#### 장시간 꺼짐 후 조명 밝기 초기화
 
-**Issue:** When a light has been off for several minutes (typically 5+), turning it on via Google Home may set brightness to 100% instead of the last used value.
+**문제:** 조명이 몇 분(보통 5분 이상) 동안 꺼져 있다가 Google Home을 통해 켜면 마지막으로 사용한 값 대신 밝기가 100%로 설정될 수 있습니다.
 
-**Cause:** This is a Google Home / Matter.js interaction issue. Google Home sends brightness commands without the required `transitionTime` field after subscription renewals, causing validation errors in Matter.js before the bridge can process the command.
+**원인:** 이는 Google Home / Matter.js 상호작용 문제입니다. Google Home은 구독 갱신 후 필수 `transitionTime` 필드 없이 밝기 명령을 보내어, 브리지가 명령을 처리하기 전에 Matter.js에서 검증 오류가 발생합니다.
 
-**Workaround - Home Assistant Blueprint:**
+**해결 방법 - Home Assistant 블루프린트:**
 
-Create a blueprint that stores brightness on turn-off and restores it on turn-on:
+꺼질 때 밝기를 저장하고 켜질 때 복원하는 블루프린트를 생성합니다:
 
 <details>
-<summary>Click to expand Blueprint YAML</summary>
+<summary>블루프린트 YAML 펼치기 (클릭)</summary>
 
 ```yaml
 blueprint:
@@ -719,53 +719,53 @@ action:
 
 </details>
 
-**Setup:**
-1. Create an `input_number` helper for each light (range 1-255)
-2. Import the blueprint or create an automation with the YAML above
-3. Configure: select your light entity and the corresponding helper
+**설정:**
+1. 각 조명에 대해 `input_number` 헬퍼를 생성합니다(범위 1-255)
+2. 블루프린트를 가져오거나 위의 YAML로 자동화를 생성합니다
+3. 구성: 조명 엔터티와 해당 헬퍼를 선택합니다
 
-**Alternative:** Use voice commands ("Hey Google, dim the lights to 50%") which work reliably.
+**대안:** 안정적으로 작동하는 음성 명령("Hey Google, dim the lights to 50%")을 사용하세요.
 
-#### Cover Automations Not Available
+#### 커버 자동화 사용 불가
 
-**Issue:** Window covering devices (blinds, shutters, curtains) cannot be used as actions in Google Home Automations. When selecting a cover device, "no actions available" is shown.
+**문제:** 창문 커버링 기기(블라인드, 셔터, 커튼)는 Google Home 자동화에서 액션으로 사용할 수 없습니다. 커버 기기를 선택하면 "사용 가능한 액션 없음"이 표시됩니다.
 
-**Cause:** This is a Google Home limitation with Matter WindowCovering devices. The same issue affects native Matter blinds (e.g., Smartwings).
+**원인:** 이는 Matter WindowCovering 기기에 대한 Google Home의 제한사항입니다. 동일한 문제가 네이티브 Matter 블라인드(예: Smartwings)에도 영향을 줍니다.
 
-**Workarounds:**
-1. Use Google Home Routines with voice commands ("Hey Google, close [cover name]")
-2. Create Home Assistant scripts and expose them as switches via HAMH
-3. Use Home Assistant automations instead of Google Home automations
-
----
-
-### Amazon Alexa / Echo Devices
-
-#### Light Brightness Reset on Turn-On
-
-**Issue:** After a subscription renewal (approximately every 5 minutes), Alexa may reset light brightness to 100% when turning on a light, even if it was previously dimmed to a different level.
-
-**Cause:** This is an Alexa-side behavior where Echo devices send an explicit `moveToLevel(254)` command immediately after the `on()` command following a new subscription.
-
-**Evidence:**
-- The same behavior occurs with other Matter bridges
-- Logs show Alexa explicitly sending `level: 254` after `on()` commands
-- This does NOT happen immediately after dimming, only after subscription renewal
-
-**Workaround:** There is currently no bridge-side workaround for this Alexa behavior. Use voice commands ("Alexa, dim the lights to 50%") which work reliably.
+**해결 방법:**
+1. 음성 명령("Hey Google, close [cover name]")과 함께 Google Home Routines를 사용하세요
+2. Home Assistant 스크립트를 생성하고 HAMH를 통해 스위치로 노출하세요
+3. Google Home 자동화 대신 Home Assistant 자동화를 사용하세요
 
 ---
 
-## Requesting New Device Types
+### Amazon Alexa / Echo 기기
 
-Before requesting a new device type, please verify:
+#### 켜기 시 조명 밝기 초기화
 
-1. The device type exists in the [Matter Specification](https://handbook.buildwithmatter.com/how-it-works/device-types/)
-2. Your controller supports the device type
-3. There isn't an existing mapping that works
+**문제:** 구독 갱신(약 5분마다) 후 Alexa는 조명을 켜는 때 이전에 다른 수준으로 디머되어 있었더라도 밝기를 100%로 재설정할 수 있습니다.
 
-To request a new device type, [open a feature request](https://github.com/RiDDiX/home-assistant-matter-hub/issues/new?labels=enhancement) with:
-- Home Assistant domain and device class
-- Desired Matter device type
-- Your use case
-- Which controller(s) you use
+**원인:** 이는 Echo 기기가 새 구독 후 `on()` 명령 직후에 명시적인 `moveToLevel(254)` 명령을 보내는 Alexa 측 동작입니다.
+
+**근거:**
+- 동일한 동작이 다른 Matter 브리지에서도 발생합니다
+- 로그를 보면 Alexa가 `on()` 명령 후에 명시적으로 `level: 254`를 보냅니다
+- 이는 디밍 직후에는 발생하지 않고 구독 갱신 후에만 발생합니다
+
+**해결 방법:** 현재 이 Alexa 동작에 대한 브리지 측 해결책은 없습니다. 안정적으로 작동하는 음성 명령("Alexa, dim the lights to 50%")을 사용하세요.
+
+---
+
+## 새 기기 유형 요청
+
+새 기기 유형을 요청하기 전에 다음을 확인하세요:
+
+1. 해당 기기 유형이 [Matter Specification](https://handbook.buildwithmatter.com/how-it-works/device-types/)에 존재하는지
+2. 사용 중인 컨트롤러가 해당 기기 유형을 지원하는지
+3. 작동하는 기존 매핑이 없는지
+
+새 기기 유형을 요청하려면 다음 내용과 함께 [기능 요청을 열어주세요](https://github.com/RiDDiX/home-assistant-matter-hub/issues/new?labels=enhancement):
+- Home Assistant 도메인과 device class
+- 원하는 Matter 기기 유형
+- 사용 사례
+- 사용 중인 컨트롤러

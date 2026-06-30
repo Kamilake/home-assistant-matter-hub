@@ -1,64 +1,64 @@
-# Connect multiple assistants to one bridge
+# 여러 어시스턴트를 하나의 브리지에 연결하기
 
-It is possible to connect a single bridge with multiple fabrics, but note that the same QR code cannot be
-used twice. The process involves commissioning the bridge with the first controller using the provided QR code.
-Subsequently, you can use the first controller to link the bridge to additional controllers.
+단일 브리지를 여러 fabric에 연결할 수 있지만, 동일한 QR 코드는 두 번 사용할 수 없다는 점에 유의하세요.
+이 과정은 제공된 QR 코드를 사용하여 첫 번째 컨트롤러로 브리지를 커미셔닝하는 것으로 시작합니다.
+그런 다음 첫 번째 컨트롤러를 사용하여 브리지를 추가 컨트롤러에 연결할 수 있습니다.
 
-After successfully connecting the first controller (e.g., Apple Home), locate the hub device in the app. For Alexa, it
-appears as a standalone device, while in Apple Home, it is nested within the Home settings. In the device settings,
-enable pairing mode to generate a manual pairing code. This code can then be used to connect the bridge to subsequent
-controllers.
+첫 번째 컨트롤러(예: Apple Home)를 성공적으로 연결한 후 앱에서 허브 장치를 찾으세요. Alexa에서는 독립
+장치로 표시되며, Apple Home에서는 홈 설정 내에 중첩되어 나타납니다. 장치 설정에서 페어링 모드를
+활성화하여 수동 페어링 코드를 생성합니다. 그런 다음 이 코드를 사용하여 브리지를 후속 컨트롤러에 연결할 수
+있습니다.
 
 ---
 
-## Example: Pairing with Apple Home and Adding to Alexa
+## 예시: Apple Home와 페어링하고 Alexa에 추가하기
 
-1. **Access "More" Settings in Apple Home**
-   Open the Apple Home app, and tap the "More" button in the top-right corner of your home screen:
+1. **Apple Home에서 "더보기" 설정 접근**
+   Apple Home 앱을 열고 홈 화면 오른쪽 상단의 "더보기" 버튼을 탭합니다:
 
-   ![More settings menu in Apple Home](/img/ConnectMultipleFabrics/multiple-fabrics-01-apple-home-more.png)
+   ![Apple Home의 더보기 설정 메뉴](/img/ConnectMultipleFabrics/multiple-fabrics-01-apple-home-more.png)
 
-2. **Locate Hubs & Bridges**
-   Navigate to "Home Hubs & Bridges" to view all connected bridges:
+2. **허브 및 브리지 찾기**
+   연결된 모든 브리지를 보려면 "홈 허브 및 브리지"로 이동합니다:
 
-   ![Home Hubs and Bridges in Apple Home](/img/ConnectMultipleFabrics/multiple-fabrics-02-apple-home-settings.png)
+   ![Apple Home의 홈 허브 및 브리지](/img/ConnectMultipleFabrics/multiple-fabrics-02-apple-home-settings.png)
 
-3. **Select Your Bridge**
-   From the list of hubs, choose your Matter hub:
+3. **브리지 선택**
+   허브 목록에서 Matter 허브를 선택합니다:
 
-   ![List of Hubs and Bridges in Apple Home](/img/ConnectMultipleFabrics/multiple-fabrics-03-apple-home-connected-hubs.png)
+   ![Apple Home의 허브 및 브리지 목록](/img/ConnectMultipleFabrics/multiple-fabrics-03-apple-home-connected-hubs.png)
 
-4. **Enable Pairing Mode**
-   Scroll to the bottom of the hub details and select "Turn on Pairing Mode":
+4. **페어링 모드 활성화**
+   허브 세부 정보의 맨 아래로 스크롤하여 "페어링 모드 켜기"를 선택합니다:
 
-   ![Turn on Pairing Mode in Apple Home](/img/ConnectMultipleFabrics/multiple-fabrics-04-apple-home-bridge-details.png)
+   ![Apple Home의 페어링 모드 켜기](/img/ConnectMultipleFabrics/multiple-fabrics-04-apple-home-bridge-details.png)
 
-5. **Retrieve the Pairing Code**
-   A manual pairing code will be displayed. Make a note of this code for later use:
+5. **페어링 코드 확인**
+   수동 페어링 코드가 표시됩니다. 나중에 사용하기 위해 이 코드를 메모해 두세요:
 
-   ![Manual Pairing Code in Apple Home](/img/ConnectMultipleFabrics/multiple-fabrics-05-apple-home-pairing-code.png)
+   ![Apple Home의 수동 페어링 코드](/img/ConnectMultipleFabrics/multiple-fabrics-05-apple-home-pairing-code.png)
 
-6. **Add the Device to Alexa**
-   Open the Alexa app and select "Add Device":
+6. **Alexa에 장치 추가**
+   Alexa 앱을 열고 "장치 추가"를 선택합니다:
 
-   ![Add a new Device in Alexa](/img/ConnectMultipleFabrics/multiple-fabrics-06-alexa-add-device.png)
+   ![Alexa에서 새 장치 추가](/img/ConnectMultipleFabrics/multiple-fabrics-06-alexa-add-device.png)
 
-7. **Select Device Type**
-   Choose "Matter" as the device type:
+7. **장치 유형 선택**
+   장치 유형으로 "Matter"를 선택합니다:
 
-   ![Select Matter Device in Alexa](/img/ConnectMultipleFabrics/multiple-fabrics-07-alexa-new-matter-device.png)
+   ![Alexa에서 Matter 장치 선택](/img/ConnectMultipleFabrics/multiple-fabrics-07-alexa-new-matter-device.png)
 
-8. **Choose Pairing Method**
-   When prompted, select "Try Numeric Code" instead of scanning a QR code:
+8. **페어링 방식 선택**
+   메시지가 표시되면 QR 코드 스캔 대신 "숫자 코드 입력"을 선택합니다:
 
-   ![Select numeric code in Alexa](/img/ConnectMultipleFabrics/multiple-fabrics-08-alexa-try-numeric-code.png)
+   ![Alexa에서 숫자 코드 선택](/img/ConnectMultipleFabrics/multiple-fabrics-08-alexa-try-numeric-code.png)
 
-9. **Enter the Pairing Code**
-   Input the manual pairing code retrieved from Apple Home:
+9. **페어링 코드 입력**
+   Apple Home에서 확인한 수동 페어링 코드를 입력합니다:
 
-   ![Enter numeric code in Alexa](/img/ConnectMultipleFabrics/multiple-fabrics-09-alexa-enter-numeric-code.png)
+   ![Alexa에서 숫자 코드 입력](/img/ConnectMultipleFabrics/multiple-fabrics-09-alexa-enter-numeric-code.png)
 
-10. **Complete the Connection**
-    Allow Alexa to establish the connection to your bridge:
+10. **연결 완료**
+    Alexa가 브리지와의 연결을 확립하도록 허용합니다:
 
-    ![Connection screen in Alexa](/img/ConnectMultipleFabrics/multiple-fabrics-10-alexa-connecting.png)
+    ![Alexa의 연결 화면](/img/ConnectMultipleFabrics/multiple-fabrics-10-alexa-connecting.png)

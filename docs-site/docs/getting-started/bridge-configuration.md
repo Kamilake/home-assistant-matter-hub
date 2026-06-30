@@ -1,46 +1,46 @@
-# Bridge Configuration
+# 브리지 구성
 
-Using the User Interface you can set up multiple bridges and configure each to use different filters for your entities.
-Each bridge will be completely independent of the others and uses its own port for matter.
+사용자 인터페이스를 사용해 여러 개의 브리지를 설정하고 각각이 엔티티에 대해 서로 다른 필터를 사용하도록 구성할 수 있습니다.
+각 브리지는 다른 브리지와 완전히 독립적이며 Matter용으로 자체 포트를 사용합니다.
 
-## Quick Start with Bridge Wizard
+## 브리지 마법사(Bridge Wizard)로 빠르게 시작하기
 
-The easiest way to create bridges is using the **Bridge Wizard**:
+브리지를 생성하는 가장 쉬운 방법은 **브리지 마법사**를 사용하는 것입니다:
 
-1. Open the web UI and go to the Bridges page
-2. Click the **Wizard** button in the top right
-3. Follow the guided steps:
-   - Enter a name for your bridge
-   - Configure entity filters (by area, label, domain, etc.)
-   - Port is automatically assigned (starting from 5540)
-4. Add multiple bridges in one session
-5. Review and confirm to create all bridges
+1. 웹 UI를 열고 Bridges 페이지로 이동합니다
+2. 우측 상단의 **Wizard** 버튼을 클릭합니다
+3. 안내되는 단계를 따릅니다:
+   - 브리지 이름을 입력합니다
+   - 엔티티 필터를 구성합니다(영역, 레이블, 도메인 등)
+   - 포트는 자동으로 할당됩니다(5540부터 시작)
+4. 한 세션에서 여러 개의 브리지를 추가합니다
+5. 검토하고 확인하여 모든 브리지를 생성합니다
 
-The wizard automatically handles port assignment and prevents conflicts.
+마법사는 포트 할당을 자동으로 처리하고 충돌을 방지합니다.
 
-## Manual Configuration
+## 수동 구성
 
-You can access the bridge configuration by opening the web UI:
+웹 UI를 열어 브리지 구성에 접근할 수 있습니다:
 
-- If you are running the Home Assistant Add On: click on `Open Web UI`
-- If you are running the docker container: open `host-ip:port` (default port is 8482 if you didn't change it)
+- Home Assistant 애드온을 실행 중인 경우: `Open Web UI`를 클릭합니다
+- Docker 컨테이너를 실행 중인 경우: `host-ip:port`를 엽니다(변경하지 않았다면 기본 포트는 8482입니다)
 
 > [!NOTE]
-> You can use **one** bridge to connect to **multiple** controllers.
-> See [this guide](../guides/connect-multiple-fabrics.md) for details how to set this up.
+> **하나의** 브리지를 사용해 **여러** 컨트롤러에 연결할 수 있습니다.
+> 설정 방법에 대한 자세한 내용은 [이 가이드](../guides/connect-multiple-fabrics.md)를 참조하세요.
 
 > [!WARNING]
-> Alexa only supports port `5540`. Therefore, you cannot create multiple bridges to connect with Alexa.
+> Alexa는 포트 `5540`만 지원합니다. 따라서 Alexa와 연결하기 위해 여러 개의 브리지를 생성할 수 없습니다.
 > 
-> There are users who managed to get it work using the following approach:
-> 1. Create a bridge with port 5540
-> 2. Connect your Alexa with that bridge
-> 3. Change the port of the bridge
-> 4. Verify if it is still working
-> 5. Repeat for the next bridge
+> 다음 방법을 사용해 작동시킨 사용자들도 있습니다:
+> 1. 포트 5540으로 브리지를 생성합니다
+> 2. Alexa를 해당 브리지에 연결합니다
+> 3. 브리지의 포트를 변경합니다
+> 4. 여전히 작동하는지 확인합니다
+> 5. 다음 브리지에 대해 반복합니다
 
-Every bridge has to have a `name` (string), `port` (number) and `filter` (object) property. The filter property has to
-include an `include` (array) and an `exclude` (array) property.
+모든 브리지는 `name`(문자열), `port`(숫자), `filter`(객체) 속성을 가져야 합니다. filter 속성은
+`include`(배열)과 `exclude`(배열) 속성을 포함해야 합니다.
 
 ```json
 {
@@ -53,105 +53,105 @@ include an `include` (array) and an `exclude` (array) property.
 }
 ```
 
-A include- or exclude-item is an object having a `type` and a `value` property.
+include 또는 exclude 항목은 `type`과 `value` 속성을 가진 객체입니다.
 
-## Filter Types
+## 필터 유형
 
-| Type | Description | Example Value |
+| 유형 | 설명 | 예시 값 |
 |------|-------------|---------------|
-| `pattern` | Wildcard pattern matching entity IDs. Use `*` as wildcard. | `light.living_room_*` |
-| `regex` | Regex tested against entity IDs only. For labels use `entity_label_regex` / `device_label_regex`. | `^light\.(kitchen\|bedroom)_.*` |
-| `domain` | Match entities by their domain (the part before the dot). | `light`, `switch`, `sensor` |
-| `platform` | Match entities by their integration/platform. | `hue`, `zwave`, `mqtt` |
-| `entity_label` | Match entities by their label. Accepts display name or slug. Only checks entity-level labels. | `Voice Control` |
-| `device_label` | Match entities by their parent device's label. All entities of that device match. | `smart_home` |
-| `entity_label_regex` | Regex tested against entity-label slugs and display names. | `^(matter\|voice).*` |
-| `device_label_regex` | Regex tested against device-label slugs and display names. All entities of a matching device are included. | `^(matter\|voice).*` |
-| `any_field_regex` | One regex tested against a single-line haystack of all entity fields. Use lookaheads for AND, alternation for OR. | see below |
-| `area` | Match entities by their area slug. | `living_room` |
-| `entity_category` | Match entities by their category. | `config`, `diagnostic` |
-| `device_name` | Match entities by their device name (case-insensitive, wildcards). | `Living Room*` |
-| `product_name` | Match entities by their product/model name (case-insensitive, wildcards). | `Hue Color Bulb` |
-| `manufacturer` | Match entities by their device manufacturer (case-insensitive, wildcards). Handy for MQTT or other generic integrations. | `*Sonoff*` |
-| `device_class` | Match entities by their device class attribute. | `temperature`, `motion` |
+| `pattern` | 엔티티 ID를 와일드카드 패턴으로 매칭합니다. 와일드카드로 `*`를 사용합니다. | `light.living_room_*` |
+| `regex` | 엔티티 ID에만 대해 테스트하는 정규식입니다. 레이블은 `entity_label_regex` / `device_label_regex`를 사용하세요. | `^light\.(kitchen\|bedroom)_.*` |
+| `domain` | 엔티티를 도메인(점 앞부분)으로 매칭합니다. | `light`, `switch`, `sensor` |
+| `platform` | 엔티티를 통합/플랫폼으로 매칭합니다. | `hue`, `zwave`, `mqtt` |
+| `entity_label` | 엔티티를 레이블로 매칭합니다. 표시 이름 또는 슬러그를 허용합니다. 엔티티 수준 레이블만 확인합니다. | `Voice Control` |
+| `device_label` | 엔티티를 상위 기기의 레이블로 매칭합니다. 해당 기기의 모든 엔티티가 일치합니다. | `smart_home` |
+| `entity_label_regex` | 엔티티 레이블 슬러그 및 표시 이름에 대해 테스트하는 정규식입니다. | `^(matter\|voice).*` |
+| `device_label_regex` | 기기 레이블 슬러그 및 표시 이름에 대해 테스트하는 정규식입니다. 일치하는 기기의 모든 엔티티가 포함됩니다. | `^(matter\|voice).*` |
+| `any_field_regex` | 모든 엔티티 필드로 구성된 단일 행 문자열에 대해 테스트하는 하나의 정규식입니다. AND는 전방 탐색(lookahead), OR는 교대(alternation)를 사용하세요. | 아래 참조 |
+| `area` | 엔티티를 영역 슬러그로 매칭합니다. | `living_room` |
+| `entity_category` | 엔티티를 카테고리로 매칭합니다. | `config`, `diagnostic` |
+| `device_name` | 엔티티를 기기 이름으로 매칭합니다(대소문자 구분 없음, 와일드카드 지원). | `Living Room*` |
+| `product_name` | 엔티티를 제품/모델 이름으로 매칭합니다(대소문자 구분 없음, 와일드카드 지원). | `Hue Color Bulb` |
+| `manufacturer` | 엔티티를 기기 제조사로 매칭합니다(대소문자 구분 없음, 와일드카드 지원). MQTT나 기타 범용 통합에 유용합니다. | `*Sonoff*` |
+| `device_class` | 엔티티를 device class 속성으로 매칭합니다. | `temperature`, `motion` |
 
 > [!NOTE]
-> The dropdown in the web UI now shows **tooltips** with detailed descriptions when hovering over each filter type.
+> 이제 웹 UI의 드롭다운에서 각 필터 유형에 마우스를 올리면 자세한 설명이 담긴 **툴팁**이 표시됩니다.
 
 > [!WARNING]
-> The old `label` filter type is **deprecated**, use `entity_label` or `device_label` instead for clarity.
+> 기존 `label` 필터 유형은 **더 이상 사용되지 않으므로**, 명확성을 위해 `entity_label` 또는 `device_label`을 대신 사용하세요.
 
-### Pattern vs Regex
+### Pattern과 Regex
 
-**Pattern** uses simple wildcard matching:
-- `*` matches any characters (zero or more)
-- Example: `light.living_room_*` matches `light.living_room_lamp`
+**Pattern**은 간단한 와일드카드 매칭을 사용합니다:
+- `*`는 임의의 문자(0개 이상)와 일치합니다
+- 예시: `light.living_room_*`는 `light.living_room_lamp`와 일치합니다
 
-**Regex** uses full JavaScript regular expressions:
-- More powerful for complex patterns
-- Example: `^(light|switch)\.kitchen_.*` matches kitchen lights and switches
+**Regex**는 완전한 JavaScript 정규 표현식을 사용합니다:
+- 복잡한 패턴에 더 강력합니다
+- 예시: `^(light|switch)\.kitchen_.*`는 주방 조명과 스위치에 일치합니다
 
 ### Any Field Regex
 
-`any_field_regex` runs one regex against a single-line haystack built per entity, with fields joined by spaces:
+`any_field_regex`는 엔티티별로 구성된 단일 행 문자열에 대해 하나의 정규식을 실행하며, 필드는 공백으로 연결됩니다:
 
 ```
 entity_id=... domain=... platform=... area=... entity_category=... device_class=... entity_labels=slug1,slug2 entity_label_names=Display 1,Display 2 device_labels=slug1 device_label_names=Display 1 device_name=... product_name=... manufacturer=...
 ```
 
-To express AND, stack lookaheads. To express OR, use alternation. Example: include lights in the `living_room` area **or** switches carrying the `voice` label:
+AND를 표현하려면 전방 탐색을 쌓고, OR를 표현하려면 교대를 사용합니다. 예시: `living_room` 영역의 조명 **또는** `voice` 레이블이 붙은 스위치를 포함하기:
 
 ```
 (?=.*\bdomain=light\b)(?=.*\barea=living_room\b)|(?=.*\bdomain=switch\b)(?=.*\bentity_labels=.*\bvoice\b)
 ```
 
-`\b` anchors keep `domain=light` from matching `domain=lightning`. The same matcher also works in the `exclude` list, just give it the inverse pattern.
+`\b` 앵커는 `domain=light`가 `domain=lightning`과 일치하는 것을 막아줍니다. 동일한 매컄는 `exclude` 목록에서도 작동하며, 반대 패턴을 주면 됩니다.
 
-### Device Name Filter
+### Device Name 필터
 
-The `device_name` filter matches against the device's name (not the entity ID):
-- Case-insensitive matching
-- Supports `*` wildcard for pattern matching
-- Matches against: user-defined name → device name → default name
-- Example: `*Philips*` matches all devices with "Philips" in their name
+`device_name` 필터는 엔티티 ID가 아닌 기기의 이름과 일치합니다:
+- 대소문자 구분 없는 매칭
+- 패턴 매칭을 위한 `*` 와일드카드 지원
+- 매칭 대상: 사용자 정의 이름 → 기기 이름 → 기본 이름
+- 예시: `*Philips*`는 이름에 "Philips"가 포함된 모든 기기와 일치합니다
 
-### Product Name Filter
+### Product Name 필터
 
-The `product_name` filter matches against the device's model or product name:
-- Case-insensitive matching
-- Supports `*` wildcard for pattern matching
-- Matches against: model → default model
-- Example: `Hue*Bulb` matches all devices with a model name containing "Hue" and "Bulb"
+`product_name` 필터는 기기의 모델 또는 제품 이름과 일치합니다:
+- 대소문자 구분 없는 매칭
+- 패턴 매칭을 위한 `*` 와일드카드 지원
+- 매칭 대상: 모델 → 기본 모델
+- 예시: `Hue*Bulb`는 모델 이름에 "Hue"와 "Bulb"가 포함된 모든 기기와 일치합니다
 
-### Device Class Filter
+### Device Class 필터
 
-The `device_class` filter matches against the entity's `device_class` attribute:
-- Exact match (case-sensitive)
-- Common device classes: `temperature`, `humidity`, `motion`, `door`, `window`, `battery`, `power`, `energy`, `illuminance`, `pressure`
-- Example: `temperature` matches all entities with `device_class: temperature`
+`device_class` 필터는 엔티티의 `device_class` 속성과 일치합니다:
+- 정확한 일치(대소문자 구분)
+- 일반적인 device class: `temperature`, `humidity`, `motion`, `door`, `window`, `battery`, `power`, `energy`, `illuminance`, `pressure`
+- 예시: `temperature`는 `device_class: temperature`인 모든 엔티티와 일치합니다
 
-The `value` property is a string containing the corresponding value. You can add multiple include or exclude rules which
-are then combined.
-All entities which match one of the include-rules will be included, but all entities which match one of the exclude
-rules will be excluded.
+`value` 속성은 해당 값을 포함하는 문자열입니다. 여러 개의 include 또는 exclude 규칙을 추가할 수 있으며,
+이는 조합됩니다.
+include 규칙 중 하나와 일치하는 모든 엔티티는 포함되지만, exclude 규칙 중 하나와 일치하는 모든 엔티티는
+제외됩니다.
 
-Labels can be applied at the entity level or at the device level:
-- Use `entity_label` to match labels assigned directly to entities
-- Use `device_label` to match labels assigned to the parent device (all entities of that device will match)
-- The old `label` type still works but only matches entity labels, use the new types for explicit control
+레이블은 엔티티 수준 또는 기기 수준에서 적용할 수 있습니다:
+- 엔티티에 직접 할당된 레이블을 매칭하려면 `entity_label`을 사용합니다
+- 상위 기기에 할당된 레이블을 매칭하려면 `device_label`을 사용합니다(해당 기기의 모든 엔티티가 일치합니다)
+- 기존 `label` 유형도 여전히 작동하지만 엔티티 레이블만 매칭하므로, 명확한 제어를 위해 새 유형을 사용하세요
 
-You can use either the **display name** (e.g. `My Smart Lights`) or the **slug** (e.g. `my_smart_lights`) as the filter value. The display name is automatically resolved to the correct slug.
+필터 값으로 **표시 이름**(예: `My Smart Lights`) 또는 **슬러그**(예: `my_smart_lights`) 중 하나를 사용할 수 있습니다. 표시 이름은 자동으로 올바른 슬러그로 변환됩니다.
 
 > [!TIP]
-> Use the **Filter Reference** page in the web UI to browse all available filter values (domains, platforms, entity categories, device classes, device names, product names, labels, and areas) with click-to-copy functionality.
+> 웹 UI의 **Filter Reference** 페이지를 사용하면 사용 가능한 모든 필터 값(도메인, 플랫폼, 엔티티 카테고리, device class, 기기 이름, 제품 이름, 레이블, 영역)을 클릭 한 번으로 복사하는 기능과 함께 탐색할 수 있습니다.
 
 > [!WARNING]
-> When performing changes on entities, like adding or removing a label, you need to refresh the matter-hub application
-> for the changes to take effect (e.g. edit the bridge or restart the addon).
+> 레이블 추가 또는 제거와 같이 엔티티를 변경할 때는 변경 사항이 적용되도록 matter-hub 애플리케이션을
+> 새로고침해야 합니다(예: 브리지 편집 또는 애드온 재시작).
 
-## Examples
+## 예제
 
-### Basic Configuration
+### 기본 구성
 
 ```json
 {
@@ -186,9 +186,9 @@ You can use either the **display name** (e.g. `My Smart Lights`) or the **slug**
 }
 ```
 
-### Using Regex for Complex Matching
+### 복잡한 매칭을 위한 Regex 사용
 
-Match all lights and switches that start with "kitchen" or "living_room":
+"kitchen" 또는 "living_room"으로 시작하는 모든 조명과 스위치를 매칭합니다:
 
 ```json
 {
@@ -206,9 +206,9 @@ Match all lights and switches that start with "kitchen" or "living_room":
 }
 ```
 
-### Using Device Name Filter
+### Device Name 필터 사용
 
-Include all entities from Philips devices, exclude IKEA devices:
+Philips 기기의 모든 엔티티를 포함하고 IKEA 기기는 제외합니다:
 
 ```json
 {
@@ -231,9 +231,9 @@ Include all entities from Philips devices, exclude IKEA devices:
 }
 ```
 
-### Combining Multiple Filter Types
+### 여러 필터 유형 조합
 
-A bigger example using multiple filter types:
+여러 필터 유형을 사용한 더 큰 예시입니다:
 
 ```json
 {
@@ -276,52 +276,52 @@ A bigger example using multiple filter types:
 }
 ```
 
-This configuration:
-- **Includes**: All entities in the "living_room" area, entities with the "voice_control" label, and all lights starting with "guest_"
-- **Excludes**: Diagnostic and config entities, any entity ending with "_battery", and any device with "Test" in its name
+이 구성은 다음과 같습니다:
+- **포함**: "living_room" 영역의 모든 엔티티, "voice_control" 레이블이 있는 엔티티, "guest_"로 시작하는 모든 조명
+- **제외**: 진단(diagnostic) 및 구성(config) 엔티티, "_battery"로 끝나는 모든 엔티티, 이름에 "Test"가 포함된 모든 기기
 
-## Feature Flags
+## 기능 플래그(Feature Flags)
 
-Feature flags control advanced behavior of the bridge. Configure them in the **Bridge Settings → Feature Flags** section of the web UI.
+기능 플래그는 브리지의 고급 동작을 제어합니다. 웹 UI의 **Bridge Settings → Feature Flags** 섹션에서 구성합니다.
 
 > [!WARNING]
-> **autoComposedDevices is a BREAKING CHANGE**: Enabling this flag changes the Matter endpoint structure for temperature sensors with auto-mapped humidity/pressure. Controllers will see these as **new devices** and you'll need to re-assign rooms, routines, and voice aliases. Only enable for new bridges or be prepared to reconfigure.
+> **autoComposedDevices는 파괴적 변경(BREAKING CHANGE)입니다**: 이 플래그를 활성화하면 습도/압력이 자동 매핑된 온도 센서의 Matter 엔드포인트 구조가 변경됩니다. 컨트롤러는 이를 **새 기기**로 인식하므로 방, 루틴, 음성 별칭을 다시 할당해야 합니다. 새 브리지에만 활성화하거나 재구성할 준비가 되어 있을 때만 활성화하세요.
 
-| Feature Flag | Description | Default |
+| 기능 플래그 | 설명 | 기본값 |
 |--------------|-------------|---------|
-| `autoComposedDevices` | Master toggle: combines related entities (battery, humidity, pressure, power, energy) into single Matter endpoints. **WARNING: Breaking change - see above.** | `false` |
-| `autoBatteryMapping` | Automatically combines battery sensors with their parent device | `false` |
-| `autoHumidityMapping` | Automatically combines humidity sensors with temperature sensors | `true` |
-| `autoPressureMapping` | Automatically combines pressure sensors with temperature sensors | `true` |
-| `autoForceSync` | Periodically push all device states to controllers every 90 seconds. Enable if devices get out of sync. | `false` |
-| `coverSwapOpenClose` | Swap open/close commands for covers (fixes reversed Alexa commands) | `false` |
-| `coverDoNotInvertPercentage` | Skip percentage inversion for covers (not Matter-compliant) | `false` |
-| `coverUseHomeAssistantPercentage` | Use HA percentages directly (Alexa-friendly) | `false` |
-| `includeHiddenEntities` | Include entities marked as hidden in Home Assistant | `false` |
-| `serverMode` | Expose device as standalone Matter device (required for Robot Vacuums with Apple Home/Alexa). Only ONE device per bridge! | `false` |
-| `productNameFromNodeLabel` | Report the node label (custom name / friendly name / entity id) as Matter `productName`. Useful for Aqara controllers that show productName as the device name. A per-entity `customProductName` still wins. | `false` |
-| `preferEntityRegistryName` | Use the entity registry name (or `original_name`) as `nodeLabel` instead of the composed `friendly_name`. HA 2026.4 prefixes `friendly_name` with the device name, breaking voice commands that relied on the short entity name. `customName` still wins. | `false` |
-| `vacuumOnOff` | Add OnOff cluster to vacuum endpoints. Required for Alexa discovery. In Server Mode, enabled by default unless explicitly set to `false`. In Bridge Mode, disabled by default. | (see description) |
-| `vacuumIncludeUnnamedRooms` | Include rooms without names in vacuum room selection | `false` |
+| `autoComposedDevices` | 마스터 토글: 관련 엔티티(배터리, 습도, 압력, 전력, 에너지)를 단일 Matter 엔드포인트로 결합합니다. **경고: 파괴적 변경 - 위 내용 참조.** | `false` |
+| `autoBatteryMapping` | 배터리 센서를 상위 기기와 자동으로 결합합니다 | `false` |
+| `autoHumidityMapping` | 습도 센서를 온도 센서와 자동으로 결합합니다 | `true` |
+| `autoPressureMapping` | 압력 센서를 온도 센서와 자동으로 결합합니다 | `true` |
+| `autoForceSync` | 90초마다 모든 기기 상태를 컨트롤러에 주기적으로 푸시합니다. 기기 상태가 동기화되지 않을 때 활성화하세요. | `false` |
+| `coverSwapOpenClose` | 커버의 열기/닫기 명령을 바꿉니다(반전된 Alexa 명령 수정) | `false` |
+| `coverDoNotInvertPercentage` | 커버의 퍼센트 반전을 건너뜁니다(Matter 표준 비준수) | `false` |
+| `coverUseHomeAssistantPercentage` | HA 퍼센트를 직접 사용합니다(Alexa 친화적) | `false` |
+| `includeHiddenEntities` | Home Assistant에서 숨김으로 표시된 엔티티를 포함합니다 | `false` |
+| `serverMode` | 기기를 독립형 Matter 기기로 노출합니다(Apple Home/Alexa에서 로봇 청소기 사용 시 필수). 브리지당 한 기기만 가능! | `false` |
+| `productNameFromNodeLabel` | 노드 레이블(사용자 지정 이름 / friendly name / 엔티티 id)를 Matter `productName`으로 보고합니다. productName을 기기 이름으로 표시하는 Aqara 컨트롤러에 유용합니다. 엔티티별 `customProductName`이 여전히 우선합니다. | `false` |
+| `preferEntityRegistryName` | 구성된 `friendly_name` 대신 엔티티 레지스트리 이름(또는 `original_name`)을 `nodeLabel`로 사용합니다. HA 2026.4는 `friendly_name`에 기기 이름을 접두어로 붙여 짧은 엔티티 이름에 의존하던 음성 명령을 깨뜨립니다. `customName`이 여전히 우선합니다. | `false` |
+| `vacuumOnOff` | 청소기 엔드포인트에 OnOff 클러스터를 추가합니다. Alexa 검색에 필요합니다. 서버 모드에서는 명시적으로 `false`로 설정하지 않는 한 기본 활성화됩니다. 브리지 모드에서는 기본 비활성화됩니다. | (설명 참조) |
+| `vacuumIncludeUnnamedRooms` | 청소기 방 선택에서 이름이 없는 방을 포함합니다 | `false` |
 
-## Issues with labels
+## 레이블 관련 문제
 
 > [!NOTE]
 >
-> You can use the label's **display name** (as shown in Home Assistant) directly as the filter value.
-> For example, if your label is called "My Smart Lights", you can enter `My Smart Lights` as the value, it will be resolved automatically.
+> 레이블의 **표시 이름**(Home Assistant에 표시되는 대로)을 필터 값으로 직접 사용할 수 있습니다.
+> 예를 들어 레이블 이름이 "My Smart Lights"라면 값으로 `My Smart Lights`를 입력할 수 있으며 자동으로 변환됩니다.
 >
-> If you prefer, you can still use the **slug** (e.g. `my_smart_lights`). Slugs are always lowercase and use underscores instead of spaces.
+> 원한다면 여전히 **슬러그**(예: `my_smart_lights`)를 사용할 수 있습니다. 슬러그는 항상 소문자이며 공백 대신 밑줄을 사용합니다.
 
 > [!WARNING]
 >
-> - If you renamed a label in Home Assistant, the slug does **not** change. In that case, use the current display name or the original slug.
-> - Areas work differently, they still require the slug (e.g. `living_room`, not `Living Room`).
+> - Home Assistant에서 레이블 이름을 변경해도 슬러그는 변경되지 **않습니다**. 그런 경우에는 현재 표시 이름 또는 원래 슬러그를 사용하세요.
+> - 영역은 다르게 작동하며 여전히 슬러그가 필요합니다(예: `Living Room`이 아닌 `living_room`).
 >
-> You can retrieve slugs using the following templates in Home Assistant:
+> Home Assistant에서 다음 템플릿을 사용해 슬러그를 가져올 수 있습니다:
 >
-> - `{{ labels() }}` - returns all labels
-> - `{{ labels("light.my_entity") }}` - returns the labels of a specific entity
-> - `{{ areas() }}` - returns all areas
+> - `{{ labels() }}` - 모든 레이블을 반환합니다
+> - `{{ labels("light.my_entity") }}` - 특정 엔티티의 레이블을 반환합니다
+> - `{{ areas() }}` - 모든 영역을 반환합니다
 
-If you can't get it working with your labels, you can delete your label and re-create it.
+레이블로 잘 작동하지 않는 경우, 레이블을 삭제하고 다시 생성할 수 있습니다.

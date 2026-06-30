@@ -1,47 +1,47 @@
 # Air Purifier
 
-Air Purifiers from Home Assistant's `fan` domain can be exposed to Matter controllers as Air Purifier devices.
+Home Assistant의 `fan` 도메인에 속한 공기청정기는 Air Purifier 디바이스로 Matter 컨트롤러에 노출될 수 있습니다.
 
-## Features
+## 기능
 
-- **On/Off Control** - Turn the air purifier on or off
-- **Speed Control** - Adjust fan speed (if supported)
-- **Preset Modes** - Auto mode and other presets (if supported)
-- **Oscillation (Rocking)** - Maps `oscillating` attribute to Matter Rocking feature (v2.0.27+)
-- **Wind Modes** - Natural Wind and Sleep Wind preset modes (v2.0.27+)
-- **HEPA Filter Life Monitoring** - Show filter life remaining in Matter controllers
+- **On/Off 제어** - 공기청정기를 켜거나 끔
+- **속도 제어** - 팬 속도 조절 (지원되는 경우)
+- **프리셋 모드** - Auto 모드 및 기타 프리셋 (지원되는 경우)
+- **회전(Rocking)** - `oscillating` 속성을 Matter Rocking feature에 매핑 (v2.0.27+)
+- **바람 모드(Wind Modes)** - Natural Wind 및 Sleep Wind 프리셋 모드 (v2.0.27+)
+- **HEPA 필터 수명 모니터링** - Matter 컨트롤러에 남은 필터 수명 표시
 
-## HEPA Filter Life Monitoring
+## HEPA 필터 수명 모니터링
 
-Matter's Air Purifier device type includes HEPA Filter Monitoring, which displays the remaining filter life in compatible Matter controllers (Apple Home, Google Home, Alexa).
+Matter의 Air Purifier 디바이스 타입에는 HEPA Filter Monitoring이 포함되어 있어, 호환되는 Matter 컨트롤러(Apple Home, Google Home, Alexa)에 남은 필터 수명을 표시합니다.
 
-### Automatic Detection
+### 자동 감지
 
-If your air purifier entity has any of these attributes, filter life monitoring is automatically enabled:
+공기청정기 엔티티에 다음 속성 중 하나라도 있으면 필터 수명 모니터링이 자동으로 활성화됩니다:
 
 - `filter_life`
 - `filter_life_remaining`
 - `filter_life_level`
 
-The value should be a percentage (0-100), where 100 = new filter and 0 = needs replacement.
+값은 백분율(0-100)이어야 하며, 100 = 새 필터, 0 = 교체 필요입니다.
 
-### Using a Separate Sensor Entity
+### 별도의 센서 엔티티 사용
 
-Many Home Assistant integrations expose filter life as a separate sensor entity (e.g., `sensor.air_purifier_filter_life`) instead of an attribute on the fan entity.
+많은 Home Assistant 통합은 필터 수명을 fan 엔티티의 속성이 아닌 별도의 센서 엔티티(예: `sensor.air_purifier_filter_life`)로 노출합니다.
 
-To use a separate sensor, configure it in **Entity Mapping**:
+별도의 센서를 사용하려면 **Entity Mapping**에서 구성하세요:
 
-1. Go to your Bridge in the Dashboard
-2. Find your air purifier entity
-3. Click **Edit Mapping**
-4. In the **Filter Life Sensor** field, enter your sensor entity ID (e.g., `sensor.luftreiniger_filter_life`)
-5. Save the mapping
+1. Dashboard에서 브리지로 이동합니다
+2. 공기청정기 엔티티를 찾습니다
+3. **Edit Mapping**을 클릭합니다
+4. **Filter Life Sensor** 필드에 센서 엔티티 ID를 입력합니다 (예: `sensor.luftreiniger_filter_life`)
+5. 매핑을 저장합니다
 
-The sensor should provide a percentage value (0-100).
+센서는 백분율 값(0-100)을 제공해야 합니다.
 
-### Template Sensor Workaround
+### 템플릿 센서 우회 방법
 
-If you prefer to add filter life as an attribute directly to your fan entity, you can use Home Assistant's customization:
+필터 수명을 fan 엔티티에 직접 속성으로 추가하려는 경우 Home Assistant의 customization을 사용할 수 있습니다:
 
 ```yaml
 # configuration.yaml
@@ -51,19 +51,19 @@ homeassistant:
       filter_life: "{{ states('sensor.air_purifier_filter_life') | int }}"
 ```
 
-Or create a template fan entity that includes the filter life attribute.
+또는 필터 수명 속성을 포함하는 템플릿 fan 엔티티를 생성하세요.
 
-## Change Indication
+## 변경 표시 (Change Indication)
 
-The filter monitoring automatically sets the `changeIndication` attribute based on filter life:
+필터 모니터링은 필터 수명에 따라 `changeIndication` 속성을 자동으로 설정합니다:
 
-| Filter Life | Change Indication | Meaning |
+| 필터 수명 | Change Indication | 의미 |
 |-------------|-------------------|---------|
-| > 20% | **Ok** | Filter is fine |
-| 5% - 20% | **Warning** | Filter life is low |
-| < 5% | **Critical** | Filter needs immediate replacement |
+| > 20% | **Ok** | 필터 양호 |
+| 5% - 20% | **Warning** | 필터 수명 부족 |
+| < 5% | **Critical** | 필터 즉시 교체 필요 |
 
-## Example Entity
+## 예시 엔티티
 
 ```yaml
 # Example air purifier entity with filter life attribute
@@ -80,42 +80,42 @@ fan.living_room_air_purifier:
     supported_features: 15
 ```
 
-## Compatibility
+## 호환성
 
 | Controller | Filter Life Display |
 |------------|---------------------|
-| Apple Home | ✅ Shows filter status |
-| Google Home | ✅ Shows filter status |
-| Amazon Alexa | ⚠️ Limited support |
+| Apple Home | ✅ 필터 상태 표시 |
+| Google Home | ✅ 필터 상태 표시 |
+| Amazon Alexa | ⚠️ 제한적 지원 |
 
 ## Composed Air Purifier
 
-Since v2.0.27, air purifiers that share a Home Assistant device with thermostat or humidity sensors can be exposed as a **Matter Composed Device** (per Matter spec section 9.4.4). This creates a parent Air Purifier endpoint with sub-endpoints for temperature and humidity, allowing controllers to display all readings in one unified device.
+v2.0.27부터, 서모스탯 또는 습도 센서와 Home Assistant 디바이스를 공유하는 공기청정기는 **Matter Composed Device**로 노출될 수 있습니다(Matter 사양 9.4.4절 참조). 이는 온도 및 습도용 하위 엔드포인트가 있는 부모 Air Purifier 엔드포인트를 생성하여, 컨트롤러가 모든 측정값을 하나의 통합된 디바이스에 표시할 수 있게 합니다.
 
-Composed air purifiers are automatically created when `autoComposedDevices` is enabled in Bridge Settings and the air purifier entity shares a device with temperature/humidity sensors.
-
----
-
-## Oscillation & Wind Modes
-
-Since v2.0.27, air purifiers properly support:
-
-- **Oscillation (Rocking)**, If your fan entity has the `oscillating` attribute, it is exposed as the Matter Rocking feature
-- **Natural Wind**, Maps the "Natural" preset mode to Matter's naturalWind feature
-- **Sleep Wind**, Maps the "Sleep" preset mode to Matter's sleepWind feature
-
-These features were previously missing from the air purifier device type.
+Composed 공기청정기는 Bridge Settings에서 `autoComposedDevices`가 활성화되어 있고 공기청정기 엔티티가 온도/습도 센서와 디바이스를 공유할 때 자동으로 생성됩니다.
 
 ---
 
-## Troubleshooting
+## 회전 및 바람 모드
 
-### Filter life not showing
+v2.0.27부터, 공기청정기는 다음을 제대로 지원합니다:
 
-1. Check that your sensor provides a numeric percentage value (0-100)
-2. Verify the sensor entity ID is correct in Entity Mapping
-3. Remove and re-add the device in your Matter controller (device capabilities changed)
+- **회전(Rocking)**, fan 엔티티에 `oscillating` 속성이 있으면 Matter Rocking feature로 노출됨
+- **Natural Wind**, "Natural" 프리셋 모드를 Matter의 naturalWind feature에 매핑
+- **Sleep Wind**, "Sleep" 프리셋 모드를 Matter의 sleepWind feature에 매핑
 
-### Filter always shows 100%
+이러한 기능은 이전에 air purifier 디바이스 타입에서 누락되어 있었습니다.
 
-The sensor value might not be updating. Check in Home Assistant Developer Tools > States that the sensor is returning the correct value.
+---
+
+## 문제 해결
+
+### 필터 수명이 표시되지 않음
+
+1. 센서가 숫자 백분율 값(0-100)을 제공하는지 확인하세요
+2. Entity Mapping에서 센서 엔티티 ID가 올바른지 확인하세요
+3. Matter 컨트롤러에서 디바이스를 제거하고 다시 추가하세요 (디바이스 기능이 변경됨)
+
+### 필터가 항상 100%로 표시됨
+
+센서 값이 업데이트되지 않을 수 있습니다. Home Assistant Developer Tools > States에서 센서가 올바른 값을 반환하는지 확인하세요.

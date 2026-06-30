@@ -1,34 +1,34 @@
-# API Reference
+# API 레퍼런스
 
-All endpoints return JSON unless otherwise noted. Default port: `8482`.
+별도로 명시되지 않는 한 모든 엔드포인트는 JSON을 반환합니다. 기본 포트: `8482`.
 
-## Base URL
+## 기본 URL
 
-When using Home Assistant Ingress, endpoints are relative to the ingress URL:
+Home Assistant Ingress를 사용할 때 엔드포인트는 ingress URL을 기준으로 상대 경로입니다:
 ```
 /api/hassio_ingress/<ingress_token>/api/...
 ```
 
-For standalone Docker deployments:
+독립 Docker 배포의 경우:
 ```
 http://localhost:8482/api/...
 ```
 
-## Authentication
+## 인증
 
-If configured, the API uses HTTP Basic Authentication. Set credentials via the Settings page or environment variables.
+구성된 경우 API는 HTTP Basic 인증을 사용합니다. 설정 페이지 또는 환경 변수를 통해 자격 증명을 설정하세요.
 
 ---
 
 ## Health API
 
-Base path: `/api/health`
+기본 경로: `/api/health`
 
 ### GET /api/health
 
-Returns basic health status.
+기본 상태 정보를 반환합니다.
 
-**Response:**
+**응답:**
 ```json
 {
   "status": "healthy",
@@ -42,49 +42,49 @@ Returns basic health status.
 }
 ```
 
-**Status codes:** `200` healthy/degraded, `503` unhealthy.
+**상태 코드:** `200` healthy/degraded, `503` unhealthy.
 
 ### GET /api/health/detailed
 
-Returns detailed health including per-bridge info, fabric details, failed-entity diagnostics, and recovery status with recent attempts.
+브리지별 정보, fabric 세부 정보, 실패한 엔터티 진단 정보, 최근 시도 내역을 포함한 복구 상태 등 상세한 상태 정보를 반환합니다.
 
 ### GET /api/health/live
 
-Kubernetes liveness probe. Returns `200 OK`.
+Kubernetes liveness probe입니다. `200 OK`를 반환합니다.
 
 ### GET /api/health/ready
 
-Kubernetes readiness probe. Returns `200` if Home Assistant is connected, `503` otherwise.
+Kubernetes readiness probe입니다. Home Assistant가 연결되면 `200`을, 그렇지 않으면 `503`을 반환합니다.
 
 ---
 
 ## Settings API
 
-Base path: `/api/settings`
+기본 경로: `/api/settings`
 
 ### GET /api/settings/recovery
 
-Returns the auto-recovery settings: `autoRecoveryEnabled` (boolean) and `recoveryIntervalMs` (number).
+자동 복구 설정을 반환합니다: `autoRecoveryEnabled`(boolean)과 `recoveryIntervalMs`(number).
 
 ### PUT /api/settings/recovery
 
-Updates the auto-recovery settings. Body accepts `autoRecoveryEnabled` and `recoveryIntervalMs` (10000-3600000 ms). Applied live and persisted across restarts.
+자동 복구 설정을 업데이트합니다. 본문은 `autoRecoveryEnabled`와 `recoveryIntervalMs`(10000-3600000 ms)를 받습니다. 즉시 적용되며 재시작 후에도 유지됩니다.
 
 ---
 
 ## Matter / Bridge API
 
-Base path: `/api/matter`
+기본 경로: `/api/matter`
 
 ### GET /api/matter/bridges
 
-List all configured bridges.
+구성된 모든 브리지를 나열합니다.
 
 ### POST /api/matter/bridges
 
-Create a new bridge.
+새 브리지를 생성합니다.
 
-**Request:**
+**요청:**
 ```json
 {
   "name": "New Bridge",
@@ -98,129 +98,129 @@ Create a new bridge.
 
 ### GET /api/matter/bridges/:bridgeId
 
-Get a specific bridge. Returns `404` if not found.
+특정 브리지를 조회합니다. 찾을 수 없으면 `404`를 반환합니다.
 
 ### PUT /api/matter/bridges/:bridgeId
 
-Update a bridge configuration.
+브리지 구성을 업데이트합니다.
 
 ### DELETE /api/matter/bridges/:bridgeId
 
-Delete a bridge. Returns `204 No Content`.
+브리지를 삭제합니다. `204 No Content`를 반환합니다.
 
-### Bridge Actions
+### 브리지 액션
 
-| Endpoint | Method | Description |
+| 엔드포인트 | 메서드 | 설명 |
 |----------|--------|-------------|
-| `/api/matter/bridges/:bridgeId/actions/start` | POST | Start a stopped bridge |
-| `/api/matter/bridges/:bridgeId/actions/stop` | POST | Stop a running bridge |
-| `/api/matter/bridges/:bridgeId/actions/restart` | POST | Restart a bridge |
-| `/api/matter/bridges/:bridgeId/actions/refresh` | POST | Refresh devices without restart |
-| `/api/matter/bridges/:bridgeId/actions/factory-reset` | POST | Factory reset (removes fabrics) |
-| `/api/matter/bridges/:bridgeId/actions/force-sync` | POST | Push current state to controllers |
-| `/api/matter/bridges/:bridgeId/actions/open-commissioning-window` | POST | Open pairing window for multi-fabric |
-| `/api/matter/bridges/actions/start-all` | POST | Start all bridges |
-| `/api/matter/bridges/actions/stop-all` | POST | Stop all bridges |
-| `/api/matter/bridges/actions/restart-all` | POST | Restart all bridges |
+| `/api/matter/bridges/:bridgeId/actions/start` | POST | 중지된 브리지 시작 |
+| `/api/matter/bridges/:bridgeId/actions/stop` | POST | 실행 중인 브리지 중지 |
+| `/api/matter/bridges/:bridgeId/actions/restart` | POST | 브리지 재시작 |
+| `/api/matter/bridges/:bridgeId/actions/refresh` | POST | 재시작 없이 장치 새로 고침 |
+| `/api/matter/bridges/:bridgeId/actions/factory-reset` | POST | 공장 초기화(fabric 제거) |
+| `/api/matter/bridges/:bridgeId/actions/force-sync` | POST | 현재 상태를 컨트롤러에 전송 |
+| `/api/matter/bridges/:bridgeId/actions/open-commissioning-window` | POST | 멀티 fabric용 페어링 창 열기 |
+| `/api/matter/bridges/actions/start-all` | POST | 모든 브리지 시작 |
+| `/api/matter/bridges/actions/stop-all` | POST | 모든 브리지 중지 |
+| `/api/matter/bridges/actions/restart-all` | POST | 모든 브리지 재시작 |
 
 ### PUT /api/matter/bridges/priorities
 
-Update bridge startup priorities.
+브리지 시작 우선순위를 업데이트합니다.
 
-**Request:**
+**요청:**
 ```json
 { "updates": [{ "id": "abc123", "priority": 1 }] }
 ```
 
 ### POST /api/matter/bridges/:bridgeId/clone
 
-Clone a bridge configuration (new port assigned automatically).
+브리지 구성을 복제합니다(새 포트가 자동으로 할당됨).
 
 ### GET /api/matter/bridges/:bridgeId/devices
 
-Get all Matter devices exposed by a bridge.
+브리지가 노출하는 모든 Matter 장치를 조회합니다.
 
 ### GET /api/matter/next-port
 
-Get the next available port for a new bridge.
+새 브리지에 사용할 다음 가용 포트를 조회합니다.
 
 ### POST /api/matter/filter-preview
 
-Preview which entities match a filter.
+필터에 일치하는 엔터티를 미리 보기합니다.
 
 ### GET /api/matter/labels
 
-Get Home Assistant labels.
+Home Assistant 레이블을 조회합니다.
 
 ### GET /api/matter/areas
 
-Get Home Assistant areas.
+Home Assistant 영역(area)을 조회합니다.
 
 ### GET /api/matter/filter-values
 
-Get available filter values (domains, labels, areas).
+사용 가능한 필터 값(도메인, 레이블, 영역)을 조회합니다.
 
 ---
 
 ## Home Assistant API
 
-Base path: `/api/home-assistant`
+기본 경로: `/api/home-assistant`
 
 ### GET /api/home-assistant/stats
 
-Get entity/device statistics and connection status.
+엔터티/장치 통계와 연결 상태를 조회합니다.
 
 ### GET /api/home-assistant/entities
 
-List entities with pagination and filtering.
+페이지네이션 및 필터링과 함께 엔터티를 나열합니다.
 
-**Query Parameters:**
-| Parameter | Type | Default | Description |
+**쿼리 매개변수:**
+| 매개변수 | 타입 | 기본값 | 설명 |
 |-----------|------|---------|-------------|
-| `domain` | string | - | Filter by domain (e.g. `light`) |
-| `search` | string | - | Search in entity_id and friendly_name |
-| `limit` | number | 100 | Max results (1-500) |
-| `offset` | number | 0 | Pagination offset |
+| `domain` | string | - | 도메인으로 필터링(예: `light`) |
+| `search` | string | - | entity_id 및 friendly_name에서 검색 |
+| `limit` | number | 100 | 최대 결과 수(1-500) |
+| `offset` | number | 0 | 페이지네이션 오프셋 |
 
 ### GET /api/home-assistant/entities/:entityId
 
-Get a specific entity. Returns `404` if not found.
+특정 엔터티를 조회합니다. 찾을 수 없으면 `404`를 반환합니다.
 
 ### GET /api/home-assistant/devices
 
-List devices with pagination and filtering.
+페이지네이션 및 필터링과 함께 장치를 나열합니다.
 
 ### GET /api/home-assistant/devices/:deviceId
 
-Get a device with all its entities.
+장치와 그에 속한 모든 엔터티를 조회합니다.
 
 ### GET /api/home-assistant/domains
 
-Get all domains with entity counts.
+엔터티 개수와 함께 모든 도메인을 조회합니다.
 
 ### POST /api/home-assistant/refresh
 
-Force refresh the HA entity registry.
+HA 엔터티 레지스트리를 강제로 새로 고침합니다.
 
 ### GET /api/home-assistant/related-buttons/:entityId
 
-Get button entities belonging to the same HA device (useful for vacuum room cleaning).
+동일한 HA 장치에 속한 버튼 엔터티를 조회합니다(청소기 방별 청소에 유용).
 
 ---
 
 ## Entity Mapping API
 
-Base path: `/api/entity-mappings`
+기본 경로: `/api/entity-mappings`
 
 ### GET /api/entity-mappings/:bridgeId
 
-Get all entity mappings for a bridge.
+브리지의 모든 엔터티 매핑을 조회합니다.
 
 ### PUT /api/entity-mappings/:bridgeId/:entityId
 
-Create or update a mapping for a specific entity.
+특정 엔터티의 매핑을 생성하거나 업데이트합니다.
 
-**Request:**
+**요청:**
 ```json
 {
   "matterDeviceType": "DimmableLight",
@@ -231,35 +231,35 @@ Create or update a mapping for a specific entity.
 
 ### DELETE /api/entity-mappings/:bridgeId/:entityId
 
-Delete a specific entity mapping.
+특정 엔터티 매핑을 삭제합니다.
 
 ### DELETE /api/entity-mappings/:bridgeId
 
-Delete all mappings for a bridge.
+브리지의 모든 매핑을 삭제합니다.
 
 ---
 
 ## Bridge Export / Import API
 
-Base path: `/api/bridges`
+기본 경로: `/api/bridges`
 
 ### GET /api/bridges/export
 
-Export all bridge configurations as JSON download.
+모든 브리지 구성을 JSON 다운로드로 내보냅니다.
 
 ### GET /api/bridges/export/:bridgeId
 
-Export a single bridge.
+단일 브리지를 내보냅니다.
 
 ### POST /api/bridges/import/preview
 
-Preview an import without applying changes.
+변경 사항을 적용하지 않고 가져오기를 미리 보기합니다.
 
 ### POST /api/bridges/import
 
-Import bridge configurations.
+브리지 구성을 가져옵니다.
 
-**Request:**
+**요청:**
 ```json
 {
   "data": { },
@@ -274,90 +274,90 @@ Import bridge configurations.
 
 ## Backup API
 
-Base path: `/api/backup`
+기본 경로: `/api/backup`
 
 ### GET /api/backup/download
 
-Download a full backup ZIP (bridges + entity mappings).
+전체 백업 ZIP(브리지 + 엔터티 매핑)을 다운로드합니다.
 
-| Parameter | Type | Default | Description |
+| 매개변수 | 타입 | 기본값 | 설명 |
 |-----------|------|---------|-------------|
-| `includeIdentity` | boolean | `false` | Include Matter identity files |
+| `includeIdentity` | boolean | `false` | Matter 아이덴티티 파일 포함 |
 
 ### POST /api/backup/restore/preview
 
-Preview a backup restore. Upload as `multipart/form-data` with `file` field.
+백업 복원을 미리 보기합니다. `file` 필드가 포함된 `multipart/form-data`로 업로드합니다.
 
 ### POST /api/backup/restore
 
-Restore from a backup. Upload as `multipart/form-data` with `file` and `options` fields.
+백업에서 복원합니다. `file`과 `options` 필드가 포함된 `multipart/form-data`로 업로드합니다.
 
 ### POST /api/backup/restart
 
-Restart the application after a restore.
+복원 후 애플리케이션을 재시작합니다.
 
 ---
 
 ## Plugin API
 
-Base path: `/api/plugins`
+기본 경로: `/api/plugins`
 
 ### GET /api/plugins
 
-List installed plugin packages and active plugins per bridge.
+설치된 플러그인 패키지와 브리지별 활성 플러그인을 나열합니다.
 
 ### POST /api/plugins/install
 
-Install a plugin from npm.
+npm에서 플러그인을 설치합니다.
 
-**Request:**
+**요청:**
 ```json
 { "packageName": "hamh-plugin-example" }
 ```
 
 ### POST /api/plugins/upload
 
-Install a plugin from an uploaded `.tgz` file. Send the raw binary as the request body with `Content-Type: application/octet-stream`.
+업로드한 `.tgz` 파일에서 플러그인을 설치합니다. `Content-Type: application/octet-stream`으로 원시 바이너리를 요청 본문으로 전송합니다.
 
 ### POST /api/plugins/install-local
 
-Link a local plugin directory.
+로컬 플러그인 디렉터리를 연결합니다.
 
-**Request:**
+**요청:**
 ```json
 { "path": "/absolute/path/to/plugin" }
 ```
 
 ### POST /api/plugins/uninstall
 
-Uninstall a plugin package.
+플러그인 패키지를 제거합니다.
 
-**Request:**
+**요청:**
 ```json
 { "packageName": "hamh-plugin-example" }
 ```
 
 ### POST /api/plugins/:bridgeId/:pluginName/enable
 
-Enable a plugin on a bridge.
+브리지에서 플러그인을 활성화합니다.
 
 ### POST /api/plugins/:bridgeId/:pluginName/disable
 
-Disable a plugin on a bridge.
+브리지에서 플러그인을 비활성화합니다.
 
 ### POST /api/plugins/:bridgeId/:pluginName/reset
 
-Reset a plugin's circuit breaker (re-enable after auto-disable from failures).
+플러그인의 서킷 브레이커를 재설정합니다(장애로 인한 자동 비활성화 후 다시 활성화).
 
 ### GET /api/plugins/:bridgeId/:pluginName/config-schema
 
-Get the JSON config schema for a plugin (if the plugin provides one).
+플러그인의 JSON 구성 스키마를 조회합니다(플러그인이 제공하는 경우).
 
 ### POST /api/plugins/:bridgeId/:pluginName/config
 
-Update a plugin's configuration.
+플러그인의 구성을 업데이트합니다.
 
-**Request:**
+**요청:**
 ```json
 { "config": { "pollingInterval": 30000 } }
 ```
@@ -366,55 +366,55 @@ Update a plugin's configuration.
 
 ## Lock Credentials API
 
-Base path: `/api/lock-credentials`
+기본 경로: `/api/lock-credentials`
 
 ### GET /api/lock-credentials
 
-Get all lock credentials.
+모든 잠금장치 자격 증명을 조회합니다.
 
 ### GET /api/lock-credentials/:entityId
 
-Get credential for a specific lock entity.
+특정 잠금장치 엔터티의 자격 증명을 조회합니다.
 
 ### PUT /api/lock-credentials/:entityId
 
-Create or update a lock credential (PIN code).
+잠금장치 자격 증명(PIN 코드)을 생성하거나 업데이트합니다.
 
 ### PATCH /api/lock-credentials/:entityId/enabled
 
-Enable or disable a lock credential.
+잠금장치 자격 증명을 활성화 또는 비활성화합니다.
 
 ### DELETE /api/lock-credentials/:entityId
 
-Delete a lock credential.
+잠금장치 자격 증명을 삭제합니다.
 
 ---
 
 ## Logs API
 
-Base path: `/api/logs`
+기본 경로: `/api/logs`
 
 ### GET /api/logs
 
-Retrieve logs with optional filtering.
+선택적 필터링과 함께 로그를 검색합니다.
 
-| Parameter | Type | Default | Description |
+| 매개변수 | 타입 | 기본값 | 설명 |
 |-----------|------|---------|-------------|
-| `level` | string | - | Comma-separated levels (e.g. `error,warn`) |
-| `search` | string | - | Search in log messages |
-| `limit` | number | 100 | Max entries (1-500) |
+| `level` | string | - | 쉼표로 구분된 레벨(예: `error,warn`) |
+| `search` | string | - | 로그 메시지에서 검색 |
+| `limit` | number | 100 | 최대 항목 수(1-500) |
 
 ### GET /api/logs/levels
 
-Get count of logs by level.
+레벨별 로그 개수를 조회합니다.
 
 ### DELETE /api/logs
 
-Clear all stored logs.
+저장된 모든 로그를 삭제합니다.
 
 ### GET /api/logs/stream
 
-Server-Sent Events (SSE) endpoint for real-time log streaming.
+실시간 로그 스트리밍을 위한 Server-Sent Events(SSE) 엔드포인트입니다.
 
 ```javascript
 const eventSource = new EventSource('api/logs/stream');
@@ -428,15 +428,15 @@ eventSource.onmessage = (event) => {
 
 ## Metrics API
 
-Base path: `/api/metrics`
+기본 경로: `/api/metrics`
 
 ### GET /api/metrics
 
-Returns system metrics in **JSON** format (memory, bridges, HA connection status).
+시스템 메트릭을 **JSON** 형식으로 반환합니다(메모리, 브리지, HA 연결 상태).
 
 ### GET /api/metrics/prometheus
 
-Returns metrics in **Prometheus** text format for scraping.
+스크래이핑을 위해 메트릭을 **Prometheus** 텍스트 형식으로 반환합니다.
 
 ```
 # HELP hamh_uptime_seconds Application uptime in seconds
@@ -456,40 +456,40 @@ hamh_bridge_status{bridge_id="abc123",bridge_name="My_Bridge"} 1
 
 ## System API
 
-Base path: `/api/system`
+기본 경로: `/api/system`
 
 ### GET /api/system/info
 
-Returns system information (hostname, platform, memory, network interfaces, storage).
+시스템 정보(호스트명, 플랫폼, 메모리, 네트워크 인터페이스, 저장소)를 반환합니다.
 
 ---
 
 ## WebSocket API
 
-**Endpoint:** `ws://<host>:<port>/api/ws`
+**엔드포인트:** `ws://<host>:<port>/api/ws`
 
-Real-time updates for bridge status and diagnostics.
+브리지 상태와 진단 정보에 대한 실시간 업데이트를 제공합니다.
 
-### Client → Server Messages
+### 클라이언트 → 서버 메시지
 
-| Type | Description |
+| 타입 | 설명 |
 |------|-------------|
-| `ping` | Client ping; server responds with `pong` |
-| `subscribe_diagnostics` | Subscribe to live diagnostic events |
-| `unsubscribe_diagnostics` | Unsubscribe from diagnostics |
+| `ping` | 클라이언트 ping; 서버가 `pong`으로 응답 |
+| `subscribe_diagnostics` | 실시간 진단 이벤트 구독 |
+| `unsubscribe_diagnostics` | 진단 구독 해제 |
 
-### Server → Client Messages
+### 서버 → 클라이언트 메시지
 
-| Type | Description |
+| 타입 | 설명 |
 |------|-------------|
-| `bridges_update` | All bridges have been updated (sent on connect + on change) |
-| `bridge_update` | Single bridge updated; includes `bridgeId` field |
-| `diagnostic_event` | Live diagnostic event (requires subscription) |
-| `diagnostic_snapshot` | Initial snapshot sent after subscribing to diagnostics |
-| `ping` | Server keepalive (every 30s) |
-| `pong` | Response to client ping |
+| `bridges_update` | 모든 브리지가 업데이트됨(연결 시 + 변경 시 전송) |
+| `bridge_update` | 단일 브리지 업데이트; `bridgeId` 필드 포함 |
+| `diagnostic_event` | 실시간 진단 이벤트(구독 필요) |
+| `diagnostic_snapshot` | 진단 구독 후 전송되는 초기 스냅샷 |
+| `ping` | 서버 keepalive(30초마다) |
+| `pong` | 클라이언트 ping에 대한 응답 |
 
-### Example
+### 예시
 
 ```javascript
 const ws = new WebSocket('ws://localhost:8482/api/ws');
@@ -509,17 +509,17 @@ ws.onmessage = (event) => {
   }
 };
 
-// Subscribe to live diagnostics
+// 실시간 진단 구독
 ws.send(JSON.stringify({ type: 'subscribe_diagnostics' }));
 ```
 
 ---
 
-## Error Responses
+## 오류 응답
 
-All endpoints return errors as:
+모든 엔드포인트는 다음 형식으로 오류를 반환합니다:
 ```json
 { "error": "Error message description" }
 ```
 
-Common status codes: `400` Bad Request, `404` Not Found, `500` Internal Server Error, `503` Service Unavailable.
+일반적인 상태 코드: `400` Bad Request, `404` Not Found, `500` Internal Server Error, `503` Service Unavailable.

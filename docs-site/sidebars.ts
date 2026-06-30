@@ -5,7 +5,7 @@ const sidebars: SidebarsConfig = {
     "index",
     {
       type: "category",
-      label: "Getting Started",
+      label: "시작하기",
       items: [
         "getting-started/installation",
         "getting-started/bridge-configuration",
@@ -15,7 +15,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Devices",
+      label: "기기",
       link: { type: "doc", id: "supported-device-types" },
       items: [
         "devices/light",
@@ -29,7 +29,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Guides",
+      label: "가이드",
       items: [
         "guides/connect-multiple-fabrics",
         "guides/alexa-bulk-delete-devices",
@@ -40,12 +40,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Plugins",
+      label: "플러그인",
       items: ["guides/plugin-system"],
     },
     {
       type: "category",
-      label: "Reference",
+      label: "레퍼런스",
       items: [
         "guides/api-reference",
         "guides/controller-compatibility",
@@ -54,7 +54,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Troubleshooting",
+      label: "문제 해결",
       items: [
         "guides/connectivity-issues",
         "guides/low-resource-devices",
@@ -63,7 +63,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Developer",
+      label: "개발자",
       items: [
         "developer/index",
         "developer/services",
